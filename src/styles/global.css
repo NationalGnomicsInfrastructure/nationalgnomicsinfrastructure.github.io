@@ -47,7 +47,23 @@ p { margin-bottom: 1rem; }
 
 .container { max-width: var(--max-w); margin: 0 auto; padding: 0 1.5rem; }
 
-/* ── Header ───────────────────────────────────────────────── */
+/* ── Redirect banner ──────────────────────────────────────── */
+.redirect-banner {
+  background: #fff3cd;
+  border-bottom: 1px solid #ffc107;
+  color: #664d03;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.5rem 1.5rem;
+}
+.redirect-banner a {
+  color: #664d03;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.redirect-banner a:hover { color: #3d2d00; }
+
+
 .site-header {
   background: var(--gnomics-green-d);
   color: white;
@@ -188,7 +204,7 @@ section.alt { background: var(--bg-alt); }
 #timer-bar {
   display: none;
   position: fixed;
-  top: 60px;
+  top: 96px;
   right: 1.5rem;
   z-index: 200;
   background: var(--gnomics-green-d);
