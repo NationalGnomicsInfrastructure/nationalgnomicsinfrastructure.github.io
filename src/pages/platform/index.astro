@@ -1,0 +1,125 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Platform Access" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="/">Home</a> / Platform Access</div>
+      <h1>Platform Access</h1>
+      <p>Welcome to the NGnI analysis and project management portal.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+
+      <!-- Pre-launch state (default) -->
+      <div id="pre-launch" style="max-width:640px;margin:0 auto;text-align:center;">
+        <div class="alert alert-info">
+          <strong>New session.</strong> Authenticate with your team credentials and press the button below to begin your platform session.
+          Your session will be active for <strong>45 minutes</strong>.
+        </div>
+
+        <div class="card mt-3" style="text-align:left;">
+          <h3>Team Authentication</h3>
+          <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your session form.</p>
+          <div class="form-group">
+            <label for="team-name">Team Name</label>
+            <input type="text" id="team-name" placeholder="e.g. The Gnome Rangers" />
+          </div>
+          <div class="form-group">
+            <label for="team-leader">Team Leader</label>
+            <input type="text" id="team-leader" placeholder="First name" />
+          </div>
+        </div>
+
+        <button id="launch-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
+          🚀 Initialise Platform Session
+        </button>
+      </div>
+
+      <!-- Post-launch state (hidden until button press) -->
+      <div id="post-launch" style="display:none;max-width:800px;margin:0 auto;">
+        <div class="alert alert-success">
+          ✅ <strong>Session active.</strong> Welcome, <span id="display-team"></span>! Your 45-minute session has started.
+        </div>
+
+        <div class="cards mt-3">
+          <a href="/platform/species-id/" class="card" style="text-decoration:none;cursor:pointer;">
+            <div class="card-icon">🔬</div>
+            <h3>Species Identification Tool</h3>
+            <p>Identify an unknown specimen using our phylogenetic distance classifier. Required for all new gnomics projects.</p>
+            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;">Open Tool →</span>
+          </a>
+          <div class="card" style="opacity:0.5;">
+            <div class="card-icon">📋</div>
+            <h3>Project Submission</h3>
+            <p>Submit a new sequencing project. Available after species identification is complete.</p>
+            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;cursor:not-allowed;">Locked</span>
+          </div>
+          <div class="card" style="opacity:0.5;">
+            <div class="card-icon">📊</div>
+            <h3>Analysis Dashboard</h3>
+            <p>View results and download processed data for your projects.</p>
+            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;cursor:not-allowed;">Locked</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</Layout>
+
+<script>
+  const launchBtn = document.getElementById('launch-btn');
+  const preLaunch = document.getElementById('pre-launch');
+  const postLaunch = document.getElementById('post-launch');
+  const displayTeam = document.getElementById('display-team');
+
+  // Restore session if already started
+  const existingStart = localStorage.getItem('gnomics_start');
+  if (existingStart) {
+    const teamName = localStorage.getItem('gnomics_team') || 'your team';
+    preLaunch!.style.display = 'none';
+    postLaunch!.style.display = 'block';
+    displayTeam!.textContent = teamName;
+    // Unlock project submission if species-id done
+    if (localStorage.getItem('gnomics_species_done')) {
+      unlockCards();
+    }
+  }
+
+  launchBtn?.addEventListener('click', () => {
+    const teamName = (document.getElementById('team-name') as HTMLInputElement)?.value.trim();
+    const teamLeader = (document.getElementById('team-leader') as HTMLInputElement)?.value.trim();
+    if (!teamName || !teamLeader) {
+      alert('Please enter your team name and leader before starting.');
+      return;
+    }
+    localStorage.setItem('gnomics_start', String(Date.now()));
+    localStorage.setItem('gnomics_team', teamName);
+    localStorage.setItem('gnomics_leader', teamLeader);
+    preLaunch!.style.display = 'none';
+    postLaunch!.style.display = 'block';
+    displayTeam!.textContent = teamName;
+    // Trigger timer
+    window.dispatchEvent(new Event('gnomics_started'));
+    location.reload(); // reload so timer bar picks up new start
+  });
+
+  function unlockCards() {
+    const cards = document.querySelectorAll('#post-launch .card');
+    cards.forEach((card, i) => {
+      if (i === 1) {
+        (card as HTMLElement).style.opacity = '1';
+        const link = card.querySelector('a') ?? card;
+        (card as HTMLElement).style.cursor = 'pointer';
+        (card as HTMLElement).onclick = () => { window.location.href = '/platform/submit/'; };
+        const btn = card.querySelector('.btn') as HTMLElement;
+        if (btn) { btn.textContent = 'Open Tool →'; btn.style.cursor = 'pointer'; }
+      }
+    });
+  }
+</script>

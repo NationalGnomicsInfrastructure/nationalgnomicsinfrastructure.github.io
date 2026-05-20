@@ -1,0 +1,127 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  showTimer?: boolean;
+}
+const { title, description = "National Gnomics Infrastructure — Advancing gnome-scale genomic discovery", showTimer = false } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} | NGnI</title>
+  <meta name="description" content={description} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="site-logo">
+      <span class="abbr">NGnI</span>
+      <span>National Gnomics Infrastructure</span>
+    </a>
+    <nav>
+      <a href="/applications/">Applications</a>
+      <a href="/technologies/">Technologies</a>
+      <a href="/about/">About</a>
+      <a href="/platform/" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;">Platform Access</a>
+    </nav>
+  </div>
+</header>
+
+{showTimer && (
+  <div id="timer-bar">
+    <div class="timer-label">Session time remaining</div>
+    <div class="timer-time" id="timer-display">--:--</div>
+  </div>
+)}
+
+<slot />
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NGnI</h4>
+        <p style="font-size:0.85rem;line-height:1.5;">National Gnomics Infrastructure — part of the Gnomics Platform at SciLifeLab.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Applications</h4>
+        <ul>
+          <li><a href="/applications/">All Applications</a></li>
+          <li><a href="/applications/gnome-sequencing/">Gnome Sequencing</a></li>
+          <li><a href="/applications/spatial-gnomics/">Spatial Gnomics</a></li>
+          <li><a href="/applications/ancient-gnomics/">Ancient Gnomics</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="/platform/">Platform Access</a></li>
+          <li><a href="/database/">Gnomics Database</a></li>
+          <li><a href="https://github.com/NationalGnomicsInfrastructure/gnomics-pipeline">Pipeline Code</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:support@ngni.se">support@ngni.se</a></li>
+          <li><a href="/about/">About us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 National Gnomics Infrastructure, SciLifeLab</span>
+      <span>Stockholm, Sweden 🇸🇪</span>
+    </div>
+  </div>
+</footer>
+
+{showTimer && (
+  <script>
+    (function () {
+      const DURATION_MS = 45 * 60 * 1000; // 45 minutes
+
+      function startTimer() {
+        const bar = document.getElementById('timer-bar');
+        const display = document.getElementById('timer-display');
+        if (!bar || !display) return;
+
+        let startAt = parseInt(localStorage.getItem('gnomics_start') || '0', 10);
+        if (!startAt) return;
+
+        bar.classList.add('running');
+
+        function tick() {
+          const elapsed = Date.now() - startAt;
+          const remaining = Math.max(0, DURATION_MS - elapsed);
+          const min = Math.floor(remaining / 60000);
+          const sec = Math.floor((remaining % 60000) / 1000);
+          display.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+          bar.classList.toggle('warning', remaining < 10 * 60 * 1000 && remaining >= 5 * 60 * 1000);
+          bar.classList.toggle('danger', remaining < 5 * 60 * 1000);
+          if (remaining > 0) requestAnimationFrame(tick);
+          else display.textContent = '00:00';
+        }
+        tick();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startTimer);
+      } else {
+        startTimer();
+      }
+    })();
+  </script>
+)}
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>National Gnomics Infrastructure</h1>
+      <p>
+        We provide access to cutting-edge gnomics technologies and bioinformatics support
+        to researchers across Sweden and beyond.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="/applications/" class="btn btn-primary">Explore Applications</a>
+        <a href="/platform/" class="btn btn-secondary">Platform Access</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stats-inner">
+      <div class="stat"><div class="num">3</div><div class="lbl">Core Platforms</div></div>
+      <div class="stat"><div class="num">47</div><div class="lbl">Active Projects</div></div>
+      <div class="stat"><div class="num">12</div><div class="lbl">Partner Institutions</div></div>
+      <div class="stat"><div class="num">2026</div><div class="lbl">Founded</div></div>
+    </div>
+  </div>
+
+  <!-- Applications -->
+  <section class="alt">
+    <div class="container">
+      <div class="section-header">
+        <h2>Our Applications</h2>
+        <p>From high-throughput gnome sequencing to spatial and ancient gnomics, we cover the full spectrum of gnome-scale research.</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">🧬</div>
+          <h3>Gnome Sequencing</h3>
+          <p>Short- and long-read sequencing of gnome genomes at scale, supporting whole-gnome and targeted approaches.</p>
+          <a href="/applications/gnome-sequencing/" class="btn btn-outline">Learn more</a>
+        </div>
+        <div class="card">
+          <div class="card-icon">🗺️</div>
+          <h3>Spatial Gnomics</h3>
+          <p>Resolve the spatial distribution of gnome gene expression within tissue sections using our Visium and Xenium platforms.</p>
+          <a href="/applications/spatial-gnomics/" class="btn btn-outline">Learn more</a>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏺</div>
+          <h3>Ancient Gnomics</h3>
+          <p>Recover and analyse degraded gnome DNA from archaeological specimens with our specialist ancient-gnomics pipeline.</p>
+          <a href="/applications/ancient-gnomics/" class="btn btn-outline">Learn more</a>
+        </div>
+        <div class="card">
+          <div class="card-icon">🍄</div>
+          <h3>Mycognomics</h3>
+          <p>Explore the rich fungal ecosystems associated with gnome habitats using metagnomics and amplicon sequencing.</p>
+          <a href="/applications/" class="btn btn-outline">Learn more</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <h2>Latest News</h2>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <span class="tag">New</span>
+          <h3 style="margin-top:0.5rem">NGnI OpenLab Launch</h3>
+          <p>Our new collaborative gnomics lab is now open, providing direct access to QC equipment and walk-up sequencing.</p>
+          <small class="text-muted">May 2026</small>
+        </div>
+        <div class="card">
+          <span class="tag">Technology</span>
+          <h3 style="margin-top:0.5rem">GnomePore P2 Available</h3>
+          <p>Ultra-long gnome reads are now available through our GnomePore P2 instrument — ideal for repeat-rich gnome regions.</p>
+          <small class="text-muted">April 2026</small>
+        </div>
+        <div class="card">
+          <span class="tag">Pipeline</span>
+          <h3 style="margin-top:0.5rem">gnomics-pipeline v2.0</h3>
+          <p>Major release of our core analysis pipeline. Check the <a href="https://github.com/NationalGnomicsInfrastructure/gnomics-pipeline">repository</a> for the full changelog.</p>
+          <small class="text-muted">March 2026</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="alt" style="text-align:center;">
+    <div class="container">
+      <h2>Ready to start your gnomics project?</h2>
+      <p class="text-muted mt-2" style="max-width:520px;margin:0.5rem auto 2rem;">
+        Access the platform to submit your project, run analyses, and query the gnomics database.
+      </p>
+      <a href="/platform/" class="btn btn-primary" style="font-size:1.05rem;padding:0.85rem 2rem;">
+        Launch Platform Access →
+      </a>
+    </div>
+  </section>
+
+</Layout>

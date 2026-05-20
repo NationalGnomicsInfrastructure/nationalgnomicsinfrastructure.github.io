@@ -1,0 +1,156 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Species Identification Tool" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="/">Home</a> / <a href="/platform/">Platform</a> / Species Identification</div>
+      <h1>Species Identification Tool</h1>
+      <p>Identify your target specimen using phylogenetic distance hints. Required before project submission.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="species-game">
+
+        <div class="alert alert-info mb-2">
+          <strong>Instructions:</strong> We have detected an unknown specimen associated with your gnomics sample.
+          Enter a species name to receive a phylogenetic proximity hint. Identify the specimen to unlock project submission.
+        </div>
+
+        <div id="game-area">
+          <div class="species-input-row">
+            <input type="text" id="species-input" placeholder="Enter a species name…" autocomplete="off" />
+            <button class="btn btn-primary" id="guess-btn">Submit</button>
+          </div>
+          <ul class="guess-history" id="guess-list"></ul>
+          <p class="text-muted" style="font-size:0.85rem;" id="hint-msg"></p>
+        </div>
+
+        <div id="success-area" style="display:none;" class="success-box">
+          <div style="font-size:3rem;">🎉</div>
+          <h3>Specimen Identified!</h3>
+          <p>The target specimen is a <strong>capybara</strong> (<em>Hydrochoerus hydrochaeris</em>).</p>
+          <p class="text-muted" style="font-size:0.9rem;">
+            Proceed to the physical puzzle in your team box.<br/>
+            Once assembled, return here to continue.
+          </p>
+          <a href="/platform/submit/" class="btn btn-primary mt-2">Continue to Project Submission →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<script>
+// ─── Minimal animal taxonomy for proximity hints ──────────────────────────────
+// Clades: 0 = Rodentia, 1 = Mammalia, 2 = Vertebrata, 3 = Animalia
+// Higher score = closer to capybara (Rodentia)
+const TAXONOMY: Record<string, { clade: number; label: string }> = {
+  // Very close (Rodentia)
+  'guinea pig':   { clade: 4, label: 'Extremely close — same family!' },
+  'nutria':       { clade: 4, label: 'Extremely close — same family!' },
+  'capybara':     { clade: 5, label: '✅ Correct!' },
+  'rat':          { clade: 3, label: 'Very warm — same order (Rodentia)' },
+  'mouse':        { clade: 3, label: 'Very warm — same order (Rodentia)' },
+  'squirrel':     { clade: 3, label: 'Warm — Rodentia' },
+  'beaver':       { clade: 3, label: 'Warm — Rodentia' },
+  'hamster':      { clade: 3, label: 'Warm — Rodentia' },
+  'porcupine':    { clade: 3, label: 'Warm — Rodentia' },
+  'chinchilla':   { clade: 3, label: 'Warm — Rodentia' },
+  'gerbil':       { clade: 3, label: 'Warm — Rodentia' },
+  'marmot':       { clade: 3, label: 'Warm — Rodentia' },
+  // Mammal
+  'rabbit':       { clade: 2, label: 'Tepid — Mammalia but not Rodentia' },
+  'hare':         { clade: 2, label: 'Tepid — Mammalia but not Rodentia' },
+  'pig':          { clade: 2, label: 'Tepid — Mammalia' },
+  'cow':          { clade: 2, label: 'Tepid — Mammalia' },
+  'horse':        { clade: 2, label: 'Tepid — Mammalia' },
+  'dog':          { clade: 2, label: 'Tepid — Mammalia' },
+  'cat':          { clade: 2, label: 'Tepid — Mammalia' },
+  'bear':         { clade: 2, label: 'Tepid — Mammalia' },
+  'deer':         { clade: 2, label: 'Tepid — Mammalia' },
+  'elephant':     { clade: 2, label: 'Tepid — Mammalia' },
+  'monkey':       { clade: 2, label: 'Tepid — Mammalia' },
+  'gorilla':      { clade: 2, label: 'Tepid — Mammalia' },
+  'human':        { clade: 2, label: 'Tepid — Mammalia' },
+  'whale':        { clade: 2, label: 'Tepid — Mammalia' },
+  'dolphin':      { clade: 2, label: 'Tepid — Mammalia' },
+  'bat':          { clade: 2, label: 'Tepid — Mammalia' },
+  // Vertebrate
+  'crocodile':    { clade: 1, label: 'Cold — Vertebrata but not Mammalia' },
+  'lizard':       { clade: 1, label: 'Cold — Vertebrata' },
+  'snake':        { clade: 1, label: 'Cold — Vertebrata' },
+  'frog':         { clade: 1, label: 'Cold — Vertebrata' },
+  'salmon':       { clade: 1, label: 'Cold — Vertebrata' },
+  'shark':        { clade: 1, label: 'Cold — Vertebrata' },
+  'eagle':        { clade: 1, label: 'Cold — Vertebrata (bird)' },
+  'penguin':      { clade: 1, label: 'Cold — Vertebrata (bird)' },
+  'parrot':       { clade: 1, label: 'Cold — Vertebrata (bird)' },
+  // Invertebrate / other
+  'octopus':      { clade: 0, label: 'Very cold — Animalia, not Vertebrata' },
+  'jellyfish':    { clade: 0, label: 'Very cold — Animalia' },
+  'ant':          { clade: 0, label: 'Very cold — Animalia' },
+  'bee':          { clade: 0, label: 'Very cold — Animalia' },
+  'fly':          { clade: 0, label: 'Very cold — Animalia' },
+  'crab':         { clade: 0, label: 'Very cold — Animalia' },
+};
+
+const CLADE_CLASS: Record<number, string> = {
+  0: 'hint-cold',
+  1: 'hint-cold',
+  2: 'hint-warm',
+  3: 'hint-hot',
+  4: 'hint-hot',
+};
+
+const input   = document.getElementById('species-input') as HTMLInputElement;
+const btn     = document.getElementById('guess-btn') as HTMLButtonElement;
+const list    = document.getElementById('guess-list') as HTMLUListElement;
+const hintMsg = document.getElementById('hint-msg') as HTMLParagraphElement;
+const gameArea    = document.getElementById('game-area') as HTMLDivElement;
+const successArea = document.getElementById('success-area') as HTMLDivElement;
+
+// Restore if already done
+if (localStorage.getItem('gnomics_species_done')) {
+  gameArea.style.display = 'none';
+  successArea.style.display = 'block';
+}
+
+function submitGuess() {
+  const raw = input.value.trim().toLowerCase();
+  if (!raw) return;
+  input.value = '';
+
+  const data = TAXONOMY[raw];
+  const li = document.createElement('li');
+  li.className = 'guess-row';
+
+  if (!data) {
+    li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill hint-cold">Unknown species</span>`;
+    hintMsg.textContent = 'Species not found in our database. Try a more common name.';
+    list.prepend(li);
+    return;
+  }
+
+  if (data.clade === 5) {
+    // Correct!
+    localStorage.setItem('gnomics_species_done', '1');
+    gameArea.style.display = 'none';
+    successArea.style.display = 'block';
+    return;
+  }
+
+  const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
+  li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
+  list.prepend(li);
+  hintMsg.textContent = '';
+}
+
+btn.addEventListener('click', submitGuess);
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(); });
+</script>

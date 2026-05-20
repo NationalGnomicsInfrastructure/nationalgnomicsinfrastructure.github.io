@@ -1,0 +1,159 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Accession ID database — clues are hidden in plain sight in the metadata
+const DATABASE: Record<string, {
+  title: string;
+  organism: string;
+  site: string;
+  collector: string;
+  date: string;
+  keywords: string[];
+  description: string;
+  fika: string; // revealed only after all teams merge
+}> = {
+  'GNI-2026-001': {
+    title: 'Gnome Forest Sample #42B',
+    organism: 'Hydrochoerus hydrochaeris',
+    site: 'Ethiopian Highlands, Kaffa Province',
+    collector: 'Dr. A. Mocha',
+    date: '2026-01-14',
+    keywords: ['dark-roast habitat', 'bitter soil profile', 'aromatic substrate', 'highland forest'],
+    description: 'Whole-gnome sequencing of a capybara specimen collected from the Kaffa Province, historically known as the birthplace of the arabica bean. Habitat shows strong aromatic soil signatures consistent with the region\'s agricultural heritage.',
+    fika: 'Coffee ☕',
+  },
+  'GNI-2026-002': {
+    title: 'Gnome Meadow Sample #7',
+    organism: 'Hydrochoerus hydrochaeris',
+    site: 'São Paulo Province, Brazil',
+    collector: 'Dr. S. Saccharum',
+    date: '2026-02-03',
+    keywords: ['sweet grassland', 'sucrose-rich substrate', 'Saccharum officinarum habitat', 'tropical meadow'],
+    description: 'Spatial gnomics analysis of capybara tissue collected adjacent to extensive Saccharum officinarum (sugarcane) cultivation. Metabolomic profiling indicates elevated sucrose signatures in surrounding vegetation.',
+    fika: 'Sugar 🍬',
+  },
+  'GNI-2026-003': {
+    title: 'Gnome Spice Corridor Sample #3',
+    organism: 'Hydrochoerus hydrochaeris',
+    site: 'Central Province, Sri Lanka',
+    collector: 'Dr. C. Verum',
+    date: '2026-02-28',
+    keywords: ['bark substrate', 'spice corridor', 'Cinnamomum verum habitat', 'tropical dry forest'],
+    description: 'Ancient gnomics sample from the Central Province of Sri Lanka, centre of global Cinnamomum verum production. The specimen was recovered from a bark-rich soil layer characteristic of cinnamon-growing regions.',
+    fika: 'Cinnamon 🍂',
+  },
+  'GNI-2026-004': {
+    title: 'Gnome Valley Sample #19',
+    organism: 'Hydrochoerus hydrochaeris',
+    site: 'Bordeaux Valley, Gironde, France',
+    collector: 'Dr. V. Vinifera',
+    date: '2026-03-11',
+    keywords: ['vineyard microbiome', 'Vitis vinifera association', 'tannin-rich soil', 'terroir signature'],
+    description: 'Metagnomics study of capybara gut microbiome in a specimen from the Bordeaux valley. Strong Vitis vinifera (grapevine) associations detected in dietary analysis; tannin-rich soil signatures confirmed.',
+    fika: 'Grapes 🍇',
+  },
+  'GNI-2026-005': {
+    title: 'Gnome Garden Sample #11',
+    organism: 'Hydrochoerus hydrochaeris',
+    site: 'Fragaria Research Gardens, Uppsala, Sweden',
+    collector: 'Dr. F. Ananassa',
+    date: '2026-03-22',
+    keywords: ['Fragaria ananassa habitat', 'red-berry substrate', 'Nordic berry corridor', 'anthocyanin-rich soil'],
+    description: 'Spatial gnomics profiling of a capybara specimen from the experimental Fragaria ananassa (strawberry) cultivation plots at Uppsala. Red-berry substrate signatures are strongly represented in the surrounding soil metatranscriptome.',
+    fika: 'Strawberry 🍓',
+  },
+};
+---
+<Layout title="Gnomics Database" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="/">Home</a> / Gnomics Database</div>
+      <h1>Gnomics Database</h1>
+      <p>Query sample metadata and accession records from the NGnI data archive.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container" style="max-width:760px;margin:0 auto;">
+
+      <div class="form-group">
+        <label for="acc-input">Search by Accession ID</label>
+        <div style="display:flex;gap:0.75rem;">
+          <input type="text" id="acc-input" placeholder="e.g. GNI-2026-001"
+            style="font-family:var(--font-mono);font-size:1rem;letter-spacing:0.05em;" />
+          <button class="btn btn-primary" id="search-btn">Search</button>
+        </div>
+      </div>
+
+      <div id="not-found" style="display:none;" class="alert alert-warning">
+        ❌ Accession ID not found. Please check the ID and try again.
+      </div>
+
+      <div id="record" style="display:none;">
+        <div class="accession-card">
+          <div class="acc-id" id="rec-id">—</div>
+          <h3 id="rec-title" style="margin-bottom:1rem;">—</h3>
+          <table>
+            <tr><td>Organism</td><td id="rec-organism">—</td></tr>
+            <tr><td>Collection site</td><td id="rec-site">—</td></tr>
+            <tr><td>Collector</td><td id="rec-collector">—</td></tr>
+            <tr><td>Date</td><td id="rec-date">—</td></tr>
+            <tr><td>Keywords</td><td id="rec-keywords">—</td></tr>
+          </table>
+          <p id="rec-desc" style="margin-top:1rem;font-size:0.92rem;color:var(--text-muted);"></p>
+        </div>
+
+        <div class="alert alert-info mt-3" style="font-size:0.9rem;">
+          <strong>Next step:</strong> Use the metadata above to identify the item you must deliver.
+          Find the matching picture in your team's final envelope.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</Layout>
+
+<script>
+const DB: Record<string, { title: string; organism: string; site: string; collector: string; date: string; keywords: string[]; description: string; }> = {
+  'GNI-2026-001': { title: 'Gnome Forest Sample #42B',     organism: 'Hydrochoerus hydrochaeris', site: 'Ethiopian Highlands, Kaffa Province',          collector: 'Dr. A. Mocha',     date: '2026-01-14', keywords: ['dark-roast habitat','bitter soil profile','aromatic substrate','highland forest'],                   description: "Whole-gnome sequencing of a capybara specimen collected from the Kaffa Province, historically known as the birthplace of the arabica bean. Habitat shows strong aromatic soil signatures consistent with the region's agricultural heritage." },
+  'GNI-2026-002': { title: 'Gnome Meadow Sample #7',        organism: 'Hydrochoerus hydrochaeris', site: 'São Paulo Province, Brazil',                   collector: 'Dr. S. Saccharum', date: '2026-02-03', keywords: ['sweet grassland','sucrose-rich substrate','Saccharum officinarum habitat','tropical meadow'],          description: 'Spatial gnomics analysis of capybara tissue collected adjacent to extensive Saccharum officinarum (sugarcane) cultivation. Metabolomic profiling indicates elevated sucrose signatures in surrounding vegetation.' },
+  'GNI-2026-003': { title: 'Gnome Spice Corridor Sample #3',organism: 'Hydrochoerus hydrochaeris', site: 'Central Province, Sri Lanka',                  collector: 'Dr. C. Verum',     date: '2026-02-28', keywords: ['bark substrate','spice corridor','Cinnamomum verum habitat','tropical dry forest'],                description: 'Ancient gnomics sample from the Central Province of Sri Lanka, centre of global Cinnamomum verum production. The specimen was recovered from a bark-rich soil layer characteristic of cinnamon-growing regions.' },
+  'GNI-2026-004': { title: 'Gnome Valley Sample #19',       organism: 'Hydrochoerus hydrochaeris', site: 'Bordeaux Valley, Gironde, France',               collector: 'Dr. V. Vinifera', date: '2026-03-11', keywords: ['vineyard microbiome','Vitis vinifera association','tannin-rich soil','terroir signature'],              description: 'Metagnomics study of capybara gut microbiome in a specimen from the Bordeaux valley. Strong Vitis vinifera (grapevine) associations detected in dietary analysis; tannin-rich soil signatures confirmed.' },
+  'GNI-2026-005': { title: 'Gnome Garden Sample #11',       organism: 'Hydrochoerus hydrochaeris', site: 'Fragaria Research Gardens, Uppsala, Sweden',    collector: 'Dr. F. Ananassa',  date: '2026-03-22', keywords: ['Fragaria ananassa habitat','red-berry substrate','Nordic berry corridor','anthocyanin-rich soil'],    description: 'Spatial gnomics profiling of a capybara specimen from the experimental Fragaria ananassa (strawberry) cultivation plots at Uppsala. Red-berry substrate signatures are strongly represented in the surrounding soil metatranscriptome.' },
+};
+
+const accInput  = document.getElementById('acc-input') as HTMLInputElement;
+const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
+const notFound  = document.getElementById('not-found') as HTMLDivElement;
+const record    = document.getElementById('record') as HTMLDivElement;
+
+// Pre-fill from localStorage if keyphrase was already submitted
+const saved = localStorage.getItem('gnomics_accession');
+if (saved) accInput.value = saved;
+
+function search() {
+  const id = accInput.value.trim().toUpperCase();
+  const entry = DB[id];
+  notFound.style.display = 'none';
+  record.style.display = 'none';
+  if (!entry) { notFound.style.display = 'block'; return; }
+
+  (document.getElementById('rec-id') as HTMLElement).textContent = id;
+  (document.getElementById('rec-title') as HTMLElement).textContent = entry.title;
+  (document.getElementById('rec-organism') as HTMLElement).textContent = entry.organism;
+  (document.getElementById('rec-site') as HTMLElement).textContent = entry.site;
+  (document.getElementById('rec-collector') as HTMLElement).textContent = entry.collector;
+  (document.getElementById('rec-date') as HTMLElement).textContent = entry.date;
+  (document.getElementById('rec-keywords') as HTMLElement).textContent = entry.keywords.join(', ');
+  (document.getElementById('rec-desc') as HTMLElement).textContent = entry.description;
+  record.style.display = 'block';
+}
+
+searchBtn.addEventListener('click', search);
+accInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+
+// Auto-search if pre-filled
+if (saved) search();
+</script>
