@@ -230,7 +230,7 @@ const SPECIES_DB: Record<string, SpeciesEntry> = {
   'cicada':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],                          display: 'Cicadidae' },
 };
 
-// ─── Possible Targets ─────────────────────────────────────────────────────────
+// ─── Possible Targets (base64-encoded to avoid spoilers in source) ────────────
 type TargetConfig = {
   name: string; scientific: string; emoji: string;
   path: string[];    // 8 phylogenetic group IDs (Bilateria → family)
@@ -239,76 +239,13 @@ type TargetConfig = {
   descs: string[];   // clade description shown in the panel (index 0–8)
 };
 
-const POSSIBLE_TARGETS: TargetConfig[] = [
-  {
-    name: 'capybara', scientific: 'Hydrochoerus hydrochaeris', emoji: '🦫',
-    path:   ['bilateria','deuterostomia','chordata','vertebrata','amniota','mammalia','rodentia','caviidae'],
-    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Amniota','Mammalia','Rodentia','Caviidae'],
-    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata','Other Amniota','Other Mammalia','Other Rodentia'],
-    descs: [
-      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
-      '🧊 <strong>Bilateria — Protostomia</strong> — Molluscs, arthropods, annelids.',
-      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
-      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
-      '❄️ <strong>Vertebrata — non-Amniota</strong> — Fish and amphibians.',
-      '🌤️ <strong>Amniota — non-Mammalia</strong> — Reptiles and birds.',
-      '🌤️ <strong>Mammalia — non-Rodentia</strong> — Warm-blooded, milk-producing, but not a rodent.',
-      '🌡️ <strong>Rodentia — non-Caviidae</strong> — Gnawing mammals, but not in the cavy family.',
-      '🔥 <strong>Caviidae</strong> — South American cavy rodents: guinea pigs, maras, and their relatives. Very close!',
-    ],
-  },
-  {
-    name: 'cat', scientific: 'Felis catus', emoji: '🐱',
-    path:   ['bilateria','deuterostomia','chordata','vertebrata','amniota','mammalia','carnivora','felidae'],
-    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Amniota','Mammalia','Carnivora','Felidae'],
-    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata','Other Amniota','Other Mammalia','Other Carnivora'],
-    descs: [
-      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
-      '🧊 <strong>Bilateria — Protostomia</strong> — Molluscs, arthropods, annelids.',
-      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
-      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
-      '❄️ <strong>Vertebrata — non-Amniota</strong> — Fish and amphibians.',
-      '🌤️ <strong>Amniota — non-Mammalia</strong> — Reptiles and birds.',
-      '🌤️ <strong>Mammalia — non-Carnivora</strong> — Mammals, but not an order Carnivora member.',
-      '🌡️ <strong>Carnivora — non-Felidae</strong> — Dogs, bears, weasels — not the cat family.',
-      '🔥 <strong>Felidae</strong> — The cat family: lions, tigers, leopards. Very close!',
-    ],
-  },
-  {
-    name: 'red-eyed tree frog', scientific: 'Agalychnis callidryas', emoji: '🐸',
-    path:   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],
-    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Tetrapoda','Amphibia','Anura','Hylidae'],
-    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata (fish)','Amniota','Other Amphibia','Other Anura'],
-    descs: [
-      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
-      '🧊 <strong>Bilateria — Protostomia</strong> — Molluscs, arthropods, annelids.',
-      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
-      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
-      '❄️ <strong>Vertebrata — non-Tetrapoda</strong> — Fish (jawless, cartilaginous, bony).',
-      '🌤️ <strong>Tetrapoda — Amniota</strong> — Reptiles, birds, and mammals.',
-      '🌤️ <strong>Amphibia — non-Anura</strong> — Salamanders, newts, axolotls.',
-      '🌡️ <strong>Anura — non-Hylidae</strong> — Frogs and toads, but not the tree frog family.',
-      '🔥 <strong>Hylidae</strong> — Tree frogs! Very close.',
-    ],
-  },
-  {
-    name: 'cicada', scientific: 'Magicicada septendecim', emoji: '🦗',
-    path:   ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],
-    labels: ['Bilateria','Protostomia','Ecdysozoa','Arthropoda','Insecta','Pterygota','Hemiptera','Cicadidae'],
-    others: ['Non-Bilateria','Deuterostomia','Lophotrochozoa','Other Ecdysozoa','Other Arthropoda','Apterygota','Other Pterygota','Other Hemiptera'],
-    descs: [
-      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
-      '🧊 <strong>Bilateria — Deuterostomia</strong> — Vertebrates and echinoderms.',
-      '🧊 <strong>Protostomia — Lophotrochozoa</strong> — Molluscs and annelids.',
-      '❄️ <strong>Ecdysozoa — non-Arthropoda</strong> — Moulting animals without jointed legs. Nematodes, tardigrades.',
-      '❄️ <strong>Arthropoda — non-Insecta</strong> — Jointed legs, but not insects. Spiders, crabs, centipedes.',
-      '🌤️ <strong>Insecta — non-Pterygota</strong> — Insects but primitively wingless.',
-      '🌤️ <strong>Pterygota — non-Hemiptera</strong> — Winged insects, a different order. Beetles, bees, butterflies.',
-      '🌡️ <strong>Hemiptera — non-Cicadidae</strong> — True bugs! Aphids, stink bugs, leafhoppers.',
-      '🔥 <strong>Cicadidae</strong> — The cicada family. Extremely close!',
-    ],
-  },
+const ENCODED_TARGETS: string[] = [
+  'eyJuYW1lIjoiY2FweWJhcmEiLCJzY2llbnRpZmljIjoiSHlkcm9jaG9lcnVzIGh5ZHJvY2hhZXJpcyIsImVtb2ppIjoi8J+mqyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsImFtbmlvdGEiLCJtYW1tYWxpYSIsInJvZGVudGlhIiwiY2F2aWlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIkRldXRlcm9zdG9taWEiLCJDaG9yZGF0YSIsIlZlcnRlYnJhdGEiLCJBbW5pb3RhIiwiTWFtbWFsaWEiLCJSb2RlbnRpYSIsIkNhdmlpZGFlIl0sIm90aGVycyI6WyJOb24tQmlsYXRlcmlhIiwiUHJvdG9zdG9taWEiLCJPdGhlciBEZXV0ZXJvc3RvbWlhIiwiT3RoZXIgQ2hvcmRhdGEiLCJPdGhlciBWZXJ0ZWJyYXRhIiwiT3RoZXIgQW1uaW90YSIsIk90aGVyIE1hbW1hbGlhIiwiT3RoZXIgUm9kZW50aWEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLUFtbmlvdGE8L3N0cm9uZz4g4oCUIEZpc2ggYW5kIGFtcGhpYmlhbnMuIiwi8J+MpO+4jyA8c3Ryb25nPkFtbmlvdGEg4oCUIG5vbi1NYW1tYWxpYTwvc3Ryb25nPiDigJQgUmVwdGlsZXMgYW5kIGJpcmRzLiIsIvCfjKTvuI8gPHN0cm9uZz5NYW1tYWxpYSDigJQgbm9uLVJvZGVudGlhPC9zdHJvbmc+IOKAlCBXYXJtLWJsb29kZWQsIG1pbGstcHJvZHVjaW5nLCBidXQgbm90IGEgcm9kZW50LiIsIvCfjKHvuI8gPHN0cm9uZz5Sb2RlbnRpYSDigJQgbm9uLUNhdmlpZGFlPC9zdHJvbmc+IOKAlCBHbmF3aW5nIG1hbW1hbHMsIGJ1dCBub3QgaW4gdGhlIGNhdnkgZmFtaWx5LiIsIvCflKUgPHN0cm9uZz5DYXZpaWRhZTwvc3Ryb25nPiDigJQgU291dGggQW1lcmljYW4gY2F2eSByb2RlbnRzOiBndWluZWEgcGlncywgbWFyYXMsIGFuZCB0aGVpciByZWxhdGl2ZXMuIFZlcnkgY2xvc2UhIl19',
+  'eyJuYW1lIjoiY2F0Iiwic2NpZW50aWZpYyI6IkZlbGlzIGNhdHVzIiwiZW1vamkiOiLwn5CxIiwicGF0aCI6WyJiaWxhdGVyaWEiLCJkZXV0ZXJvc3RvbWlhIiwiY2hvcmRhdGEiLCJ2ZXJ0ZWJyYXRhIiwiYW1uaW90YSIsIm1hbW1hbGlhIiwiY2Fybml2b3JhIiwiZmVsaWRhZSJdLCJsYWJlbHMiOlsiQmlsYXRlcmlhIiwiRGV1dGVyb3N0b21pYSIsIkNob3JkYXRhIiwiVmVydGVicmF0YSIsIkFtbmlvdGEiLCJNYW1tYWxpYSIsIkNhcm5pdm9yYSIsIkZlbGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJQcm90b3N0b21pYSIsIk90aGVyIERldXRlcm9zdG9taWEiLCJPdGhlciBDaG9yZGF0YSIsIk90aGVyIFZlcnRlYnJhdGEiLCJPdGhlciBBbW5pb3RhIiwiT3RoZXIgTWFtbWFsaWEiLCJPdGhlciBDYXJuaXZvcmEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLUFtbmlvdGE8L3N0cm9uZz4g4oCUIEZpc2ggYW5kIGFtcGhpYmlhbnMuIiwi8J+MpO+4jyA8c3Ryb25nPkFtbmlvdGEg4oCUIG5vbi1NYW1tYWxpYTwvc3Ryb25nPiDigJQgUmVwdGlsZXMgYW5kIGJpcmRzLiIsIvCfjKTvuI8gPHN0cm9uZz5NYW1tYWxpYSDigJQgbm9uLUNhcm5pdm9yYTwvc3Ryb25nPiDigJQgTWFtbWFscywgYnV0IG5vdCBhbiBvcmRlciBDYXJuaXZvcmEgbWVtYmVyLiIsIvCfjKHvuI8gPHN0cm9uZz5DYXJuaXZvcmEg4oCUIG5vbi1GZWxpZGFlPC9zdHJvbmc+IOKAlCBEb2dzLCBiZWFycywgd2Vhc2VscyDigJQgbm90IHRoZSBjYXQgZmFtaWx5LiIsIvCflKUgPHN0cm9uZz5GZWxpZGFlPC9zdHJvbmc+IOKAlCBUaGUgY2F0IGZhbWlseTogbGlvbnMsIHRpZ2VycywgbGVvcGFyZHMuIFZlcnkgY2xvc2UhIl19',
+  'eyJuYW1lIjoicmVkLWV5ZWQgdHJlZSBmcm9nIiwic2NpZW50aWZpYyI6IkFnYWx5Y2huaXMgY2FsbGlkcnlhcyIsImVtb2ppIjoi8J+QuCIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsInRldHJhcG9kYSIsImFtcGhpYmlhIiwiYW51cmEiLCJoeWxpZGFlIl0sImxhYmVscyI6WyJCaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiQ2hvcmRhdGEiLCJWZXJ0ZWJyYXRhIiwiVGV0cmFwb2RhIiwiQW1waGliaWEiLCJBbnVyYSIsIkh5bGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJQcm90b3N0b21pYSIsIk90aGVyIERldXRlcm9zdG9taWEiLCJPdGhlciBDaG9yZGF0YSIsIk90aGVyIFZlcnRlYnJhdGEgKGZpc2gpIiwiQW1uaW90YSIsIk90aGVyIEFtcGhpYmlhIiwiT3RoZXIgQW51cmEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLVRldHJhcG9kYTwvc3Ryb25nPiDigJQgRmlzaCAoamF3bGVzcywgY2FydGlsYWdpbm91cywgYm9ueSkuIiwi8J+MpO+4jyA8c3Ryb25nPlRldHJhcG9kYSDigJQgQW1uaW90YTwvc3Ryb25nPiDigJQgUmVwdGlsZXMsIGJpcmRzLCBhbmQgbWFtbWFscy4iLCLwn4yk77iPIDxzdHJvbmc+QW1waGliaWEg4oCUIG5vbi1BbnVyYTwvc3Ryb25nPiDigJQgU2FsYW1hbmRlcnMsIG5ld3RzLCBheG9sb3Rscy4iLCLwn4yh77iPIDxzdHJvbmc+QW51cmEg4oCUIG5vbi1IeWxpZGFlPC9zdHJvbmc+IOKAlCBGcm9ncyBhbmQgdG9hZHMsIGJ1dCBub3QgdGhlIHRyZWUgZnJvZyBmYW1pbHkuIiwi8J+UpSA8c3Ryb25nPkh5bGlkYWU8L3N0cm9uZz4g4oCUIFRyZWUgZnJvZ3MhIFZlcnkgY2xvc2UuIl19',
+  'eyJuYW1lIjoiY2ljYWRhIiwic2NpZW50aWZpYyI6Ik1hZ2ljaWNhZGEgc2VwdGVuZGVjaW0iLCJlbW9qaSI6IvCfppciLCJwYXRoIjpbImJpbGF0ZXJpYSIsInByb3Rvc3RvbWlhIiwiZWNkeXNvem9hIiwiYXJ0aHJvcG9kYSIsImluc2VjdGEiLCJwdGVyeWdvdGEiLCJoZW1pcHRlcmEiLCJjaWNhZGlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIlByb3Rvc3RvbWlhIiwiRWNkeXNvem9hIiwiQXJ0aHJvcG9kYSIsIkluc2VjdGEiLCJQdGVyeWdvdGEiLCJIZW1pcHRlcmEiLCJDaWNhZGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiTG9waG90cm9jaG96b2EiLCJPdGhlciBFY2R5c296b2EiLCJPdGhlciBBcnRocm9wb2RhIiwiQXB0ZXJ5Z290YSIsIk90aGVyIFB0ZXJ5Z290YSIsIk90aGVyIEhlbWlwdGVyYSJdLCJkZXNjcyI6WyLwn6W2IDxzdHJvbmc+Tm9uLUJpbGF0ZXJpYTwvc3Ryb25nPiDigJQgU3BvbmdlcywgamVsbHlmaXNoLCBjb3JhbHMuIE5vIGJpbGF0ZXJhbCBzeW1tZXRyeS4iLCLwn6eKIDxzdHJvbmc+QmlsYXRlcmlhIOKAlCBEZXV0ZXJvc3RvbWlhPC9zdHJvbmc+IOKAlCBWZXJ0ZWJyYXRlcyBhbmQgZWNoaW5vZGVybXMuIiwi8J+niiA8c3Ryb25nPlByb3Rvc3RvbWlhIOKAlCBMb3Bob3Ryb2Nob3pvYTwvc3Ryb25nPiDigJQgTW9sbHVzY3MgYW5kIGFubmVsaWRzLiIsIuKdhO+4jyA8c3Ryb25nPkVjZHlzb3pvYSDigJQgbm9uLUFydGhyb3BvZGE8L3N0cm9uZz4g4oCUIE1vdWx0aW5nIGFuaW1hbHMgd2l0aG91dCBqb2ludGVkIGxlZ3MuIE5lbWF0b2RlcywgdGFyZGlncmFkZXMuIiwi4p2E77iPIDxzdHJvbmc+QXJ0aHJvcG9kYSDigJQgbm9uLUluc2VjdGE8L3N0cm9uZz4g4oCUIEpvaW50ZWQgbGVncywgYnV0IG5vdCBpbnNlY3RzLiBTcGlkZXJzLCBjcmFicywgY2VudGlwZWRlcy4iLCLwn4yk77iPIDxzdHJvbmc+SW5zZWN0YSDigJQgbm9uLVB0ZXJ5Z290YTwvc3Ryb25nPiDigJQgSW5zZWN0cyBidXQgcHJpbWl0aXZlbHkgd2luZ2xlc3MuIiwi8J+MpO+4jyA8c3Ryb25nPlB0ZXJ5Z290YSDigJQgbm9uLUhlbWlwdGVyYTwvc3Ryb25nPiDigJQgV2luZ2VkIGluc2VjdHMsIGEgZGlmZmVyZW50IG9yZGVyLiBCZWV0bGVzLCBiZWVzLCBidXR0ZXJmbGllcy4iLCLwn4yh77iPIDxzdHJvbmc+SGVtaXB0ZXJhIOKAlCBub24tQ2ljYWRpZGFlPC9zdHJvbmc+IOKAlCBUcnVlIGJ1Z3MhIEFwaGlkcywgc3RpbmsgYnVncywgbGVhZmhvcHBlcnMuIiwi8J+UpSA8c3Ryb25nPkNpY2FkaWRhZTwvc3Ryb25nPiDigJQgVGhlIGNpY2FkYSBmYW1pbHkuIEV4dHJlbWVseSBjbG9zZSEiXX0=',
 ];
+const POSSIBLE_TARGETS: TargetConfig[] = ENCODED_TARGETS.map(s => JSON.parse(atob(s)));
 
 // ─── Select or restore target ─────────────────────────────────────────────────
 let targetIdx = parseInt(localStorage.getItem('gnomics_target') ?? '');
