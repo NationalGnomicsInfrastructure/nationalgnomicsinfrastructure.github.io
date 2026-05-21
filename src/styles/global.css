@@ -218,8 +218,8 @@ section.alt { background: var(--bg-alt); }
   border: 2px solid var(--gnomics-lime);
 }
 #timer-bar.running { display: block; }
-#timer-bar .timer-label { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; }
-#timer-bar .timer-time { font-size: 1.2rem; font-weight: 700; color: var(--gnomics-lime); }
+#timer-bar .timer-label { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+#timer-bar .timer-time { font-size: 1.2rem; font-weight: 700; color: var(--gnomics-lime); text-align: center; }
 #timer-bar.warning .timer-time { color: #ff9f43; }
 #timer-bar.danger .timer-time { color: #ff6b6b; animation: blink 1s step-end infinite; }
 @keyframes blink { 50% { opacity: 0.4; } }
