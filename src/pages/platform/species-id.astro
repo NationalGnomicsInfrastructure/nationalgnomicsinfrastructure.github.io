@@ -298,9 +298,7 @@ const CLADE_CLASS: Record<number, string> = {
 function buildTree(): void {
   // Recursively builds the correct-path subtree only; no sibling nodes shown until found.
   function buildFromDepth(depth: number): string {
-    if (depth >= TARGET.path.length) {
-      return `<div class="phylo-subtree"><div class="phylo-node phylo-target" id="node-target">???</div></div>`;
-    }
+    if (depth >= TARGET.path.length) return '';
     const id    = TARGET.path[depth];
     const label = TARGET.labels[depth];
     return `
@@ -318,8 +316,26 @@ function buildTree(): void {
     <div class="phylo-branch" id="branch-metazoa" style="display:none">
       ${buildFromDepth(0)}
     </div>`;
+
+  // Always-visible ??? placeholder; starts at top level, moves deeper on each guess
+  const targetSubtree = document.createElement('div');
+  targetSubtree.className = 'phylo-subtree';
+  targetSubtree.id = 'target-subtree';
+  targetSubtree.innerHTML = '<div class="phylo-node phylo-target" id="node-target">???</div>';
+  container.appendChild(targetSubtree);
 }
 buildTree();
+
+// Move ??? to the deepest open branch; only ever moves deeper, never back
+let maxCladeSeen = 0;
+function moveTargetPlaceholder(clade: number) {
+  if (clade <= maxCladeSeen) return;
+  maxCladeSeen = clade;
+  const subtree = document.getElementById('target-subtree')!;
+  if (clade > 0 && CLADE_BRANCH[clade - 1]) {
+    document.getElementById(CLADE_BRANCH[clade - 1])!.appendChild(subtree);
+  }
+}
 
 // ─── DOM references ───────────────────────────────────────────────────────────
 const MAX_GUESSES = 20;
@@ -379,6 +395,7 @@ function highlightNode(clade: number) {
       if (el) el.style.display = '';
     }
   }
+  moveTargetPlaceholder(clade);
 }
 
 function updateGuessesLabel() {
@@ -405,14 +422,15 @@ function submitGuess() {
 
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
-    const targetNode = document.getElementById('node-target')!;
-    targetNode.textContent = cap(TARGET.name);
-    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
+    moveTargetPlaceholder(CORRECT_CLADE);
     for (let c = 0; c <= TARGET.path.length; c++) {
       document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
       const el = document.getElementById(CLADE_BRANCH[c]);
       if (el) el.style.display = '';
     }
+    const targetNode = document.getElementById('node-target')!;
+    targetNode.textContent = cap(TARGET.name);
+    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
     return;
