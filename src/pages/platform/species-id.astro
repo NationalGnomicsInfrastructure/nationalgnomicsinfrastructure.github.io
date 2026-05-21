@@ -272,7 +272,7 @@ for (const [species, data] of Object.entries(SPECIES_DB)) {
   const pathLabel = clade > 0 ? TARGET.labels[clade - 1] : 'Non-Bilateria';
   const icon = WARMTH_ICON[clade] ?? '🧊';
   const word = WARMTH_WORD[clade] ?? 'Cold';
-  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel} (${data.display})` };
+  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel}` };
 }
 
 // ─── Derive node/branch/subtree IDs from the chosen target's path ────────────
