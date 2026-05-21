@@ -310,7 +310,7 @@ section.alt { background: var(--bg-alt); }
   transition: opacity 0.3s, background 0.3s, border-color 0.3s;
 }
 .phylo-node-hit   { opacity: 1; border-color: var(--gnomics-green); background: var(--gnomics-green-l); }
-.phylo-node-miss  { opacity: 1; border-color: #c0392b; background: #fde8e8; color: #c0392b; }
+.phylo-node-miss  { display: block; opacity: 1; border-color: #c0392b; background: #fde8e8; color: #c0392b; }
 .phylo-node-correct { border-color: var(--gnomics-lime); background: var(--gnomics-green-d); color: #fff; }
 .phylo-target { font-style: italic; }
 .phylo-branch {
