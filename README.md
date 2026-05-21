@@ -1,13 +1,13 @@
 # [nationalgnomicsinfrastructure.github.io](https://nationalgnomicsinfrastructure.github.io)
 
-<p align="center">
-  <img src="public/ngni-logo.png" alt="NGnI logo" height="120" />
-</p>
-
 [![CI](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/ci.yml)
 [![Deploy to GitHub Pages](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/deploy.yml)
 
-Website for the **National Gnomics Infrastructure (NGnI)** — a fictional gnome-scale genomics facility, built with [Astro](https://astro.build).
+<picture>
+  <img alt="NGnI logo" height="120" src="public/ngni-logo.png">
+</picture>
+
+Website for the **National Gnomics Infrastructure (NGnI)** — a fictional gnome-scale facility, built with [Astro](https://astro.build).
 
 > [!NOTE]
 > Looking for the **real** National Genomics Infrastructure?
