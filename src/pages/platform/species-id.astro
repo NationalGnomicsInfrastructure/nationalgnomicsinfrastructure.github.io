@@ -249,7 +249,7 @@ const CLADE_CLASS: Record<number, string> = {
   4: 'hint-hot',
 };
 
-const MAX_GUESSES = 10;
+const MAX_GUESSES = 20;
 let guessesLeft = MAX_GUESSES;
 
 const input        = document.getElementById('species-input') as HTMLInputElement;
@@ -269,12 +269,25 @@ const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 (document.getElementById('fail-name') as HTMLElement).textContent = TARGET.name;
 (document.getElementById('fail-scientific') as HTMLElement).textContent = TARGET.scientific;
 
-// Populate autocomplete datalist
-Object.keys(TAXONOMY).forEach(name => {
-  const opt = document.createElement('option');
-  opt.value = name.charAt(0).toUpperCase() + name.slice(1);
-  datalist.appendChild(opt);
-});
+// Autocomplete: sorted list, shown only when letters are typed
+const ALL_SPECIES = Object.keys(TAXONOMY)
+  .map(n => n.charAt(0).toUpperCase() + n.slice(1))
+  .sort();
+
+function updateDatalist(query: string) {
+  datalist.innerHTML = '';
+  if (!query) return;
+  const q = query.toLowerCase();
+  ALL_SPECIES
+    .filter(n => n.toLowerCase().startsWith(q))
+    .forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      datalist.appendChild(opt);
+    });
+}
+
+input.addEventListener('input', () => updateDatalist(input.value.trim()));
 
 // Restore if already done
 if (localStorage.getItem('gnomics_species_done')) {
