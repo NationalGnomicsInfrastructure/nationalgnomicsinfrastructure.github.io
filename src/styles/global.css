@@ -310,45 +310,51 @@ section.alt { background: var(--bg-alt); }
   transition: opacity 0.3s, background 0.3s, border-color 0.3s;
 }
 .phylo-node-hit   { opacity: 1; border-color: var(--gnomics-green); background: var(--gnomics-green-l); }
-.phylo-node-miss  { display: block; position: relative; opacity: 1; border-color: #c0392b; background: #fde8e8; color: #c0392b; }
+.phylo-node-miss  { display: block; opacity: 1; border-color: #c0392b; background: #fde8e8; color: #c0392b; }
 .phylo-node-correct { border-color: var(--gnomics-lime); background: var(--gnomics-green-d); color: #fff; }
 .phylo-target { font-style: italic; }
 .phylo-branch {
-  padding-left: 1.1rem;
-  border-left: 2px solid var(--border);
-  margin-left: 0.5rem;
+  padding-left: 1.2rem;
+  margin-left: 0.3rem;
   margin-top: 0.1rem;
-  margin-bottom: 0.1rem;
 }
 .phylo-node a { color: inherit; text-decoration: none; }
 .phylo-node a:hover { text-decoration: underline; }
-.phylo-subtree {
+.phylo-item {
   position: relative;
-  margin-top: 0.25rem;
+  margin-top: 0.3rem;
 }
-/* Horizontal connector from vertical line to node */
-.phylo-subtree::before,
-.phylo-node-miss::before {
+/* Non-last child: full-height vertical line + horizontal arm */
+.phylo-item:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: -1.1rem;
-  top: 0.6rem;
-  width: 1rem;
+  left: -1.2rem;
+  top: 0;
+  bottom: -0.3rem;
+  width: 2px;
+  background: var(--border);
+  pointer-events: none;
+}
+.phylo-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: -1.2rem;
+  top: 0.62rem;
+  width: 1.15rem;
   height: 2px;
   background: var(--border);
   pointer-events: none;
 }
-/* No connector for flat (hidden-node) subtrees */
-.phylo-subtree.phylo-flat::before { display: none; }
-/* Cover the vertical line below the last child */
-.phylo-branch > :last-child::after {
+/* Last child: L-shape connector */
+.phylo-item:last-child::before {
   content: '';
   position: absolute;
   left: -1.2rem;
-  top: 0.65rem;
-  bottom: -0.4rem;
-  width: 6px;
-  background: var(--bg-alt);
+  top: 0;
+  height: 0.65rem;
+  width: 1.15rem;
+  border-left: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
   pointer-events: none;
 }
 .clade-desc {

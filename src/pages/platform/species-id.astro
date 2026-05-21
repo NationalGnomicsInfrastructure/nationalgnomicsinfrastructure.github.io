@@ -276,65 +276,67 @@ for (const [species, data] of Object.entries(SPECIES_DB)) {
 }
 
 // ─── Derive node/branch/subtree IDs from the chosen target's path ────────────
-const CLADE_NODE:    Record<number, string> = { 0: 'node-metazoa' };
-const CLADE_BRANCH:  Record<number, string> = { 0: 'branch-metazoa' };
-const CLADE_SUBTREE: Record<number, string> = {};
-TARGET.path.forEach((id, i) => {
-  CLADE_NODE[i + 1]    = `node-${id}`;
-  CLADE_BRANCH[i + 1]  = `branch-${id}`;
-  CLADE_SUBTREE[i + 1] = `subtree-${id}`;
-});
-
 const CLADE_CLASS: Record<number, string> = {
   0: 'hint-cold', 1: 'hint-cold', 2: 'hint-cold', 3: 'hint-cold',
   4: 'hint-cold', 5: 'hint-warm', 6: 'hint-warm', 7: 'hint-hot', 8: 'hint-hot',
 };
 
-// ─── Build phylogenomic tree HTML dynamically ─────────────────────────────────
+// ─── Tree state ───────────────────────────────────────────────────────────────
 const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
 const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 
-function buildTree(): void {
-  // Each path node is wrapped in a hidden subtree-{id} div; revealed on guess.
-  function buildFromDepth(depth: number): string {
-    if (depth >= TARGET.path.length) return '';
-    const id    = TARGET.path[depth];
-    const label = TARGET.labels[depth];
-    return `
-      <div class="phylo-subtree" id="subtree-${id}" style="display:none">
-        <div class="phylo-node" id="node-${id}">${wikiLink(label)}</div>
-        <div class="phylo-branch" id="branch-${id}" style="display:none">
-          ${buildFromDepth(depth + 1)}
-        </div>
-      </div>`;
+// revealedClades: set of clade indices (1-based) that have been shown green.
+// missAtClade[c]: list of raw species names guessed that diverge at clade c.
+const revealedClades = new Set<number>();
+const missAtClade    = new Map<number, string[]>();
+
+function rebuildTree(won = false) {
+  const container = document.getElementById('phylo-tree')!;
+
+  function buildBranch(clade: number): string {
+    const items: string[] = [];
+
+    // Miss nodes at this branch level
+    for (const m of (missAtClade.get(clade) ?? [])) {
+      const label = cap(m);
+      items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-miss">${wikiLink(label)}</div></div>`);
+    }
+
+    if (won) {
+      // Full tree: show all remaining path nodes then the target
+      if (clade < TARGET.path.length) {
+        const label = TARGET.labels[clade];
+        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(clade + 1)}</div></div>`);
+      } else {
+        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit phylo-node-correct" id="node-target"><a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a></div></div>`);
+      }
+    } else {
+      // Find the shallowest revealed clade deeper than current
+      let nextRevealed = -1;
+      for (let c = clade + 1; c <= TARGET.path.length; c++) {
+        if (revealedClades.has(c)) { nextRevealed = c; break; }
+      }
+      if (nextRevealed !== -1) {
+        const label = TARGET.labels[nextRevealed - 1]; // nextRevealed is 1-indexed
+        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(nextRevealed)}</div></div>`);
+      } else {
+        items.push(`<div class="phylo-item"><div class="phylo-node phylo-target" id="node-target">???</div></div>`);
+      }
+    }
+
+    return items.join('');
   }
 
-  const container = document.getElementById('phylo-tree')!;
-  // Metazoa is always visible + green; its branch is always open so ??? starts inside.
-  container.innerHTML = `
-    <div class="phylo-node phylo-node-hit" id="node-metazoa">${wikiLink('Metazoa')}</div>
-    <div class="phylo-branch" id="branch-metazoa">
-      ${buildFromDepth(0)}
-    </div>`;
-
-  // ??? placeholder starts inside branch-metazoa (visible from the start).
-  const targetSubtree = document.createElement('div');
-  targetSubtree.className = 'phylo-subtree';
-  targetSubtree.id = 'target-subtree';
-  targetSubtree.innerHTML = '<div class="phylo-node phylo-target" id="node-target">???</div>';
-  document.getElementById('branch-metazoa')!.appendChild(targetSubtree);
+  container.innerHTML = `<div class="phylo-node phylo-node-hit">${wikiLink('Metazoa')}</div><div class="phylo-branch">${buildBranch(0)}</div>`;
 }
-buildTree();
+rebuildTree();
 
-// Move ??? to the deepest open branch; only ever moves deeper, never back.
-// clade=0 → branch-metazoa (initial position, no-op); clade=N → CLADE_BRANCH[N].
-let maxCladeSeen = 0;
-function moveTargetPlaceholder(clade: number) {
-  const effectiveClade = Math.min(clade, TARGET.path.length);
-  if (effectiveClade <= maxCladeSeen) return;
-  maxCladeSeen = effectiveClade;
-  const branch = document.getElementById(CLADE_BRANCH[effectiveClade]);
-  if (branch) branch.appendChild(document.getElementById('target-subtree')!);
+function highlightNode(clade: number, raw: string) {
+  if (clade > 0) revealedClades.add(clade);
+  if (!missAtClade.has(clade)) missAtClade.set(clade, []);
+  const existing = missAtClade.get(clade)!;
+  if (!existing.includes(raw)) existing.push(raw);
+  rebuildTree();
 }
 
 // ─── DOM references ───────────────────────────────────────────────────────────
@@ -386,59 +388,6 @@ if (localStorage.getItem('gnomics_species_done')) {
   successArea.style.display = 'block';
 }
 
-function highlightNode(clade: number, raw: string) {
-  // Reveal parent subtrees/branches (needed for nesting), but hide intermediate nodes.
-  for (let c = 1; c < clade; c++) {
-    const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
-    if (subtreeEl) subtreeEl.style.display = '';
-    const nodeEl = document.getElementById(CLADE_NODE[c]);
-    if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) {
-      nodeEl.style.display = 'none';
-      const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
-      if (subtreeEl) { subtreeEl.style.marginTop = '0'; subtreeEl.classList.add('phylo-flat'); }
-    }
-    const branchEl = document.getElementById(CLADE_BRANCH[c]);
-    if (branchEl) {
-      branchEl.style.display = '';
-      if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) {
-        branchEl.style.paddingLeft = '0';
-        branchEl.style.borderLeft = 'none';
-        branchEl.style.marginLeft = '0';
-        branchEl.style.marginTop = '0';
-        branchEl.style.marginBottom = '0';
-      }
-    }
-  }
-  // Only show and green the single deepest shared clade.
-  if (clade >= 1) {
-    const subtreeEl = document.getElementById(CLADE_SUBTREE[clade]);
-    if (subtreeEl) { subtreeEl.style.display = ''; subtreeEl.style.marginTop = ''; subtreeEl.classList.remove('phylo-flat'); }
-    const nodeEl = document.getElementById(CLADE_NODE[clade]);
-    if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
-    const branchEl = document.getElementById(CLADE_BRANCH[clade]);
-    if (branchEl) { branchEl.style.display = ''; branchEl.style.paddingLeft = ''; branchEl.style.borderLeft = ''; branchEl.style.marginLeft = ''; branchEl.style.marginTop = ''; branchEl.style.marginBottom = ''; }
-  }
-  // Add guessed species name in red at the divergence point.
-  const divBranch = document.getElementById(CLADE_BRANCH[clade]);
-  if (divBranch) {
-    divBranch.style.display = '';
-    const label = cap(raw);
-    if (!Array.from(divBranch.children).some(el => el.classList.contains('phylo-node-miss') && el.querySelector('a')?.textContent === label)) {
-      const missNode = document.createElement('div');
-      missNode.className = 'phylo-node phylo-node-miss';
-      const link = document.createElement('a');
-      link.href = wiki(label);
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = label;
-      missNode.appendChild(link);
-      const t = document.getElementById('target-subtree');
-      t?.parentElement === divBranch ? divBranch.insertBefore(missNode, t) : divBranch.appendChild(missNode);
-    }
-  }
-  moveTargetPlaceholder(clade);
-}
-
 function updateGuessesLabel() {
   guessesLabel.textContent = `${guessesLeft} guess${guessesLeft === 1 ? '' : 'es'} remaining`;
   guessesLabel.style.color = guessesLeft <= 3 ? '#c0392b' : '';
@@ -463,20 +412,7 @@ function submitGuess() {
 
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
-    moveTargetPlaceholder(CORRECT_CLADE);
-    for (let c = 1; c <= TARGET.path.length; c++) {
-      const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
-      if (subtreeEl) subtreeEl.style.display = '';
-    }
-    for (let c = 0; c <= TARGET.path.length; c++) {
-      const nodeEl = document.getElementById(CLADE_NODE[c]);
-      if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.add('phylo-node-hit'); }
-      const el = document.getElementById(CLADE_BRANCH[c]);
-      if (el) el.style.display = '';
-    }
-    const targetNode = document.getElementById('node-target')!;
-    targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
-    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
+    rebuildTree(true);
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
     return;
