@@ -22,7 +22,7 @@ import Layout from '../../layouts/Layout.astro';
             <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
             Identify the spirit animal linked to your sample by entering species names below.
             Each guess returns a phylogenetic proximity hint.
-            You have <strong>10 guesses</strong>.
+            You have <strong>20 guesses</strong>.
           </div>
 
           <div id="game-area">
@@ -61,36 +61,74 @@ import Layout from '../../layouts/Layout.astro';
         <div class="phylo-panel">
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
           <div class="phylo-tree">
-            <div class="phylo-node" id="node-animalia">Metazoa</div>
-            <div class="phylo-branch" id="branch-animalia" style="display:none">
+            <div class="phylo-node" id="node-metazoa">Metazoa</div>
+            <div class="phylo-branch" id="branch-metazoa" style="display:none">
               <div class="phylo-subtree">
-                <div class="phylo-node" id="node-vertebrata">Vertebrata</div>
-                <div class="phylo-branch" id="branch-vertebrata" style="display:none">
+                <div class="phylo-node" id="node-bilateria">Bilateria</div>
+                <div class="phylo-branch" id="branch-bilateria" style="display:none">
                   <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-mammalia">Mammalia</div>
-                    <div class="phylo-branch" id="branch-mammalia" style="display:none">
+                    <div class="phylo-node" id="node-deuterostomia">Deuterostomia</div>
+                    <div class="phylo-branch" id="branch-deuterostomia" style="display:none">
                       <div class="phylo-subtree">
-                        <div class="phylo-node" id="node-rodentia">Rodentia</div>
-                        <div class="phylo-branch" id="branch-rodentia" style="display:none">
+                        <div class="phylo-node" id="node-chordata">Chordata</div>
+                        <div class="phylo-branch" id="branch-chordata" style="display:none">
                           <div class="phylo-subtree">
-                            <div class="phylo-node" id="node-caviidae">Caviidae</div>
-                            <div class="phylo-branch" id="branch-caviidae" style="display:none">
+                            <div class="phylo-node" id="node-vertebrata">Vertebrata</div>
+                            <div class="phylo-branch" id="branch-vertebrata" style="display:none">
                               <div class="phylo-subtree">
-                                <div class="phylo-node phylo-target" id="node-target">???</div>
+                                <div class="phylo-node" id="node-amniota">Amniota</div>
+                                <div class="phylo-branch" id="branch-amniota" style="display:none">
+                                  <div class="phylo-subtree">
+                                    <div class="phylo-node" id="node-mammalia">Mammalia</div>
+                                    <div class="phylo-branch" id="branch-mammalia" style="display:none">
+                                      <div class="phylo-subtree">
+                                        <div class="phylo-node" id="node-rodentia">Rodentia</div>
+                                        <div class="phylo-branch" id="branch-rodentia" style="display:none">
+                                          <div class="phylo-subtree">
+                                            <div class="phylo-node" id="node-caviidae">Caviidae</div>
+                                            <div class="phylo-branch" id="branch-caviidae" style="display:none">
+                                              <div class="phylo-subtree">
+                                                <div class="phylo-node phylo-target" id="node-target">???</div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div class="phylo-subtree">
+                                            <div class="phylo-node" id="node-other-rodentia">Other Rodentia</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="phylo-subtree">
+                                        <div class="phylo-node" id="node-other-mammalia">Other Mammalia</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="phylo-subtree">
+                                    <div class="phylo-node" id="node-other-amniota">Other Amniota</div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="phylo-subtree">
+                                <div class="phylo-node" id="node-other-vertebrata">Other Vertebrata</div>
                               </div>
                             </div>
                           </div>
+                          <div class="phylo-subtree">
+                            <div class="phylo-node" id="node-other-chordata">Other Chordata</div>
+                          </div>
                         </div>
+                      </div>
+                      <div class="phylo-subtree">
+                        <div class="phylo-node" id="node-other-deuterostomia">Other Deuterostomia</div>
                       </div>
                     </div>
                   </div>
                   <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-other-mammal">Other Mammalia</div>
+                    <div class="phylo-node" id="node-protostomia">Protostomia</div>
                   </div>
                 </div>
               </div>
               <div class="phylo-subtree">
-                <div class="phylo-node" id="node-other-vertebrata">Other Vertebrata</div>
+                <div class="phylo-node" id="node-non-bilateria">Non-Bilateria</div>
               </div>
             </div>
           </div>
@@ -112,141 +150,175 @@ const TARGET = {
 };
 
 // ─── Taxonomy ─────────────────────────────────────────────────────────────────
-// clade: 0 = Invertebrata, 1 = Vertebrata (non-mammal), 2 = Mammalia (non-rodent),
-//        3 = Rodentia (non-caviid), 4 = Caviidae, 5 = target (correct)
+// clade: 0 = Non-Bilateria, 1 = Protostomia, 2 = Deuterostomia (non-Chordata),
+//        3 = Chordata (non-Vertebrata), 4 = Vertebrata (non-Amniota),
+//        5 = Amniota (non-Mammalia), 6 = Mammalia (non-Rodentia),
+//        7 = Rodentia (non-Caviidae), 8 = Caviidae, 9 = target (correct)
 const TAXONOMY: Record<string, { clade: number; label: string }> = {
-  // Caviidae (clade 4)
-  'guinea pig':       { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
-  'nutria':           { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
-  'rock cavy':        { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
-  'patagonian mara':  { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
-  [TARGET.name]:      { clade: 5, label: '✅ Correct!' },
-  // Rodentia (clade 3)
-  'rat':              { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'mouse':            { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'squirrel':         { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'beaver':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'hamster':          { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'porcupine':        { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'chinchilla':       { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'gerbil':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'marmot':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'vole':             { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'lemming':          { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'prairie dog':      { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'woodchuck':        { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  'degu':             { clade: 3, label: '🌡️ Very warm — Rodentia' },
-  // Mammalia non-rodent (clade 2)
-  'rabbit':           { clade: 2, label: '🌤️ Warm — Mammalia, not Rodentia' },
-  'hare':             { clade: 2, label: '🌤️ Warm — Mammalia, not Rodentia' },
-  'pig':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'cow':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'horse':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'donkey':           { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'sheep':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'goat':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'dog':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'cat':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'bear':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'wolf':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'fox':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'deer':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'moose':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'elephant':         { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'giraffe':          { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'hippopotamus':     { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'rhinoceros':       { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'lion':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'tiger':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'monkey':           { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'gorilla':          { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'chimpanzee':       { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'human':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'whale':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'dolphin':          { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'seal':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'bat':              { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'hedgehog':         { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'mole':             { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'otter':            { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'badger':           { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'raccoon':          { clade: 2, label: '🌤️ Warm — Mammalia' },
-  'kangaroo':         { clade: 2, label: '🌤️ Warm — Mammalia (marsupial)' },
-  'koala':            { clade: 2, label: '🌤️ Warm — Mammalia (marsupial)' },
-  // Vertebrata non-mammal (clade 1)
-  'crocodile':        { clade: 1, label: '❄️ Cold — Vertebrata, not Mammalia' },
-  'alligator':        { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'lizard':           { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'gecko':            { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'chameleon':        { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'snake':            { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'turtle':           { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
-  'frog':             { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
-  'toad':             { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
-  'salamander':       { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
-  'salmon':           { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
-  'tuna':             { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
-  'clownfish':        { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
-  'shark':            { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
-  'ray':              { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
-  'eagle':            { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'penguin':          { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'parrot':           { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'owl':              { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'flamingo':         { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'ostrich':          { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'crow':             { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  'pigeon':           { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
-  // Invertebrata (clade 0)
-  'octopus':          { clade: 0, label: '🧊 Very cold — Animalia, not Vertebrata' },
-  'squid':            { clade: 0, label: '🧊 Very cold — Metazoa (mollusc)' },
-  'snail':            { clade: 0, label: '🧊 Very cold — Metazoa (mollusc)' },
-  'jellyfish':        { clade: 0, label: '🧊 Very cold — Metazoa' },
-  'ant':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'bee':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'butterfly':        { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'fly':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'beetle':           { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'dragonfly':        { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
-  'crab':             { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
-  'lobster':          { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
-  'shrimp':           { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
-  'spider':           { clade: 0, label: '🧊 Very cold — Metazoa (arachnid)' },
-  'scorpion':         { clade: 0, label: '🧊 Very cold — Metazoa (arachnid)' },
-  'starfish':         { clade: 0, label: '🧊 Very cold — Metazoa (echinoderm)' },
-  'earthworm':        { clade: 0, label: '🧊 Very cold — Metazoa (annelid)' },
+  // Caviidae (clade 8)
+  'guinea pig':       { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
+  'rock cavy':        { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
+  'patagonian mara':  { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
+  [TARGET.name]:      { clade: 9, label: '✅ Correct!' },
+  // Rodentia non-Caviidae (clade 7)
+  'rat':              { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'mouse':            { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'squirrel':         { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'beaver':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'hamster':          { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'porcupine':        { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'chinchilla':       { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'gerbil':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'marmot':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'vole':             { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'lemming':          { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'prairie dog':      { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'woodchuck':        { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'degu':             { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  'nutria':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
+  // Mammalia non-Rodentia (clade 6)
+  'rabbit':           { clade: 6, label: '🌤️ Warm — Mammalia, not Rodentia' },
+  'hare':             { clade: 6, label: '🌤️ Warm — Mammalia, not Rodentia' },
+  'pig':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'cow':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'horse':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'donkey':           { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'sheep':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'goat':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'dog':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'cat':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'bear':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'wolf':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'fox':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'deer':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'moose':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'elephant':         { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'giraffe':          { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'hippopotamus':     { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'rhinoceros':       { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'lion':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'tiger':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'monkey':           { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'gorilla':          { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'chimpanzee':       { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'human':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'whale':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'dolphin':          { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'seal':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'bat':              { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'hedgehog':         { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'mole':             { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'otter':            { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'badger':           { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'raccoon':          { clade: 6, label: '🌤️ Warm — Mammalia' },
+  'kangaroo':         { clade: 6, label: '🌤️ Warm — Mammalia (marsupial)' },
+  'koala':            { clade: 6, label: '🌤️ Warm — Mammalia (marsupial)' },
+  // Amniota non-Mammalia: reptiles & birds (clade 5)
+  'crocodile':        { clade: 5, label: '❄️ Cool — Amniota, not Mammalia (reptile)' },
+  'alligator':        { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'lizard':           { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'gecko':            { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'chameleon':        { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'snake':            { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'turtle':           { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
+  'eagle':            { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'penguin':          { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'parrot':           { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'owl':              { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'flamingo':         { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'ostrich':          { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'crow':             { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  'pigeon':           { clade: 5, label: '❄️ Cool — Amniota (bird)' },
+  // Vertebrata non-Amniota: fish & amphibians (clade 4)
+  'salmon':           { clade: 4, label: '🧊 Cold — Vertebrata, not Amniota (fish)' },
+  'tuna':             { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
+  'clownfish':        { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
+  'shark':            { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
+  'ray':              { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
+  'zebrafish':        { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
+  'lamprey':          { clade: 4, label: '🧊 Cold — Vertebrata (jawless fish)' },
+  'frog':             { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
+  'toad':             { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
+  'salamander':       { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
+  // Chordata non-Vertebrata (clade 3)
+  'lancelet':         { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
+  'tunicate':         { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
+  'sea squirt':       { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
+  // Deuterostomia non-Chordata: echinoderms (clade 2)
+  'starfish':         { clade: 2, label: '🧊 Cold — Deuterostomia, not Chordata (echinoderm)' },
+  'sea urchin':       { clade: 2, label: '🧊 Cold — Deuterostomia (echinoderm)' },
+  'sea cucumber':     { clade: 2, label: '🧊 Cold — Deuterostomia (echinoderm)' },
+  // Protostomia: molluscs, arthropods, annelids (clade 1)
+  'octopus':          { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
+  'squid':            { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
+  'snail':            { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
+  'clam':             { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
+  'ant':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'bee':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'butterfly':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'fly':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'beetle':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'dragonfly':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
+  'crab':             { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
+  'lobster':          { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
+  'shrimp':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
+  'spider':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (arachnid)' },
+  'scorpion':         { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (arachnid)' },
+  'earthworm':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (annelid)' },
+  // Non-Bilateria: sponges, cnidarians (clade 0)
+  'jellyfish':        { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
+  'coral':            { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
+  'sea anemone':      { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
+  'hydra':            { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
+  'sponge':           { clade: 0, label: '🥶 Very cold — Non-Bilateria (porifera)' },
 };
 
 const CLADE_DESC: Record<number, string> = {
-  0: '🧊 <strong>Invertebrata</strong> — Animals without a backbone (Metazoa). The vast majority of animal species on Earth.',
-  1: '❄️ <strong>Vertebrata</strong> — Animals with a backbone. Includes fish, amphibians, reptiles, birds, and mammals.',
-  2: '🌤️ <strong>Mammalia</strong> — Warm-blooded vertebrates that nurse young with milk. ~6,400 living species.',
-  3: '🌡️ <strong>Rodentia</strong> — The largest order of mammals (~2,500 species). Characterised by continuously growing incisors.',
-  4: '🔥 <strong>Caviidae</strong> — South American rodents including guinea pigs, maras, and their relatives. ~14 species.',
+  0: '🥶 <strong>Non-Bilateria</strong> — The earliest-branching animals: sponges, jellyfish, corals. No bilateral symmetry.',
+  1: '🧊 <strong>Protostomia</strong> — Bilaterian animals where the mouth develops first. Includes molluscs, arthropods, and annelid worms.',
+  2: '🧊 <strong>Deuterostomia (non-Chordata)</strong> — Bilaterian animals where the anus develops first. Echinoderms: starfish, sea urchins, sea cucumbers.',
+  3: '❄️ <strong>Chordata (non-Vertebrata)</strong> — Animals with a notochord. Includes lancelets and tunicates but no backbone yet.',
+  4: '🧊 <strong>Vertebrata (non-Amniota)</strong> — Animals with a backbone. Jawless fish, cartilaginous fish, bony fish, and amphibians.',
+  5: '❄️ <strong>Amniota (non-Mammalia)</strong> — Vertebrates with an amniotic egg. Reptiles and birds.',
+  6: '🌤️ <strong>Mammalia</strong> — Warm-blooded amniotes that nurse young with milk. ~6,400 living species.',
+  7: '🌡️ <strong>Rodentia</strong> — The largest order of mammals (~2,500 species). Characterised by continuously growing incisors.',
+  8: '🔥 <strong>Caviidae</strong> — South American rodents including guinea pigs, maras, and their relatives. ~14 species.',
 };
 
 const CLADE_NODE: Record<number, string> = {
-  0: 'node-animalia',
-  1: 'node-vertebrata',
-  2: 'node-mammalia',
-  3: 'node-rodentia',
-  4: 'node-caviidae',
+  0: 'node-metazoa',
+  1: 'node-bilateria',
+  2: 'node-deuterostomia',
+  3: 'node-chordata',
+  4: 'node-vertebrata',
+  5: 'node-amniota',
+  6: 'node-mammalia',
+  7: 'node-rodentia',
+  8: 'node-caviidae',
 };
 
 const CLADE_BRANCH: Record<number, string> = {
-  0: 'branch-animalia',
-  1: 'branch-vertebrata',
-  2: 'branch-mammalia',
-  3: 'branch-rodentia',
-  4: 'branch-caviidae',
+  0: 'branch-metazoa',
+  1: 'branch-bilateria',
+  2: 'branch-deuterostomia',
+  3: 'branch-chordata',
+  4: 'branch-vertebrata',
+  5: 'branch-amniota',
+  6: 'branch-mammalia',
+  7: 'branch-rodentia',
+  8: 'branch-caviidae',
 };
 
 const CLADE_CLASS: Record<number, string> = {
   0: 'hint-cold',
   1: 'hint-cold',
-  2: 'hint-warm',
-  3: 'hint-hot',
-  4: 'hint-hot',
+  2: 'hint-cold',
+  3: 'hint-cold',
+  4: 'hint-cold',
+  5: 'hint-warm',
+  6: 'hint-warm',
+  7: 'hint-hot',
+  8: 'hint-hot',
 };
 
 const MAX_GUESSES = 20;
@@ -297,7 +369,7 @@ if (localStorage.getItem('gnomics_species_done')) {
 
 function highlightNode(clade: number) {
   // Light up all nodes up to this clade level and reveal their branches
-  for (let c = 0; c <= clade && c <= 4; c++) {
+  for (let c = 0; c <= clade && c <= 8; c++) {
     const nodeId = CLADE_NODE[c];
     if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
     const branchId = CLADE_BRANCH[c];
@@ -328,11 +400,11 @@ function submitGuess() {
     return;
   }
 
-  if (data.clade === 5) {
+  if (data.clade === 9) {
     localStorage.setItem('gnomics_species_done', '1');
     document.getElementById('node-target')!.textContent = TARGET.name.charAt(0).toUpperCase() + TARGET.name.slice(1);
     document.getElementById('node-target')!.classList.add('phylo-node-hit', 'phylo-node-correct');
-    for (let c = 0; c <= 4; c++) {
+    for (let c = 0; c <= 8; c++) {
       const nodeId = CLADE_NODE[c];
       if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
       const branchId = CLADE_BRANCH[c];

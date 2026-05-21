@@ -313,13 +313,13 @@ section.alt { background: var(--bg-alt); }
 .phylo-node-correct { border-color: var(--gnomics-lime); background: var(--gnomics-green-d); color: #fff; }
 .phylo-target { font-style: italic; }
 .phylo-branch {
-  padding-left: 1.1rem;
+  padding-left: 0.7rem;
   border-left: 2px solid var(--border);
-  margin-left: 0.6rem;
+  margin-left: 0.4rem;
   margin-top: 0.1rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
-.phylo-subtree { margin-top: 0.3rem; }
+.phylo-subtree { margin-top: 0.2rem; }
 .clade-desc {
   margin-top: 1rem;
   padding: 0.65rem 0.85rem;
