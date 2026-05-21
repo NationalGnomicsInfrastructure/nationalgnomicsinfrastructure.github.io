@@ -75,6 +75,10 @@ import Layout from '../../layouts/Layout.astro';
 
       <!-- Post-launch state (hidden until button press) -->
       <div id="post-launch" style="display:none;max-width:800px;margin:0 auto;">
+        <div class="alert alert-success">
+          ✅ <strong>Session active.</strong> Welcome, <span id="display-team"></span>!
+        </div>
+
         <div class="cards mt-3">
           <a href="/platform/species-id/" class="card" id="card-species-id" style="text-decoration:none;cursor:pointer;">
             <div class="card-icon">🔬</div>
@@ -106,6 +110,7 @@ import Layout from '../../layouts/Layout.astro';
   const verifyBtn = document.getElementById('verify-btn');
   const preLaunch = document.getElementById('pre-launch');
   const postLaunch = document.getElementById('post-launch');
+  const displayTeam = document.getElementById('display-team');
   const userAuth = document.getElementById('user-auth');
   const teamAuth = document.getElementById('team-auth');
   const codeCard = document.getElementById('access-code-card');
@@ -127,8 +132,10 @@ import Layout from '../../layouts/Layout.astro';
     window.dispatchEvent(new Event('gnomics_started'));
   }
   if (existingMode) {
+    const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
+    displayTeam!.textContent = displayName;
     if (localStorage.getItem('gnomics_species_done')) {
       unlockCards();
       const card = document.getElementById('card-species-id') as HTMLAnchorElement;
@@ -169,6 +176,7 @@ import Layout from '../../layouts/Layout.astro';
     localStorage.setItem('gnomics_start', String(Date.now()));
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
+    displayTeam!.textContent = displayName;
     window.dispatchEvent(new Event('gnomics_started'));
     location.reload();
   }

@@ -64,8 +64,9 @@ import '../../styles/species-id.css';
 </Layout>
 
 <script>
-import { SPECIES_DB, ENCODED_TARGETS } from '../../data/phylo-tree';
-import type { TargetConfig } from '../../data/phylo-tree';
+import { SPECIES_DB } from '../../data/phylo-tree';
+import { ENCODED_TARGETS } from '../../data/philo-targets';
+import type { TargetConfig } from '../../data/philo-targets';
 
 const POSSIBLE_TARGETS: TargetConfig[] = ENCODED_TARGETS.map(s => JSON.parse(decodeURIComponent(escape(atob(s)))));
 
