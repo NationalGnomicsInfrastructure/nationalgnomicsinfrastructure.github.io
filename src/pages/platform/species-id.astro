@@ -500,18 +500,8 @@ function submitGuess() {
 }
 
 retryBtn?.addEventListener('click', () => {
-  guessesLeft = MAX_GUESSES;
-  updateGuessesLabel();
-  list.innerHTML = '';
-  cladeDesc.style.display = 'none';
-  document.querySelectorAll('.phylo-node').forEach(n => n.classList.remove('phylo-node-hit','phylo-node-correct'));
-  Object.values(CLADE_BRANCH).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  document.getElementById('node-target')!.textContent = '???';
-  failArea.style.display = 'none';
-  gameArea.style.display = 'block';
+  localStorage.removeItem('gnomics_target');
+  window.location.reload();
 });
 
 btn.addEventListener('click', submitGuess);
