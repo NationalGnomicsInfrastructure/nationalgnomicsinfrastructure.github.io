@@ -57,6 +57,9 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
       <div class="footer-col">
         <h4>NGnI</h4>
         <p style="font-size:0.85rem;line-height:1.5;">National Gnomics Infrastructure — part of the Gnomics Platform at SciFiLab.</p>
+        <a href="https://github.com/SciFiLab" target="_blank" rel="noopener">
+          <img src="/scifilab-symbol.svg" alt="SciFiLab" style="height:2.5rem;margin-top:0.75rem;opacity:0.85;" />
+        </a>
       </div>
       <div class="footer-col">
         <h4>Applications</h4>
@@ -76,10 +79,10 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Contact</h4>
+        <h4>About us</h4>
         <ul>
-          <li><a href="mailto:support@ngni.se">support@ngni.se</a></li>
           <li><a href="/about/">About us</a></li>
+          <li><a href="/about/#contact">Contact form</a></li>
         </ul>
       </div>
     </div>
@@ -110,11 +113,11 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
           const remaining = Math.max(0, DURATION_MS - elapsed);
           const min = Math.floor(remaining / 60000);
           const sec = Math.floor((remaining % 60000) / 1000);
-          display.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-          bar.classList.toggle('warning', remaining < 10 * 60 * 1000 && remaining >= 5 * 60 * 1000);
-          bar.classList.toggle('danger', remaining < 5 * 60 * 1000);
+          if (display) display.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+          if (bar) bar.classList.toggle('warning', remaining < 10 * 60 * 1000 && remaining >= 5 * 60 * 1000);
+          if (bar) bar.classList.toggle('danger', remaining < 5 * 60 * 1000);
           if (remaining > 0) requestAnimationFrame(tick);
-          else display.textContent = '00:00';
+          else if (display) display.textContent = '00:00';
         }
         tick();
       }
