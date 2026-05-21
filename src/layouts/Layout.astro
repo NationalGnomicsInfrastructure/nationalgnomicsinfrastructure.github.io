@@ -46,6 +46,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   <div id="timer-bar">
     <div class="timer-label">Session time remaining</div>
     <div class="timer-time" id="timer-display">--:--</div>
+    <button id="restart-btn" onclick="if(confirm('⚠️ This will clear your session and all progress. Are you sure?')){['gnomics_start','gnomics_team','gnomics_leader','gnomics_species_done'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="display:none;margin-top:0.5rem;width:100%;font-size:0.75rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.5);color:inherit;border-radius:4px;cursor:pointer;">🔄 Restart</button>
   </div>
 )}
 
@@ -112,6 +113,8 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
         if (!startAt) return;
 
         bar.classList.add('running');
+        const restartBtn = document.getElementById('restart-btn');
+        if (restartBtn) restartBtn.style.display = 'inline-block';
 
         function tick() {
           const elapsed = Date.now() - startAt;
@@ -121,6 +124,14 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
           if (display) display.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
           if (bar) bar.classList.toggle('warning', remaining < 10 * 60 * 1000 && remaining >= 5 * 60 * 1000);
           if (bar) bar.classList.toggle('danger', remaining < 5 * 60 * 1000);
+          // Interpolate border from lime (#a3e635) → red (#ff6b6b) as time runs out
+          if (bar) {
+            const progress = 1 - remaining / DURATION_MS; // 0 → 1
+            const r = Math.round(163 + (255 - 163) * progress);
+            const g = Math.round(230 + (107 - 230) * progress);
+            const b = Math.round(53  + (107 - 53)  * progress);
+            bar.style.borderColor = `rgb(${r},${g},${b})`;
+          }
           if (remaining > 0) requestAnimationFrame(tick);
           else if (display) display.textContent = '00:00';
         }
