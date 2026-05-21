@@ -224,55 +224,6 @@ section.alt { background: var(--bg-alt); }
 #timer-bar.danger .timer-time { color: #ff6b6b; animation: blink 1s step-end infinite; }
 @keyframes blink { 50% { opacity: 0.4; } }
 
-/* ── Species ID (Enigma 1) ────────────────────────────────── */
-.species-game {
-  max-width: 640px;
-  margin: 0 auto;
-}
-.species-input-row {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-.species-input-row input {
-  flex: 1;
-  padding: 0.6rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 1rem;
-  font-family: var(--font-sans);
-}
-.species-input-row input:focus { outline: none; border-color: var(--gnomics-green); }
-.guess-history { list-style: none; margin-bottom: 1.5rem; }
-.guess-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 0.4rem;
-  border-radius: var(--radius);
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  font-size: 0.92rem;
-}
-.guess-row .guess-name { flex: 1; font-weight: 500; }
-.hint-pill {
-  padding: 0.2rem 0.6rem;
-  border-radius: 99px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-.hint-warm { background: #fff3cd; color: #856404; }
-.hint-hot  { background: #d1e7dd; color: #0a3622; }
-.hint-cold { background: #cfe2ff; color: #084298; }
-.success-box {
-  background: var(--gnomics-green-l);
-  border: 2px solid var(--gnomics-green);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  text-align: center;
-}
-.success-box h3 { color: var(--gnomics-green-d); }
 
 /* ── Keyphrase form (Enigma 5) ────────────────────────────── */
 .submit-form {

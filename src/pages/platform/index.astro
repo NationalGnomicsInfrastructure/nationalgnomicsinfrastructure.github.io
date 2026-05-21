@@ -76,11 +76,11 @@ import Layout from '../../layouts/Layout.astro';
       <!-- Post-launch state (hidden until button press) -->
       <div id="post-launch" style="display:none;max-width:800px;margin:0 auto;">
         <div class="alert alert-success">
-          ✅ <strong>Session active.</strong> Welcome, <span id="display-team"></span>! Your 45-minute session has started.
+          ✅ <strong>Session active.</strong> Welcome, <span id="display-team"></span>!
         </div>
 
         <div class="cards mt-3">
-          <a href="/platform/species-id/" class="card" style="text-decoration:none;cursor:pointer;">
+          <a href="/platform/species-id/" class="card" id="card-species-id" style="text-decoration:none;cursor:pointer;">
             <div class="card-icon">🔬</div>
             <h3>Species Identification Tool</h3>
             <p>Identify an unknown specimen using our phylogenetic distance classifier. Required for all new gnomics projects.</p>
@@ -136,7 +136,16 @@ import Layout from '../../layouts/Layout.astro';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
     displayTeam!.textContent = displayName;
-    if (localStorage.getItem('gnomics_species_done')) unlockCards();
+    if (localStorage.getItem('gnomics_species_done')) {
+      unlockCards();
+      const card = document.getElementById('card-species-id') as HTMLAnchorElement;
+      if (card) {
+        card.removeAttribute('href');
+        card.style.cursor = 'default';
+        card.style.opacity = '0.5';
+        card.querySelector('.btn')!.textContent = '✅ Completed';
+      }
+    }
   }
 
   async function sha256(str: string): Promise<string> {
