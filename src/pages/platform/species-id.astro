@@ -61,7 +61,6 @@ import Layout from '../../layouts/Layout.astro';
         <div class="phylo-panel">
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
           <div class="phylo-tree" id="phylo-tree"></div>
-          <div id="clade-desc" class="clade-desc" style="display:none;"></div>
         </div>
 
       </div>
@@ -232,18 +231,16 @@ const SPECIES_DB: Record<string, SpeciesEntry> = {
 
 // ─── Possible Targets (base64-encoded to avoid spoilers in source) ────────────
 type TargetConfig = {
-  name: string; scientific: string; emoji: string;
+  name: string; scientific: string;
   path: string[];    // 8 phylogenetic group IDs (Bilateria → family)
   labels: string[];  // display labels for each path node
-  others: string[];  // "other branch" label shown as sibling at each tree level
-  descs: string[];   // clade description shown in the panel (index 0–8)
 };
 
 const ENCODED_TARGETS: string[] = [
-  'eyJuYW1lIjoiY2FweWJhcmEiLCJzY2llbnRpZmljIjoiSHlkcm9jaG9lcnVzIGh5ZHJvY2hhZXJpcyIsImVtb2ppIjoi8J+mqyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsImFtbmlvdGEiLCJtYW1tYWxpYSIsInJvZGVudGlhIiwiY2F2aWlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIkRldXRlcm9zdG9taWEiLCJDaG9yZGF0YSIsIlZlcnRlYnJhdGEiLCJBbW5pb3RhIiwiTWFtbWFsaWEiLCJSb2RlbnRpYSIsIkNhdmlpZGFlIl0sIm90aGVycyI6WyJOb24tQmlsYXRlcmlhIiwiUHJvdG9zdG9taWEiLCJPdGhlciBEZXV0ZXJvc3RvbWlhIiwiT3RoZXIgQ2hvcmRhdGEiLCJPdGhlciBWZXJ0ZWJyYXRhIiwiT3RoZXIgQW1uaW90YSIsIk90aGVyIE1hbW1hbGlhIiwiT3RoZXIgUm9kZW50aWEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLUFtbmlvdGE8L3N0cm9uZz4g4oCUIEZpc2ggYW5kIGFtcGhpYmlhbnMuIiwi8J+MpO+4jyA8c3Ryb25nPkFtbmlvdGEg4oCUIG5vbi1NYW1tYWxpYTwvc3Ryb25nPiDigJQgUmVwdGlsZXMgYW5kIGJpcmRzLiIsIvCfjKTvuI8gPHN0cm9uZz5NYW1tYWxpYSDigJQgbm9uLVJvZGVudGlhPC9zdHJvbmc+IOKAlCBXYXJtLWJsb29kZWQsIG1pbGstcHJvZHVjaW5nLCBidXQgbm90IGEgcm9kZW50LiIsIvCfjKHvuI8gPHN0cm9uZz5Sb2RlbnRpYSDigJQgbm9uLUNhdmlpZGFlPC9zdHJvbmc+IOKAlCBHbmF3aW5nIG1hbW1hbHMsIGJ1dCBub3QgaW4gdGhlIGNhdnkgZmFtaWx5LiIsIvCflKUgPHN0cm9uZz5DYXZpaWRhZTwvc3Ryb25nPiDigJQgU291dGggQW1lcmljYW4gY2F2eSByb2RlbnRzOiBndWluZWEgcGlncywgbWFyYXMsIGFuZCB0aGVpciByZWxhdGl2ZXMuIFZlcnkgY2xvc2UhIl19',
-  'eyJuYW1lIjoiY2F0Iiwic2NpZW50aWZpYyI6IkZlbGlzIGNhdHVzIiwiZW1vamkiOiLwn5CxIiwicGF0aCI6WyJiaWxhdGVyaWEiLCJkZXV0ZXJvc3RvbWlhIiwiY2hvcmRhdGEiLCJ2ZXJ0ZWJyYXRhIiwiYW1uaW90YSIsIm1hbW1hbGlhIiwiY2Fybml2b3JhIiwiZmVsaWRhZSJdLCJsYWJlbHMiOlsiQmlsYXRlcmlhIiwiRGV1dGVyb3N0b21pYSIsIkNob3JkYXRhIiwiVmVydGVicmF0YSIsIkFtbmlvdGEiLCJNYW1tYWxpYSIsIkNhcm5pdm9yYSIsIkZlbGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJQcm90b3N0b21pYSIsIk90aGVyIERldXRlcm9zdG9taWEiLCJPdGhlciBDaG9yZGF0YSIsIk90aGVyIFZlcnRlYnJhdGEiLCJPdGhlciBBbW5pb3RhIiwiT3RoZXIgTWFtbWFsaWEiLCJPdGhlciBDYXJuaXZvcmEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLUFtbmlvdGE8L3N0cm9uZz4g4oCUIEZpc2ggYW5kIGFtcGhpYmlhbnMuIiwi8J+MpO+4jyA8c3Ryb25nPkFtbmlvdGEg4oCUIG5vbi1NYW1tYWxpYTwvc3Ryb25nPiDigJQgUmVwdGlsZXMgYW5kIGJpcmRzLiIsIvCfjKTvuI8gPHN0cm9uZz5NYW1tYWxpYSDigJQgbm9uLUNhcm5pdm9yYTwvc3Ryb25nPiDigJQgTWFtbWFscywgYnV0IG5vdCBhbiBvcmRlciBDYXJuaXZvcmEgbWVtYmVyLiIsIvCfjKHvuI8gPHN0cm9uZz5DYXJuaXZvcmEg4oCUIG5vbi1GZWxpZGFlPC9zdHJvbmc+IOKAlCBEb2dzLCBiZWFycywgd2Vhc2VscyDigJQgbm90IHRoZSBjYXQgZmFtaWx5LiIsIvCflKUgPHN0cm9uZz5GZWxpZGFlPC9zdHJvbmc+IOKAlCBUaGUgY2F0IGZhbWlseTogbGlvbnMsIHRpZ2VycywgbGVvcGFyZHMuIFZlcnkgY2xvc2UhIl19',
-  'eyJuYW1lIjoicmVkLWV5ZWQgdHJlZSBmcm9nIiwic2NpZW50aWZpYyI6IkFnYWx5Y2huaXMgY2FsbGlkcnlhcyIsImVtb2ppIjoi8J+QuCIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsInRldHJhcG9kYSIsImFtcGhpYmlhIiwiYW51cmEiLCJoeWxpZGFlIl0sImxhYmVscyI6WyJCaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiQ2hvcmRhdGEiLCJWZXJ0ZWJyYXRhIiwiVGV0cmFwb2RhIiwiQW1waGliaWEiLCJBbnVyYSIsIkh5bGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJQcm90b3N0b21pYSIsIk90aGVyIERldXRlcm9zdG9taWEiLCJPdGhlciBDaG9yZGF0YSIsIk90aGVyIFZlcnRlYnJhdGEgKGZpc2gpIiwiQW1uaW90YSIsIk90aGVyIEFtcGhpYmlhIiwiT3RoZXIgQW51cmEiXSwiZGVzY3MiOlsi8J+ltiA8c3Ryb25nPk5vbi1CaWxhdGVyaWE8L3N0cm9uZz4g4oCUIFNwb25nZXMsIGplbGx5ZmlzaCwgY29yYWxzLiBObyBiaWxhdGVyYWwgc3ltbWV0cnkuIiwi8J+niiA8c3Ryb25nPkJpbGF0ZXJpYSDigJQgUHJvdG9zdG9taWE8L3N0cm9uZz4g4oCUIE1vbGx1c2NzLCBhcnRocm9wb2RzLCBhbm5lbGlkcy4iLCLwn6eKIDxzdHJvbmc+RGV1dGVyb3N0b21pYSDigJQgbm9uLUNob3JkYXRhPC9zdHJvbmc+IOKAlCBFY2hpbm9kZXJtczogc3RhcmZpc2gsIHNlYSB1cmNoaW5zLiIsIuKdhO+4jyA8c3Ryb25nPkNob3JkYXRhIOKAlCBub24tVmVydGVicmF0YTwvc3Ryb25nPiDigJQgTGFuY2VsZXRzIGFuZCB0dW5pY2F0ZXMuIiwi4p2E77iPIDxzdHJvbmc+VmVydGVicmF0YSDigJQgbm9uLVRldHJhcG9kYTwvc3Ryb25nPiDigJQgRmlzaCAoamF3bGVzcywgY2FydGlsYWdpbm91cywgYm9ueSkuIiwi8J+MpO+4jyA8c3Ryb25nPlRldHJhcG9kYSDigJQgQW1uaW90YTwvc3Ryb25nPiDigJQgUmVwdGlsZXMsIGJpcmRzLCBhbmQgbWFtbWFscy4iLCLwn4yk77iPIDxzdHJvbmc+QW1waGliaWEg4oCUIG5vbi1BbnVyYTwvc3Ryb25nPiDigJQgU2FsYW1hbmRlcnMsIG5ld3RzLCBheG9sb3Rscy4iLCLwn4yh77iPIDxzdHJvbmc+QW51cmEg4oCUIG5vbi1IeWxpZGFlPC9zdHJvbmc+IOKAlCBGcm9ncyBhbmQgdG9hZHMsIGJ1dCBub3QgdGhlIHRyZWUgZnJvZyBmYW1pbHkuIiwi8J+UpSA8c3Ryb25nPkh5bGlkYWU8L3N0cm9uZz4g4oCUIFRyZWUgZnJvZ3MhIFZlcnkgY2xvc2UuIl19',
-  'eyJuYW1lIjoiY2ljYWRhIiwic2NpZW50aWZpYyI6Ik1hZ2ljaWNhZGEgc2VwdGVuZGVjaW0iLCJlbW9qaSI6IvCfppciLCJwYXRoIjpbImJpbGF0ZXJpYSIsInByb3Rvc3RvbWlhIiwiZWNkeXNvem9hIiwiYXJ0aHJvcG9kYSIsImluc2VjdGEiLCJwdGVyeWdvdGEiLCJoZW1pcHRlcmEiLCJjaWNhZGlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIlByb3Rvc3RvbWlhIiwiRWNkeXNvem9hIiwiQXJ0aHJvcG9kYSIsIkluc2VjdGEiLCJQdGVyeWdvdGEiLCJIZW1pcHRlcmEiLCJDaWNhZGlkYWUiXSwib3RoZXJzIjpbIk5vbi1CaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiTG9waG90cm9jaG96b2EiLCJPdGhlciBFY2R5c296b2EiLCJPdGhlciBBcnRocm9wb2RhIiwiQXB0ZXJ5Z290YSIsIk90aGVyIFB0ZXJ5Z290YSIsIk90aGVyIEhlbWlwdGVyYSJdLCJkZXNjcyI6WyLwn6W2IDxzdHJvbmc+Tm9uLUJpbGF0ZXJpYTwvc3Ryb25nPiDigJQgU3BvbmdlcywgamVsbHlmaXNoLCBjb3JhbHMuIE5vIGJpbGF0ZXJhbCBzeW1tZXRyeS4iLCLwn6eKIDxzdHJvbmc+QmlsYXRlcmlhIOKAlCBEZXV0ZXJvc3RvbWlhPC9zdHJvbmc+IOKAlCBWZXJ0ZWJyYXRlcyBhbmQgZWNoaW5vZGVybXMuIiwi8J+niiA8c3Ryb25nPlByb3Rvc3RvbWlhIOKAlCBMb3Bob3Ryb2Nob3pvYTwvc3Ryb25nPiDigJQgTW9sbHVzY3MgYW5kIGFubmVsaWRzLiIsIuKdhO+4jyA8c3Ryb25nPkVjZHlzb3pvYSDigJQgbm9uLUFydGhyb3BvZGE8L3N0cm9uZz4g4oCUIE1vdWx0aW5nIGFuaW1hbHMgd2l0aG91dCBqb2ludGVkIGxlZ3MuIE5lbWF0b2RlcywgdGFyZGlncmFkZXMuIiwi4p2E77iPIDxzdHJvbmc+QXJ0aHJvcG9kYSDigJQgbm9uLUluc2VjdGE8L3N0cm9uZz4g4oCUIEpvaW50ZWQgbGVncywgYnV0IG5vdCBpbnNlY3RzLiBTcGlkZXJzLCBjcmFicywgY2VudGlwZWRlcy4iLCLwn4yk77iPIDxzdHJvbmc+SW5zZWN0YSDigJQgbm9uLVB0ZXJ5Z290YTwvc3Ryb25nPiDigJQgSW5zZWN0cyBidXQgcHJpbWl0aXZlbHkgd2luZ2xlc3MuIiwi8J+MpO+4jyA8c3Ryb25nPlB0ZXJ5Z290YSDigJQgbm9uLUhlbWlwdGVyYTwvc3Ryb25nPiDigJQgV2luZ2VkIGluc2VjdHMsIGEgZGlmZmVyZW50IG9yZGVyLiBCZWV0bGVzLCBiZWVzLCBidXR0ZXJmbGllcy4iLCLwn4yh77iPIDxzdHJvbmc+SGVtaXB0ZXJhIOKAlCBub24tQ2ljYWRpZGFlPC9zdHJvbmc+IOKAlCBUcnVlIGJ1Z3MhIEFwaGlkcywgc3RpbmsgYnVncywgbGVhZmhvcHBlcnMuIiwi8J+UpSA8c3Ryb25nPkNpY2FkaWRhZTwvc3Ryb25nPiDigJQgVGhlIGNpY2FkYSBmYW1pbHkuIEV4dHJlbWVseSBjbG9zZSEiXX0=',
+  'eyJuYW1lIjoiY2FweWJhcmEiLCJzY2llbnRpZmljIjoiSHlkcm9jaG9lcnVzIGh5ZHJvY2hhZXJpcyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsImFtbmlvdGEiLCJtYW1tYWxpYSIsInJvZGVudGlhIiwiY2F2aWlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIkRldXRlcm9zdG9taWEiLCJDaG9yZGF0YSIsIlZlcnRlYnJhdGEiLCJBbW5pb3RhIiwiTWFtbWFsaWEiLCJSb2RlbnRpYSIsIkNhdmlpZGFlIl19',
+  'eyJuYW1lIjoiY2F0Iiwic2NpZW50aWZpYyI6IkZlbGlzIGNhdHVzIiwicGF0aCI6WyJiaWxhdGVyaWEiLCJkZXV0ZXJvc3RvbWlhIiwiY2hvcmRhdGEiLCJ2ZXJ0ZWJyYXRhIiwiYW1uaW90YSIsIm1hbW1hbGlhIiwiY2Fybml2b3JhIiwiZmVsaWRhZSJdLCJsYWJlbHMiOlsiQmlsYXRlcmlhIiwiRGV1dGVyb3N0b21pYSIsIkNob3JkYXRhIiwiVmVydGVicmF0YSIsIkFtbmlvdGEiLCJNYW1tYWxpYSIsIkNhcm5pdm9yYSIsIkZlbGlkYWUiXX0=',
+  'eyJuYW1lIjoicmVkLWV5ZWQgdHJlZSBmcm9nIiwic2NpZW50aWZpYyI6IkFnYWx5Y2huaXMgY2FsbGlkcnlhcyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsInRldHJhcG9kYSIsImFtcGhpYmlhIiwiYW51cmEiLCJoeWxpZGFlIl0sImxhYmVscyI6WyJCaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiQ2hvcmRhdGEiLCJWZXJ0ZWJyYXRhIiwiVGV0cmFwb2RhIiwiQW1waGliaWEiLCJBbnVyYSIsIkh5bGlkYWUiXX0=',
+  'eyJuYW1lIjoiY2ljYWRhIiwic2NpZW50aWZpYyI6Ik1hZ2ljaWNhZGEgc2VwdGVuZGVjaW0iLCJwYXRoIjpbImJpbGF0ZXJpYSIsInByb3Rvc3RvbWlhIiwiZWNkeXNvem9hIiwiYXJ0aHJvcG9kYSIsImluc2VjdGEiLCJwdGVyeWdvdGEiLCJoZW1pcHRlcmEiLCJjaWNhZGlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIlByb3Rvc3RvbWlhIiwiRWNkeXNvem9hIiwiQXJ0aHJvcG9kYSIsIkluc2VjdGEiLCJQdGVyeWdvdGEiLCJIZW1pcHRlcmEiLCJDaWNhZGlkYWUiXX0=',
 ];
 const POSSIBLE_TARGETS: TargetConfig[] = ENCODED_TARGETS.map(s => JSON.parse(decodeURIComponent(escape(atob(s)))));
 
@@ -349,7 +346,6 @@ const guessesLabel = document.getElementById('guesses-left') as HTMLSpanElement;
 const gameArea     = document.getElementById('game-area') as HTMLDivElement;
 const successArea  = document.getElementById('success-area') as HTMLDivElement;
 const failArea     = document.getElementById('fail-area') as HTMLDivElement;
-const cladeDesc    = document.getElementById('clade-desc') as HTMLDivElement;
 const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 
 // Populate success/fail target name
@@ -388,18 +384,19 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number) {
-  // Nodes above the match: green (confirmed shared ancestors)
-  for (let c = 0; c < clade && c <= TARGET.path.length; c++) {
+  // All shared ancestors: green; reveal their branches including branch[clade]
+  for (let c = 0; c <= clade && c <= TARGET.path.length; c++) {
     const el = document.getElementById(CLADE_NODE[c]);
     if (el) { el.classList.remove('phylo-node-miss'); el.classList.add('phylo-node-hit'); }
     const branch = document.getElementById(CLADE_BRANCH[c]);
     if (branch) branch.style.display = '';
   }
-  // Deepest matched node: red (divergence point for this wrong guess)
-  if (clade <= TARGET.path.length) {
-    document.getElementById(CLADE_NODE[clade])?.classList.add('phylo-node-miss');
+  // First non-shared node (target goes here, guess didn't): red
+  if (clade + 1 < CORRECT_CLADE) {
+    const missEl = document.getElementById(CLADE_NODE[clade + 1]);
+    if (missEl) { missEl.classList.remove('phylo-node-hit'); missEl.classList.add('phylo-node-miss'); }
   }
-  moveTargetPlaceholder(clade);
+  moveTargetPlaceholder(clade + 1);
 }
 
 function updateGuessesLabel() {
@@ -443,9 +440,6 @@ function submitGuess() {
   guessesLeft--;
   updateGuessesLabel();
   highlightNode(data.clade);
-
-  const desc = TARGET.descs[data.clade];
-  if (desc) { cladeDesc.innerHTML = desc; cladeDesc.style.display = 'block'; }
 
   const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
   li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
