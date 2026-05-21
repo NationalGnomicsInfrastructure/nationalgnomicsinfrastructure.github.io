@@ -359,23 +359,20 @@ const CLADE_CLASS: Record<number, string> = {
 
 // ─── Build phylogenomic tree HTML dynamically ─────────────────────────────────
 function buildTree(): void {
-  // Recursively builds the content to place inside the branch at depth-1.
-  // Returns two sibling subtrees: [correct path node + its branch, other branch label].
+  // Recursively builds the correct-path subtree only; no sibling nodes shown until found.
   function buildFromDepth(depth: number): string {
     if (depth >= TARGET.path.length) {
       return `<div class="phylo-subtree"><div class="phylo-node phylo-target" id="node-target">???</div></div>`;
     }
     const id    = TARGET.path[depth];
     const label = TARGET.labels[depth];
-    const other = TARGET.others[depth];
     return `
       <div class="phylo-subtree">
         <div class="phylo-node" id="node-${id}">${label}</div>
         <div class="phylo-branch" id="branch-${id}" style="display:none">
           ${buildFromDepth(depth + 1)}
         </div>
-      </div>
-      <div class="phylo-subtree"><div class="phylo-node">${other}</div></div>`;
+      </div>`;
   }
 
   const container = document.getElementById('phylo-tree')!;
