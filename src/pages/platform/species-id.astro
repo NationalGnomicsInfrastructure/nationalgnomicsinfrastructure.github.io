@@ -387,17 +387,23 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number, raw: string) {
-  // Reveal parent subtrees/branches (needed for nesting), but only green the deepest shared clade.
-  for (let c = 1; c <= clade; c++) {
+  // Reveal parent subtrees/branches (needed for nesting), but hide intermediate nodes.
+  for (let c = 1; c < clade; c++) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
     if (subtreeEl) subtreeEl.style.display = '';
+    const nodeEl = document.getElementById(CLADE_NODE[c]);
+    if (nodeEl) nodeEl.style.display = 'none';
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) branchEl.style.display = '';
   }
-  // Only mark the single most common (deepest shared) clade green.
+  // Only show and green the single deepest shared clade.
   if (clade >= 1) {
+    const subtreeEl = document.getElementById(CLADE_SUBTREE[clade]);
+    if (subtreeEl) subtreeEl.style.display = '';
     const nodeEl = document.getElementById(CLADE_NODE[clade]);
-    if (nodeEl) { nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
+    if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
+    const branchEl = document.getElementById(CLADE_BRANCH[clade]);
+    if (branchEl) branchEl.style.display = '';
   }
   // Add guessed species name in red at the divergence point.
   const divBranch = document.getElementById(CLADE_BRANCH[clade]);
@@ -450,7 +456,8 @@ function submitGuess() {
       if (subtreeEl) subtreeEl.style.display = '';
     }
     for (let c = 0; c <= TARGET.path.length; c++) {
-      document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
+      const nodeEl = document.getElementById(CLADE_NODE[c]);
+      if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.add('phylo-node-hit'); }
       const el = document.getElementById(CLADE_BRANCH[c]);
       if (el) el.style.display = '';
     }
