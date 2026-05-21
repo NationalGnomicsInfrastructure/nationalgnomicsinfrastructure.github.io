@@ -45,9 +45,8 @@ import Layout from '../../layouts/Layout.astro';
             <div style="font-size:3rem;">🎉</div>
             <h3>Spirit Animal Identified!</h3>
             <p>The Project Coordinator's spirit animal is a <strong id="success-name"></strong> (<em id="success-scientific"></em>).</p>
-            <p class="text-muted" style="font-size:0.9rem;">
-              Proceed to the physical puzzle in your team box.<br/>
-              Once assembled, return here to continue.
+            <p class="text-muted" style="font-size:0.9rem;" id="success-next-msg">
+              Please proceed to the next task.
             </p>
             <a href="/platform/submit/" class="btn btn-primary mt-2">Continue to Project Submission →</a>
           </div>
@@ -385,6 +384,16 @@ input.addEventListener('input', () => {
 // Restore if already done
 if (localStorage.getItem('gnomics_species_done')) {
   gameArea.style.display = 'none';
+  showSuccess();
+}
+
+function showSuccess() {
+  const msg = document.getElementById('success-next-msg')!;
+  if (localStorage.getItem('gnomics_mode') === 'mixed') {
+    msg.innerHTML = 'Proceed to the physical puzzle in your team box.<br/>Once assembled, return here to continue.';
+  } else {
+    msg.textContent = 'Please proceed to the next task.';
+  }
   successArea.style.display = 'block';
 }
 
@@ -417,7 +426,7 @@ function submitGuess() {
     targetNode.classList.remove('phylo-target');
     targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
     gameArea.style.display = 'none';
-    successArea.style.display = 'block';
+    showSuccess();
     return;
   }
 
