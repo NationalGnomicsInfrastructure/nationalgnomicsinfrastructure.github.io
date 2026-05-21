@@ -62,19 +62,19 @@ import Layout from '../../layouts/Layout.astro';
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenetic Tree</h4>
           <div class="phylo-tree">
             <div class="phylo-node" id="node-animalia">🌍 Animalia</div>
-            <div class="phylo-branch">
+            <div class="phylo-branch" id="branch-animalia" style="display:none">
               <div class="phylo-subtree">
                 <div class="phylo-node" id="node-vertebrata">🦴 Vertebrata</div>
-                <div class="phylo-branch">
+                <div class="phylo-branch" id="branch-vertebrata" style="display:none">
                   <div class="phylo-subtree">
                     <div class="phylo-node" id="node-mammalia">🤱 Mammalia</div>
-                    <div class="phylo-branch">
+                    <div class="phylo-branch" id="branch-mammalia" style="display:none">
                       <div class="phylo-subtree">
                         <div class="phylo-node" id="node-rodentia">🐀 Rodentia</div>
-                        <div class="phylo-branch">
+                        <div class="phylo-branch" id="branch-rodentia" style="display:none">
                           <div class="phylo-subtree">
                             <div class="phylo-node" id="node-caviidae">🐹 Caviidae</div>
-                            <div class="phylo-branch">
+                            <div class="phylo-branch" id="branch-caviidae" style="display:none">
                               <div class="phylo-subtree">
                                 <div class="phylo-node phylo-target" id="node-target">❓ ???</div>
                               </div>
@@ -233,6 +233,14 @@ const CLADE_NODE: Record<number, string> = {
   4: 'node-caviidae',
 };
 
+const CLADE_BRANCH: Record<number, string> = {
+  0: 'branch-animalia',
+  1: 'branch-vertebrata',
+  2: 'branch-mammalia',
+  3: 'branch-rodentia',
+  4: 'branch-caviidae',
+};
+
 const CLADE_CLASS: Record<number, string> = {
   0: 'hint-cold',
   1: 'hint-cold',
@@ -275,10 +283,15 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number) {
-  // Light up all nodes up to this clade level
+  // Light up all nodes up to this clade level and reveal their branches
   for (let c = 0; c <= clade && c <= 4; c++) {
     const nodeId = CLADE_NODE[c];
     if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
+    const branchId = CLADE_BRANCH[c];
+    if (branchId) {
+      const el = document.getElementById(branchId);
+      if (el) el.style.display = '';
+    }
   }
 }
 
@@ -309,6 +322,11 @@ function submitGuess() {
     for (let c = 0; c <= 4; c++) {
       const nodeId = CLADE_NODE[c];
       if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
+      const branchId = CLADE_BRANCH[c];
+      if (branchId) {
+        const el = document.getElementById(branchId);
+        if (el) el.style.display = '';
+      }
     }
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
@@ -343,6 +361,11 @@ retryBtn?.addEventListener('click', () => {
   document.querySelectorAll('.phylo-node').forEach(n => {
     n.classList.remove('phylo-node-hit', 'phylo-node-correct');
   });
+  Object.values(CLADE_BRANCH).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('node-target')!.textContent = '❓ ???';
   failArea.style.display = 'none';
   gameArea.style.display = 'block';
 });
