@@ -22,20 +22,36 @@ import Layout from '../../layouts/Layout.astro';
         </div>
 
         <div class="card mt-3" style="text-align:left;">
-          <h3>Team Authentication</h3>
-          <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your session form.</p>
+          <h3>Session Access Code</h3>
+          <p class="text-muted" style="font-size:0.9rem;">Enter the access code provided by your session coordinator.</p>
           <div class="form-group">
-            <label for="team-name">Team Name</label>
-            <input type="text" id="team-name" placeholder="e.g. The Gnome Rangers" />
+            <label for="access-code">Access Code</label>
+            <input type="password" id="access-code" placeholder="••••••••••••" autocomplete="off" />
           </div>
-          <div class="form-group">
-            <label for="team-leader">Team Leader</label>
-            <input type="text" id="team-leader" placeholder="First name" />
-          </div>
+          <div id="access-code-error" style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;">Invalid access code. Please try again.</div>
         </div>
 
-        <button id="launch-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-          🚀 Initialise Platform Session
+        <div id="team-auth" style="display:none;">
+          <div class="card mt-3" style="text-align:left;">
+            <h3>Team Authentication</h3>
+            <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your session form.</p>
+            <div class="form-group">
+              <label for="team-name">Team Name</label>
+              <input type="text" id="team-name" placeholder="e.g. The Gnome Rangers" />
+            </div>
+            <div class="form-group">
+              <label for="team-leader">Team Leader</label>
+              <input type="text" id="team-leader" placeholder="First name" />
+            </div>
+          </div>
+
+          <button id="launch-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
+            🚀 Initialise Platform Session
+          </button>
+        </div>
+
+        <button id="verify-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
+          🔑 Verify Access Code
         </button>
       </div>
 
@@ -73,10 +89,17 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
+  const H = ['06770edea421d96182c10ddc3dc192c2a4ac39c05670beb3738e38a43b300d37',
+             '8a88a25603494bf72ac434a30f32fd8143e0bdc18509b888ed7ef917b2bf3610'];
+  const M = ['online', 'mixed'];
+
   const launchBtn = document.getElementById('launch-btn');
+  const verifyBtn = document.getElementById('verify-btn');
   const preLaunch = document.getElementById('pre-launch');
   const postLaunch = document.getElementById('post-launch');
   const displayTeam = document.getElementById('display-team');
+  const teamAuth = document.getElementById('team-auth');
+  const codeError = document.getElementById('access-code-error');
 
   // Restore session if already started
   const existingStart = localStorage.getItem('gnomics_start');
@@ -85,11 +108,29 @@ import Layout from '../../layouts/Layout.astro';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
     displayTeam!.textContent = teamName;
-    // Unlock project submission if species-id done
-    if (localStorage.getItem('gnomics_species_done')) {
-      unlockCards();
-    }
+    if (localStorage.getItem('gnomics_species_done')) unlockCards();
   }
+
+  async function sha256(str: string): Promise<string> {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  verifyBtn?.addEventListener('click', async () => {
+    const code = (document.getElementById('access-code') as HTMLInputElement)?.value.trim();
+    if (!code) return;
+    const hash = await sha256(code);
+    const idx = H.indexOf(hash);
+    if (idx === -1) {
+      codeError!.style.display = 'block';
+      return;
+    }
+    codeError!.style.display = 'none';
+    localStorage.setItem('gnomics_mode', M[idx]);
+    teamAuth!.style.display = 'block';
+    verifyBtn!.style.display = 'none';
+    (document.getElementById('access-code') as HTMLInputElement).disabled = true;
+  });
 
   launchBtn?.addEventListener('click', () => {
     const teamName = (document.getElementById('team-name') as HTMLInputElement)?.value.trim();
@@ -104,9 +145,8 @@ import Layout from '../../layouts/Layout.astro';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
     displayTeam!.textContent = teamName;
-    // Trigger timer
     window.dispatchEvent(new Event('gnomics_started'));
-    location.reload(); // reload so timer bar picks up new start
+    location.reload();
   });
 
   function unlockCards() {
