@@ -1,0 +1,174 @@
+// ─── Phylogenomic Tree Data ───────────────────────────────────────────────────
+// Species database: each entry has an ordered phylogenetic path (broad → specific)
+// and a display label. Taxonomy clade is computed dynamically against the target.
+
+export type SpeciesEntry = { path: string[]; display: string };
+
+export const SPECIES_DB: Record<string, SpeciesEntry> = {
+  // Non-Bilateria (path lacks 'bilateria' → always clade 0)
+  'jellyfish':           { path: ['cnidaria'],   display: 'Cnidaria' },
+  'coral':               { path: ['cnidaria'],   display: 'Cnidaria' },
+  'sea anemone':         { path: ['cnidaria'],   display: 'Cnidaria' },
+  'hydra':               { path: ['cnidaria'],   display: 'Cnidaria' },
+  'sponge':              { path: ['porifera'],   display: 'Porifera' },
+  // Bilateria – Protostomia – Lophotrochozoa
+  'snail':               { path: ['bilateria','protostomia','lophotrochozoa','mollusca','gastropoda'],   display: 'Gastropoda' },
+  'octopus':             { path: ['bilateria','protostomia','lophotrochozoa','mollusca','cephalopoda'],  display: 'Cephalopoda' },
+  'squid':               { path: ['bilateria','protostomia','lophotrochozoa','mollusca','cephalopoda'],  display: 'Cephalopoda' },
+  'clam':                { path: ['bilateria','protostomia','lophotrochozoa','mollusca','bivalvia'],     display: 'Bivalvia' },
+  'earthworm':           { path: ['bilateria','protostomia','lophotrochozoa','annelida'],               display: 'Annelida' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – non-Insecta
+  'spider':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','chelicerata'],     display: 'Arachnida' },
+  'scorpion':            { path: ['bilateria','protostomia','ecdysozoa','arthropoda','chelicerata'],     display: 'Arachnida' },
+  'crab':                { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  'lobster':             { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  'shrimp':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – non-Hemiptera
+  'ant':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'bee':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'wasp':                { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'butterfly':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','lepidoptera'], display: 'Lepidoptera' },
+  'beetle':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','coleoptera'],  display: 'Coleoptera' },
+  'fly':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','diptera'],     display: 'Diptera' },
+  'mosquito':            { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','diptera'],     display: 'Diptera' },
+  'dragonfly':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','odonata'],     display: 'Odonata' },
+  'grasshopper':         { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','orthoptera'],  display: 'Orthoptera' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – Hemiptera – non-Cicadidae
+  'aphid':               { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','sternorrhyncha'], display: 'Hemiptera' },
+  'stink bug':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
+  'leafhopper':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadellidae'],  display: 'Hemiptera' },
+  'shield bug':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
+  // Bilateria – Protostomia – Ecdysozoa – non-Arthropoda
+  'roundworm':           { path: ['bilateria','protostomia','ecdysozoa','nematoda'],   display: 'Nematoda' },
+  'tardigrade':          { path: ['bilateria','protostomia','ecdysozoa','tardigrada'], display: 'Tardigrada' },
+  // Bilateria – Deuterostomia – Echinodermata
+  'starfish':            { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  'sea urchin':          { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  'sea cucumber':        { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  // Bilateria – Deuterostomia – Chordata – non-Vertebrata
+  'lancelet':            { path: ['bilateria','deuterostomia','chordata','cephalochordata'], display: 'Cephalochordata' },
+  'tunicate':            { path: ['bilateria','deuterostomia','chordata','urochordata'],     display: 'Urochordata' },
+  'sea squirt':          { path: ['bilateria','deuterostomia','chordata','urochordata'],     display: 'Urochordata' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – non-Tetrapoda (fish)
+  'shark':               { path: ['bilateria','deuterostomia','chordata','vertebrata','chondrichthyes'], display: 'Chondrichthyes' },
+  'ray':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','chondrichthyes'], display: 'Chondrichthyes' },
+  'salmon':              { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'tuna':                { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'clownfish':           { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'zebrafish':           { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'lamprey':             { path: ['bilateria','deuterostomia','chordata','vertebrata','agnatha'],        display: 'Agnatha' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – Anura – non-Hylidae
+  'frog':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae'],       display: 'Anura (Ranidae)' },
+  'toad':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','bufonidae'],     display: 'Anura (Bufonidae)' },
+  'bullfrog':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae'],       display: 'Anura' },
+  'poison dart frog':    { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','dendrobatidae'], display: 'Anura' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – non-Anura
+  'salamander':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  'axolotl':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  'newt':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – Anura – Hylidae
+  'tree frog':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  "white's tree frog":   { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  'gray tree frog':      { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  'spring peeper':       { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Reptilia
+  'snake':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'lizard':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'gecko':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'chameleon':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'crocodile':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','crocodilia'], display: 'Reptilia' },
+  'alligator':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','crocodilia'], display: 'Reptilia' },
+  'turtle':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','testudines'], display: 'Reptilia' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Aves
+  'eagle':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'penguin':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'parrot':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'owl':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'flamingo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'ostrich':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'crow':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'pigeon':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – Felidae
+  'lion':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'tiger':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'leopard':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'cheetah':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'jaguar':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'lynx':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'puma':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – non-Felidae
+  'dog':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'wolf':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'fox':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'bear':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','ursidae'],   display: 'Carnivora (Ursidae)' },
+  'otter':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'badger':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'weasel':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'seal':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','phocidae'],   display: 'Carnivora (Pinnipedia)' },
+  'raccoon':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','procyonidae'], display: 'Carnivora' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Rodentia – Caviidae
+  'guinea pig':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  'rock cavy':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  'patagonian mara':     { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Rodentia – non-Caviidae
+  'rat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
+  'mouse':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
+  'squirrel':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia (Sciuridae)' },
+  'beaver':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','castoridae'], display: 'Rodentia' },
+  'hamster':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  'gerbil':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia' },
+  'vole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  'marmot':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia (Sciuridae)' },
+  'prairie dog':         { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia' },
+  'porcupine':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','hystricidae'], display: 'Rodentia' },
+  'chinchilla':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','chinchillidae'], display: 'Rodentia' },
+  'degu':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','octodontidae'], display: 'Rodentia' },
+  'nutria':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','myocastoridae'], display: 'Rodentia' },
+  'woodchuck':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia' },
+  'lemming':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – non-Rodentia, non-Carnivora
+  'rabbit':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','lagomorpha'],      display: 'Lagomorpha' },
+  'hare':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','lagomorpha'],      display: 'Lagomorpha' },
+  'horse':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'donkey':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'rhinoceros':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'pig':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'cow':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'sheep':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'goat':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'deer':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'moose':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'giraffe':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'hippopotamus':        { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'whale':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Cetacea' },
+  'dolphin':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Cetacea' },
+  'elephant':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','proboscidea'],    display: 'Proboscidea' },
+  'monkey':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'gorilla':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'chimpanzee':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'human':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'bat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','chiroptera'],     display: 'Chiroptera' },
+  'hedgehog':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','erinaceidae'],    display: 'Erinaceidae' },
+  'mole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','talpidae'],       display: 'Talpidae' },
+  'kangaroo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
+  'koala':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
+  // ─── Target species (included so they appear in autocomplete for other targets) ───
+  'capybara':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'],                display: 'Caviidae' },
+  'cat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'],                 display: 'Felidae' },
+  'red-eyed tree frog':  { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],                             display: 'Hylidae' },
+  'cicada':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],                          display: 'Cicadidae' },
+};
+
+// ─── Possible Targets (base64-encoded to avoid spoilers in source) ────────────
+export type TargetConfig = {
+  name: string; scientific: string;
+  path: string[];    // phylogenetic group IDs (Bilateria → family)
+  labels: string[];  // display labels for each path node
+};
+
+export const ENCODED_TARGETS: string[] = [
+  'eyJuYW1lIjoiY2FweWJhcmEiLCJzY2llbnRpZmljIjoiSHlkcm9jaG9lcnVzIGh5ZHJvY2hhZXJpcyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsImFtbmlvdGEiLCJtYW1tYWxpYSIsInJvZGVudGlhIiwiY2F2aWlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIkRldXRlcm9zdG9taWEiLCJDaG9yZGF0YSIsIlZlcnRlYnJhdGEiLCJBbW5pb3RhIiwiTWFtbWFsaWEiLCJSb2RlbnRpYSIsIkNhdmlpZGFlIl19',
+  'eyJuYW1lIjoiY2F0Iiwic2NpZW50aWZpYyI6IkZlbGlzIGNhdHVzIiwicGF0aCI6WyJiaWxhdGVyaWEiLCJkZXV0ZXJvc3RvbWlhIiwiY2hvcmRhdGEiLCJ2ZXJ0ZWJyYXRhIiwiYW1uaW90YSIsIm1hbW1hbGlhIiwiY2Fybml2b3JhIiwiZmVsaWRhZSJdLCJsYWJlbHMiOlsiQmlsYXRlcmlhIiwiRGV1dGVyb3N0b21pYSIsIkNob3JkYXRhIiwiVmVydGVicmF0YSIsIkFtbmlvdGEiLCJNYW1tYWxpYSIsIkNhcm5pdm9yYSIsIkZlbGlkYWUiXX0=',
+  'eyJuYW1lIjoicmVkLWV5ZWQgdHJlZSBmcm9nIiwic2NpZW50aWZpYyI6IkFnYWx5Y2huaXMgY2FsbGlkcnlhcyIsInBhdGgiOlsiYmlsYXRlcmlhIiwiZGV1dGVyb3N0b21pYSIsImNob3JkYXRhIiwidmVydGVicmF0YSIsInRldHJhcG9kYSIsImFtcGhpYmlhIiwiYW51cmEiLCJoeWxpZGFlIl0sImxhYmVscyI6WyJCaWxhdGVyaWEiLCJEZXV0ZXJvc3RvbWlhIiwiQ2hvcmRhdGEiLCJWZXJ0ZWJyYXRhIiwiVGV0cmFwb2RhIiwiQW1waGliaWEiLCJBbnVyYSIsIkh5bGlkYWUiXX0=',
+  'eyJuYW1lIjoiY2ljYWRhIiwic2NpZW50aWZpYyI6Ik1hZ2ljaWNhZGEgc2VwdGVuZGVjaW0iLCJwYXRoIjpbImJpbGF0ZXJpYSIsInByb3Rvc3RvbWlhIiwiZWNkeXNvem9hIiwiYXJ0aHJvcG9kYSIsImluc2VjdGEiLCJwdGVyeWdvdGEiLCJoZW1pcHRlcmEiLCJjaWNhZGlkYWUiXSwibGFiZWxzIjpbIkJpbGF0ZXJpYSIsIlByb3Rvc3RvbWlhIiwiRWNkeXNvem9hIiwiQXJ0aHJvcG9kYSIsIkluc2VjdGEiLCJQdGVyeWdvdGEiLCJIZW1pcHRlcmEiLCJDaWNhZGlkYWUiXX0=',
+];
