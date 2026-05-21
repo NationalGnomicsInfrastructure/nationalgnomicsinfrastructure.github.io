@@ -387,14 +387,17 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number, raw: string) {
-  // Reveal + green all shared ancestors (c=1..clade).
+  // Reveal parent subtrees/branches (needed for nesting), but only green the deepest shared clade.
   for (let c = 1; c <= clade; c++) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
     if (subtreeEl) subtreeEl.style.display = '';
-    const nodeEl = document.getElementById(CLADE_NODE[c]);
-    if (nodeEl) { nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) branchEl.style.display = '';
+  }
+  // Only mark the single most common (deepest shared) clade green.
+  if (clade >= 1) {
+    const nodeEl = document.getElementById(CLADE_NODE[clade]);
+    if (nodeEl) { nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
   }
   // Add guessed species name in red at the divergence point.
   const divBranch = document.getElementById(CLADE_BRANCH[clade]);
