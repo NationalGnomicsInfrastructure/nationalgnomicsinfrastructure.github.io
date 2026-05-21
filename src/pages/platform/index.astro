@@ -129,6 +129,7 @@ import Layout from '../../layouts/Layout.astro';
   const existingMode  = localStorage.getItem('gnomics_mode');
   if (existingMode && !existingStart) {
     localStorage.setItem('gnomics_start', String(Date.now()));
+    window.dispatchEvent(new Event('gnomics_started'));
   }
   if (existingMode) {
     const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
