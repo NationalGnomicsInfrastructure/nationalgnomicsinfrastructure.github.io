@@ -61,7 +61,7 @@ import Layout from '../../layouts/Layout.astro';
         <div class="phylo-panel">
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenetic Tree</h4>
           <div class="phylo-tree">
-            <div class="phylo-node" id="node-animalia">🌍 Animalia</div>
+            <div class="phylo-node" id="node-animalia">🧫 Metazoa</div>
             <div class="phylo-branch" id="branch-animalia" style="display:none">
               <div class="phylo-subtree">
                 <div class="phylo-node" id="node-vertebrata">🦴 Vertebrata</div>
@@ -199,26 +199,26 @@ const TAXONOMY: Record<string, { clade: number; label: string }> = {
   'pigeon':           { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
   // Invertebrata (clade 0)
   'octopus':          { clade: 0, label: '🧊 Very cold — Animalia, not Vertebrata' },
-  'squid':            { clade: 0, label: '🧊 Very cold — Animalia (mollusc)' },
-  'snail':            { clade: 0, label: '🧊 Very cold — Animalia (mollusc)' },
-  'jellyfish':        { clade: 0, label: '🧊 Very cold — Animalia' },
-  'ant':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'bee':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'butterfly':        { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'fly':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'beetle':           { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'dragonfly':        { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
-  'crab':             { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
-  'lobster':          { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
-  'shrimp':           { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
-  'spider':           { clade: 0, label: '🧊 Very cold — Animalia (arachnid)' },
-  'scorpion':         { clade: 0, label: '🧊 Very cold — Animalia (arachnid)' },
-  'starfish':         { clade: 0, label: '🧊 Very cold — Animalia (echinoderm)' },
-  'earthworm':        { clade: 0, label: '🧊 Very cold — Animalia (annelid)' },
+  'squid':            { clade: 0, label: '🧊 Very cold — Metazoa (mollusc)' },
+  'snail':            { clade: 0, label: '🧊 Very cold — Metazoa (mollusc)' },
+  'jellyfish':        { clade: 0, label: '🧊 Very cold — Metazoa' },
+  'ant':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'bee':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'butterfly':        { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'fly':              { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'beetle':           { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'dragonfly':        { clade: 0, label: '🧊 Very cold — Metazoa (insect)' },
+  'crab':             { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
+  'lobster':          { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
+  'shrimp':           { clade: 0, label: '🧊 Very cold — Metazoa (crustacean)' },
+  'spider':           { clade: 0, label: '🧊 Very cold — Metazoa (arachnid)' },
+  'scorpion':         { clade: 0, label: '🧊 Very cold — Metazoa (arachnid)' },
+  'starfish':         { clade: 0, label: '🧊 Very cold — Metazoa (echinoderm)' },
+  'earthworm':        { clade: 0, label: '🧊 Very cold — Metazoa (annelid)' },
 };
 
 const CLADE_DESC: Record<number, string> = {
-  0: '🧊 <strong>Invertebrata</strong> — Animals without a backbone. The vast majority of animal species on Earth.',
+  0: '🧊 <strong>Invertebrata</strong> — Animals without a backbone (Metazoa). The vast majority of animal species on Earth.',
   1: '❄️ <strong>Vertebrata</strong> — Animals with a backbone. Includes fish, amphibians, reptiles, birds, and mammals.',
   2: '🌤️ <strong>Mammalia</strong> — Warm-blooded vertebrates that nurse young with milk. ~6,400 living species.',
   3: '🌡️ <strong>Rodentia</strong> — The largest order of mammals (~2,500 species). Characterised by continuously growing incisors.',
