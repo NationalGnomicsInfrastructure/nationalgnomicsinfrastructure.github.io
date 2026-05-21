@@ -388,12 +388,16 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number) {
-  for (let c = 0; c <= clade && c <= TARGET.path.length; c++) {
-    document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
-    if (c < clade) {
-      const el = document.getElementById(CLADE_BRANCH[c]);
-      if (el) el.style.display = '';
-    }
+  // Nodes above the match: green (confirmed shared ancestors)
+  for (let c = 0; c < clade && c <= TARGET.path.length; c++) {
+    const el = document.getElementById(CLADE_NODE[c]);
+    if (el) { el.classList.remove('phylo-node-miss'); el.classList.add('phylo-node-hit'); }
+    const branch = document.getElementById(CLADE_BRANCH[c]);
+    if (branch) branch.style.display = '';
+  }
+  // Deepest matched node: red (divergence point for this wrong guess)
+  if (clade <= TARGET.path.length) {
+    document.getElementById(CLADE_NODE[clade])?.classList.add('phylo-node-miss');
   }
   moveTargetPlaceholder(clade);
 }
