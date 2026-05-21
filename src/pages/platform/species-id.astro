@@ -57,26 +57,26 @@ import Layout from '../../layouts/Layout.astro';
 
         </div>
 
-        <!-- Right: phylogenetic tree -->
+        <!-- Right: phylogenomic tree -->
         <div class="phylo-panel">
-          <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenetic Tree</h4>
+          <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
           <div class="phylo-tree">
-            <div class="phylo-node" id="node-animalia">🧫 Metazoa</div>
+            <div class="phylo-node" id="node-animalia">Metazoa</div>
             <div class="phylo-branch" id="branch-animalia" style="display:none">
               <div class="phylo-subtree">
-                <div class="phylo-node" id="node-vertebrata">🦴 Vertebrata</div>
+                <div class="phylo-node" id="node-vertebrata">Vertebrata</div>
                 <div class="phylo-branch" id="branch-vertebrata" style="display:none">
                   <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-mammalia">🤱 Mammalia</div>
+                    <div class="phylo-node" id="node-mammalia">Mammalia</div>
                     <div class="phylo-branch" id="branch-mammalia" style="display:none">
                       <div class="phylo-subtree">
-                        <div class="phylo-node" id="node-rodentia">🐀 Rodentia</div>
+                        <div class="phylo-node" id="node-rodentia">Rodentia</div>
                         <div class="phylo-branch" id="branch-rodentia" style="display:none">
                           <div class="phylo-subtree">
-                            <div class="phylo-node" id="node-caviidae">🐹 Caviidae</div>
+                            <div class="phylo-node" id="node-caviidae">Caviidae</div>
                             <div class="phylo-branch" id="branch-caviidae" style="display:none">
                               <div class="phylo-subtree">
-                                <div class="phylo-node phylo-target" id="node-target">❓ ???</div>
+                                <div class="phylo-node phylo-target" id="node-target">???</div>
                               </div>
                             </div>
                           </div>
@@ -85,12 +85,12 @@ import Layout from '../../layouts/Layout.astro';
                     </div>
                   </div>
                   <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-other-mammal">… Other Mammalia</div>
+                    <div class="phylo-node" id="node-other-mammal">Other Mammalia</div>
                   </div>
                 </div>
               </div>
               <div class="phylo-subtree">
-                <div class="phylo-node" id="node-other-vertebrata">… Other Vertebrata</div>
+                <div class="phylo-node" id="node-other-vertebrata">Other Vertebrata</div>
               </div>
             </div>
           </div>
@@ -317,7 +317,7 @@ function submitGuess() {
 
   if (data.clade === 5) {
     localStorage.setItem('gnomics_species_done', '1');
-    document.getElementById('node-target')!.textContent = `${TARGET.emoji} ${TARGET.name.charAt(0).toUpperCase() + TARGET.name.slice(1)}`;
+    document.getElementById('node-target')!.textContent = TARGET.name.charAt(0).toUpperCase() + TARGET.name.slice(1);
     document.getElementById('node-target')!.classList.add('phylo-node-hit', 'phylo-node-correct');
     for (let c = 0; c <= 4; c++) {
       const nodeId = CLADE_NODE[c];
@@ -365,7 +365,7 @@ retryBtn?.addEventListener('click', () => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  document.getElementById('node-target')!.textContent = '❓ ???';
+  document.getElementById('node-target')!.textContent = '???';
   failArea.style.display = 'none';
   gameArea.style.display = 'block';
 });
