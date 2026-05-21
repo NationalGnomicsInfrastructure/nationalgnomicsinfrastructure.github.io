@@ -22,12 +22,11 @@ import Layout from '../../layouts/Layout.astro';
             <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
             Identify the spirit animal linked to your sample by entering species names below.
             Each guess returns a phylogenetic proximity hint.
-            You have <strong>20 guesses</strong>.
           </div>
 
           <div id="game-area">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
-              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">20 guesses remaining</span>
+            <div style="margin-bottom:0.5rem;">
+              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">13 guesses remaining</span>
             </div>
             <datalist id="species-list"></datalist>
             <div class="species-input-row">
@@ -341,7 +340,7 @@ function moveTargetPlaceholder(clade: number) {
 }
 
 // ─── DOM references ───────────────────────────────────────────────────────────
-const MAX_GUESSES = 20;
+const MAX_GUESSES = 13;
 let guessesLeft = MAX_GUESSES;
 
 const input        = document.getElementById('species-input') as HTMLInputElement;
