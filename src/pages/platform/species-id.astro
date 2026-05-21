@@ -386,60 +386,8 @@ if (localStorage.getItem('gnomics_species_done')) {
   successArea.style.display = 'block';
 }
 
-// Build a new wrong-path DOM element (red nodes + species leaf).
-function createWrongEl(species: string, wrongPath: string[]): HTMLElement {
-  if (wrongPath.length === 0) {
-    const leaf = document.createElement('div');
-    leaf.className = 'phylo-node phylo-node-miss phylo-target';
-    leaf.textContent = cap(species);
-    return leaf;
-  }
-  const subtree = document.createElement('div');
-  subtree.className = 'phylo-subtree';
-  const node = document.createElement('div');
-  node.className = 'phylo-node phylo-node-miss';
-  node.textContent = cap(wrongPath[0]);
-  const branch = document.createElement('div');
-  branch.className = 'phylo-branch';
-  branch.appendChild(createWrongEl(species, wrongPath.slice(1)));
-  subtree.appendChild(node);
-  subtree.appendChild(branch);
-  return subtree;
-}
-
-// Merge a wrong path into the tree like a trie: reuse existing red nodes,
-// only fork where paths diverge. Avoids duplicating shared intermediate clades.
-function mergeWrongPath(container: Element, wrongPath: string[], species: string) {
-  const insertEl = (el: Element) => {
-    const t = document.getElementById('target-subtree');
-    t?.parentElement === container ? container.insertBefore(el, t) : container.appendChild(el);
-  };
-  if (wrongPath.length === 0) {
-    const label = cap(species);
-    if (!Array.from(container.children).some(el => el.classList.contains('phylo-node-miss') && el.textContent === label)) {
-      const leaf = document.createElement('div');
-      leaf.className = 'phylo-node phylo-node-miss phylo-target';
-      leaf.textContent = label;
-      insertEl(leaf);
-    }
-    return;
-  }
-  const label = cap(wrongPath[0]);
-  const existing = Array.from(container.children).find(el => {
-    if (!el.classList.contains('phylo-subtree')) return false;
-    const n = el.querySelector(':scope > .phylo-node');
-    return n?.classList.contains('phylo-node-miss') && n.textContent === label;
-  }) as HTMLElement | undefined;
-  if (existing) {
-    const b = existing.querySelector(':scope > .phylo-branch') as HTMLElement;
-    if (b) mergeWrongPath(b, wrongPath.slice(1), species);
-  } else {
-    insertEl(createWrongEl(species, wrongPath));
-  }
-}
-
 function highlightNode(clade: number, raw: string) {
-  // Reveal + green all shared ancestors (c=1..clade), opening each subtree and branch.
+  // Reveal + green all shared ancestors (c=1..clade).
   for (let c = 1; c <= clade; c++) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
     if (subtreeEl) subtreeEl.style.display = '';
@@ -448,12 +396,18 @@ function highlightNode(clade: number, raw: string) {
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) branchEl.style.display = '';
   }
-  // Merge wrong path into the divergence branch.
+  // Add guessed species name in red at the divergence point.
   const divBranch = document.getElementById(CLADE_BRANCH[clade]);
   if (divBranch) {
     divBranch.style.display = '';
-    const wrongPath = (SPECIES_DB[raw]?.path ?? []).slice(clade);
-    mergeWrongPath(divBranch, wrongPath, raw);
+    const label = cap(raw);
+    if (!Array.from(divBranch.children).some(el => el.classList.contains('phylo-node-miss') && el.textContent === label)) {
+      const missNode = document.createElement('div');
+      missNode.className = 'phylo-node phylo-node-miss';
+      missNode.textContent = label;
+      const t = document.getElementById('target-subtree');
+      t?.parentElement === divBranch ? divBranch.insertBefore(missNode, t) : divBranch.appendChild(missNode);
+    }
   }
   moveTargetPlaceholder(clade);
 }
