@@ -124,9 +124,13 @@ import Layout from '../../layouts/Layout.astro';
     toggleBtn.textContent = isHidden ? '🙈' : '👁';
   });
 
-  // Restore session if already started
+  // Restore session if already started, or auto-restart if credentials are present (after a restart)
   const existingStart = localStorage.getItem('gnomics_start');
-  if (existingStart) {
+  const existingMode  = localStorage.getItem('gnomics_mode');
+  if (existingMode && !existingStart) {
+    localStorage.setItem('gnomics_start', String(Date.now()));
+  }
+  if (existingMode) {
     const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
