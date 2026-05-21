@@ -386,7 +386,21 @@ if (localStorage.getItem('gnomics_species_done')) {
   successArea.style.display = 'block';
 }
 
-function highlightNode(clade: number, guessDisplay: string) {
+// Build a nested wrong-path subtree (all nodes red) ending with the species name.
+function buildWrongSubtree(species: string, wrongPath: string[]): string {
+  function inner(idx: number): string {
+    if (idx >= wrongPath.length) {
+      return `<div class="phylo-node phylo-node-miss phylo-target">${cap(species)}</div>`;
+    }
+    return `<div class="phylo-subtree">
+      <div class="phylo-node phylo-node-miss">${cap(wrongPath[idx])}</div>
+      <div class="phylo-branch">${inner(idx + 1)}</div>
+    </div>`;
+  }
+  return inner(0);
+}
+
+function highlightNode(clade: number, raw: string) {
   // Reveal + green all shared ancestors (c=1..clade), opening each subtree and branch.
   for (let c = 1; c <= clade; c++) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
@@ -396,23 +410,22 @@ function highlightNode(clade: number, guessDisplay: string) {
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) branchEl.style.display = '';
   }
-  // Add wrong-guess label as a red node in the divergence branch (CLADE_BRANCH[clade]).
+  // Add full wrong-path subtree in the divergence branch.
   const divBranch = document.getElementById(CLADE_BRANCH[clade]);
   if (divBranch) {
-    divBranch.style.display = ''; // branch-metazoa is already open; others may need this
-    const alreadyAdded = Array.from(divBranch.children).some(
-      el => el.classList.contains('phylo-node-miss') && el.textContent === guessDisplay
-    );
-    if (!alreadyAdded) {
-      const missNode = document.createElement('div');
-      missNode.className = 'phylo-node phylo-node-miss';
-      missNode.textContent = guessDisplay;
-      // Insert before ??? if it's already in this branch; otherwise append.
+    divBranch.style.display = '';
+    if (!divBranch.querySelector(`[data-species="${raw}"]`)) {
+      // Diverging path = everything in the guess path after the shared prefix.
+      const wrongPath = (SPECIES_DB[raw]?.path ?? []).slice(clade);
+      const subtree = document.createElement('div');
+      subtree.className = 'phylo-subtree';
+      subtree.dataset.species = raw;
+      subtree.innerHTML = buildWrongSubtree(raw, wrongPath);
       const targetSub = document.getElementById('target-subtree');
       if (targetSub?.parentElement === divBranch) {
-        divBranch.insertBefore(missNode, targetSub);
+        divBranch.insertBefore(subtree, targetSub);
       } else {
-        divBranch.appendChild(missNode);
+        divBranch.appendChild(subtree);
       }
     }
   }
