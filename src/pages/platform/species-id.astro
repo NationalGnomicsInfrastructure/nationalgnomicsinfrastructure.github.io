@@ -412,7 +412,6 @@ function submitGuess() {
 
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
-    document.getElementById('phylo-tree')!.style.display = 'none';
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
     return;
