@@ -180,12 +180,13 @@ section.alt { background: var(--bg-alt); }
 }
 .footer-inner { max-width: var(--max-w); margin: 0 auto; }
 .footer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+.footer-col { text-align: center; }
 .footer-col h4 { color: white; font-size: 0.95rem; margin-bottom: 0.75rem; }
 .footer-col ul { list-style: none; }
 .footer-col li { margin-bottom: 0.4rem; }
 .footer-col a { color: rgba(255,255,255,0.65); }
 .footer-col a:hover { color: var(--gnomics-lime); text-decoration: none; }
-.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
 
 /* ── Platform / game pages ────────────────────────────────── */
 .page-header {
