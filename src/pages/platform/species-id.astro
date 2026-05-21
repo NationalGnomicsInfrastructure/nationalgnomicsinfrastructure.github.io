@@ -463,7 +463,7 @@ function submitGuess() {
 
   guessesLeft--;
   updateGuessesLabel();
-  highlightNode(data.clade, SPECIES_DB[raw]?.display ?? raw);
+  highlightNode(data.clade, raw);
 
   const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
   li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
