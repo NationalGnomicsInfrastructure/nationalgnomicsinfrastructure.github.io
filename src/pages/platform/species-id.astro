@@ -21,13 +21,11 @@ import Layout from '../../layouts/Layout.astro';
           <div class="alert alert-info mb-2">
             <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
             Identify the spirit animal linked to your sample by entering species names below.
-            Each guess returns a phylogenetic proximity hint.
+            Each guess returns a phylogenetic proximity hint.<br>
+            <span id="guesses-left">13 guesses remaining</span>
           </div>
 
           <div id="game-area">
-            <div style="margin-bottom:0.5rem;">
-              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">13 guesses remaining</span>
-            </div>
             <datalist id="species-list"></datalist>
             <div class="species-input-row">
               <input type="text" id="species-input" placeholder="Enter a species name…" list="species-list" autocomplete="off" />
