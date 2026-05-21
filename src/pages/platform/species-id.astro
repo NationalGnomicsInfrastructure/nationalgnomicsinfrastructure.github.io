@@ -392,7 +392,7 @@ function highlightNode(clade: number, raw: string) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
     if (subtreeEl) subtreeEl.style.display = '';
     const nodeEl = document.getElementById(CLADE_NODE[c]);
-    if (nodeEl) nodeEl.style.display = 'none';
+    if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) nodeEl.style.display = 'none';
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) branchEl.style.display = '';
   }
