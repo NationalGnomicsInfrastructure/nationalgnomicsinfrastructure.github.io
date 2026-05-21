@@ -45,10 +45,7 @@ import Layout from '../../layouts/Layout.astro';
             <div style="font-size:3rem;">🎉</div>
             <h3>Spirit Animal Identified!</h3>
             <p>The Project Coordinator's spirit animal is a <strong id="success-name"></strong> (<em id="success-scientific"></em>).</p>
-            <p class="text-muted" style="font-size:0.9rem;" id="success-next-msg">
-              Please proceed to the next task.
-            </p>
-            <a href="/platform/" class="btn btn-primary mt-2" id="success-btn">Proceed to Next Task →</a>
+            <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
           </div>
 
         </div>
@@ -388,10 +385,6 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function showSuccess() {
-  const btn = document.getElementById('success-btn') as HTMLAnchorElement;
-  btn.textContent = 'Proceed to Next Task →';
-  btn.href = '/platform/';
-  document.getElementById('success-next-msg')!.style.display = 'none';
   successArea.style.display = 'block';
 }
 
