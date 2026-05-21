@@ -395,7 +395,7 @@ function highlightNode(clade: number, raw: string) {
     if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) {
       nodeEl.style.display = 'none';
       const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
-      if (subtreeEl) subtreeEl.style.marginTop = '0';
+      if (subtreeEl) { subtreeEl.style.marginTop = '0'; subtreeEl.classList.add('phylo-flat'); }
     }
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
     if (branchEl) {
@@ -412,7 +412,7 @@ function highlightNode(clade: number, raw: string) {
   // Only show and green the single deepest shared clade.
   if (clade >= 1) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[clade]);
-    if (subtreeEl) { subtreeEl.style.display = ''; subtreeEl.style.marginTop = ''; }
+    if (subtreeEl) { subtreeEl.style.display = ''; subtreeEl.style.marginTop = ''; subtreeEl.classList.remove('phylo-flat'); }
     const nodeEl = document.getElementById(CLADE_NODE[clade]);
     if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
     const branchEl = document.getElementById(CLADE_BRANCH[clade]);
