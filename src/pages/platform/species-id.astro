@@ -27,7 +27,7 @@ import Layout from '../../layouts/Layout.astro';
 
           <div id="game-area">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
-              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">10 guesses remaining</span>
+              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">20 guesses remaining</span>
             </div>
             <datalist id="species-list"></datalist>
             <div class="species-input-row">
@@ -60,78 +60,7 @@ import Layout from '../../layouts/Layout.astro';
         <!-- Right: phylogenomic tree -->
         <div class="phylo-panel">
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
-          <div class="phylo-tree">
-            <div class="phylo-node" id="node-metazoa">Metazoa</div>
-            <div class="phylo-branch" id="branch-metazoa" style="display:none">
-              <div class="phylo-subtree">
-                <div class="phylo-node" id="node-bilateria">Bilateria</div>
-                <div class="phylo-branch" id="branch-bilateria" style="display:none">
-                  <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-deuterostomia">Deuterostomia</div>
-                    <div class="phylo-branch" id="branch-deuterostomia" style="display:none">
-                      <div class="phylo-subtree">
-                        <div class="phylo-node" id="node-chordata">Chordata</div>
-                        <div class="phylo-branch" id="branch-chordata" style="display:none">
-                          <div class="phylo-subtree">
-                            <div class="phylo-node" id="node-vertebrata">Vertebrata</div>
-                            <div class="phylo-branch" id="branch-vertebrata" style="display:none">
-                              <div class="phylo-subtree">
-                                <div class="phylo-node" id="node-amniota">Amniota</div>
-                                <div class="phylo-branch" id="branch-amniota" style="display:none">
-                                  <div class="phylo-subtree">
-                                    <div class="phylo-node" id="node-mammalia">Mammalia</div>
-                                    <div class="phylo-branch" id="branch-mammalia" style="display:none">
-                                      <div class="phylo-subtree">
-                                        <div class="phylo-node" id="node-rodentia">Rodentia</div>
-                                        <div class="phylo-branch" id="branch-rodentia" style="display:none">
-                                          <div class="phylo-subtree">
-                                            <div class="phylo-node" id="node-caviidae">Caviidae</div>
-                                            <div class="phylo-branch" id="branch-caviidae" style="display:none">
-                                              <div class="phylo-subtree">
-                                                <div class="phylo-node phylo-target" id="node-target">???</div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div class="phylo-subtree">
-                                            <div class="phylo-node" id="node-other-rodentia">Other Rodentia</div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div class="phylo-subtree">
-                                        <div class="phylo-node" id="node-other-mammalia">Other Mammalia</div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="phylo-subtree">
-                                    <div class="phylo-node" id="node-other-amniota">Other Amniota</div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="phylo-subtree">
-                                <div class="phylo-node" id="node-other-vertebrata">Other Vertebrata</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="phylo-subtree">
-                            <div class="phylo-node" id="node-other-chordata">Other Chordata</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="phylo-subtree">
-                        <div class="phylo-node" id="node-other-deuterostomia">Other Deuterostomia</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="phylo-subtree">
-                    <div class="phylo-node" id="node-protostomia">Protostomia</div>
-                  </div>
-                </div>
-              </div>
-              <div class="phylo-subtree">
-                <div class="phylo-node" id="node-non-bilateria">Non-Bilateria</div>
-              </div>
-            </div>
-          </div>
+          <div class="phylo-tree" id="phylo-tree"></div>
           <div id="clade-desc" class="clade-desc" style="display:none;"></div>
         </div>
 
@@ -142,185 +71,323 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-// ─── Target configuration (change here to update the spirit animal) ───────────
-const TARGET = {
-  name:       'capybara',
-  scientific: 'Hydrochoerus hydrochaeris',
-  emoji:      '🦫',
+// ─── Species Database ─────────────────────────────────────────────────────────
+// Each species has an ordered phylogenetic path (broad → specific) and a display label.
+// Taxonomy clade is computed dynamically against the chosen target's path.
+type SpeciesEntry = { path: string[]; display: string };
+const SPECIES_DB: Record<string, SpeciesEntry> = {
+  // Non-Bilateria (path lacks 'bilateria' → always clade 0)
+  'jellyfish':           { path: ['cnidaria'],   display: 'Cnidaria' },
+  'coral':               { path: ['cnidaria'],   display: 'Cnidaria' },
+  'sea anemone':         { path: ['cnidaria'],   display: 'Cnidaria' },
+  'hydra':               { path: ['cnidaria'],   display: 'Cnidaria' },
+  'sponge':              { path: ['porifera'],   display: 'Porifera' },
+  // Bilateria – Protostomia – Lophotrochozoa
+  'snail':               { path: ['bilateria','protostomia','lophotrochozoa','mollusca','gastropoda'],   display: 'Gastropoda' },
+  'octopus':             { path: ['bilateria','protostomia','lophotrochozoa','mollusca','cephalopoda'],  display: 'Cephalopoda' },
+  'squid':               { path: ['bilateria','protostomia','lophotrochozoa','mollusca','cephalopoda'],  display: 'Cephalopoda' },
+  'clam':                { path: ['bilateria','protostomia','lophotrochozoa','mollusca','bivalvia'],     display: 'Bivalvia' },
+  'earthworm':           { path: ['bilateria','protostomia','lophotrochozoa','annelida'],               display: 'Annelida' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – non-Insecta
+  'spider':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','chelicerata'],     display: 'Arachnida' },
+  'scorpion':            { path: ['bilateria','protostomia','ecdysozoa','arthropoda','chelicerata'],     display: 'Arachnida' },
+  'crab':                { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  'lobster':             { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  'shrimp':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','crustacea'],       display: 'Crustacea' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – non-Hemiptera
+  'ant':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'bee':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'wasp':                { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hymenoptera'], display: 'Hymenoptera' },
+  'butterfly':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','lepidoptera'], display: 'Lepidoptera' },
+  'beetle':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','coleoptera'],  display: 'Coleoptera' },
+  'fly':                 { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','diptera'],     display: 'Diptera' },
+  'mosquito':            { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','diptera'],     display: 'Diptera' },
+  'dragonfly':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','odonata'],     display: 'Odonata' },
+  'grasshopper':         { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','orthoptera'],  display: 'Orthoptera' },
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – Hemiptera – non-Cicadidae
+  'aphid':               { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','sternorrhyncha'], display: 'Hemiptera' },
+  'stink bug':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
+  'leafhopper':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadellidae'],  display: 'Hemiptera' },
+  'shield bug':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
+  // Bilateria – Protostomia – Ecdysozoa – non-Arthropoda
+  'roundworm':           { path: ['bilateria','protostomia','ecdysozoa','nematoda'],   display: 'Nematoda' },
+  'tardigrade':          { path: ['bilateria','protostomia','ecdysozoa','tardigrada'], display: 'Tardigrada' },
+  // Bilateria – Deuterostomia – Echinodermata
+  'starfish':            { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  'sea urchin':          { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  'sea cucumber':        { path: ['bilateria','deuterostomia','echinodermata'],  display: 'Echinodermata' },
+  // Bilateria – Deuterostomia – Chordata – non-Vertebrata
+  'lancelet':            { path: ['bilateria','deuterostomia','chordata','cephalochordata'], display: 'Cephalochordata' },
+  'tunicate':            { path: ['bilateria','deuterostomia','chordata','urochordata'],     display: 'Urochordata' },
+  'sea squirt':          { path: ['bilateria','deuterostomia','chordata','urochordata'],     display: 'Urochordata' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – non-Tetrapoda (fish)
+  'shark':               { path: ['bilateria','deuterostomia','chordata','vertebrata','chondrichthyes'], display: 'Chondrichthyes' },
+  'ray':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','chondrichthyes'], display: 'Chondrichthyes' },
+  'salmon':              { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'tuna':                { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'clownfish':           { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'zebrafish':           { path: ['bilateria','deuterostomia','chordata','vertebrata','actinopterygii'], display: 'Actinopterygii' },
+  'lamprey':             { path: ['bilateria','deuterostomia','chordata','vertebrata','agnatha'],        display: 'Agnatha' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – Anura – non-Hylidae
+  'frog':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae'],       display: 'Anura (Ranidae)' },
+  'toad':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','bufonidae'],     display: 'Anura (Bufonidae)' },
+  'bullfrog':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae'],       display: 'Anura' },
+  'poison dart frog':    { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','dendrobatidae'], display: 'Anura' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – non-Anura
+  'salamander':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  'axolotl':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  'newt':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','urodela'], display: 'Urodela' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amphibia – Anura – Hylidae
+  'tree frog':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  "white's tree frog":   { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  'gray tree frog':      { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  'spring peeper':       { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Reptilia
+  'snake':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'lizard':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'gecko':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'chameleon':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'crocodile':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','crocodilia'], display: 'Reptilia' },
+  'alligator':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','crocodilia'], display: 'Reptilia' },
+  'turtle':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','testudines'], display: 'Reptilia' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Aves
+  'eagle':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'penguin':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'parrot':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'owl':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'flamingo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'ostrich':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'crow':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  'pigeon':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','aves'], display: 'Aves' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – Felidae
+  'lion':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'tiger':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'leopard':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'cheetah':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'jaguar':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'lynx':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'puma':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – non-Felidae
+  'dog':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'wolf':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'fox':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
+  'bear':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','ursidae'],   display: 'Carnivora (Ursidae)' },
+  'otter':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'badger':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'weasel':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
+  'seal':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','phocidae'],   display: 'Carnivora (Pinnipedia)' },
+  'raccoon':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','procyonidae'], display: 'Carnivora' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Rodentia – Caviidae
+  'guinea pig':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  'rock cavy':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  'patagonian mara':     { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Rodentia – non-Caviidae
+  'rat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
+  'mouse':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
+  'squirrel':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia (Sciuridae)' },
+  'beaver':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','castoridae'], display: 'Rodentia' },
+  'hamster':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  'gerbil':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia' },
+  'vole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  'marmot':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia (Sciuridae)' },
+  'prairie dog':         { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia' },
+  'porcupine':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','hystricidae'], display: 'Rodentia' },
+  'chinchilla':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','chinchillidae'], display: 'Rodentia' },
+  'degu':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','octodontidae'], display: 'Rodentia' },
+  'nutria':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','myocastoridae'], display: 'Rodentia' },
+  'woodchuck':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','sciuridae'],  display: 'Rodentia' },
+  'lemming':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','cricetidae'], display: 'Rodentia' },
+  // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – non-Rodentia, non-Carnivora
+  'rabbit':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','lagomorpha'],      display: 'Lagomorpha' },
+  'hare':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','lagomorpha'],      display: 'Lagomorpha' },
+  'horse':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'donkey':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'rhinoceros':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'pig':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'cow':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'sheep':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'goat':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'deer':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'moose':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'giraffe':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'hippopotamus':        { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
+  'whale':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Cetacea' },
+  'dolphin':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Cetacea' },
+  'elephant':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','proboscidea'],    display: 'Proboscidea' },
+  'monkey':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'gorilla':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'chimpanzee':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'human':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','primates'],       display: 'Primates' },
+  'bat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','chiroptera'],     display: 'Chiroptera' },
+  'hedgehog':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','erinaceidae'],    display: 'Erinaceidae' },
+  'mole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','talpidae'],       display: 'Talpidae' },
+  'kangaroo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
+  'koala':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
+  // ─── Target species (included so they appear in autocomplete for other targets) ───
+  'capybara':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'],                display: 'Caviidae' },
+  'cat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'],                 display: 'Felidae' },
+  'red-eyed tree frog':  { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],                             display: 'Hylidae' },
+  'cicada':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],                          display: 'Cicadidae' },
 };
 
-// ─── Taxonomy ─────────────────────────────────────────────────────────────────
-// clade: 0 = Non-Bilateria, 1 = Protostomia, 2 = Deuterostomia (non-Chordata),
-//        3 = Chordata (non-Vertebrata), 4 = Vertebrata (non-Amniota),
-//        5 = Amniota (non-Mammalia), 6 = Mammalia (non-Rodentia),
-//        7 = Rodentia (non-Caviidae), 8 = Caviidae, 9 = target (correct)
-const TAXONOMY: Record<string, { clade: number; label: string }> = {
-  // Caviidae (clade 8)
-  'guinea pig':       { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
-  'rock cavy':        { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
-  'patagonian mara':  { clade: 8, label: '🔥 Extremely close — same family (Caviidae)!' },
-  [TARGET.name]:      { clade: 9, label: '✅ Correct!' },
-  // Rodentia non-Caviidae (clade 7)
-  'rat':              { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'mouse':            { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'squirrel':         { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'beaver':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'hamster':          { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'porcupine':        { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'chinchilla':       { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'gerbil':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'marmot':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'vole':             { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'lemming':          { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'prairie dog':      { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'woodchuck':        { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'degu':             { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  'nutria':           { clade: 7, label: '🌡️ Very warm — Rodentia' },
-  // Mammalia non-Rodentia (clade 6)
-  'rabbit':           { clade: 6, label: '🌤️ Warm — Mammalia, not Rodentia' },
-  'hare':             { clade: 6, label: '🌤️ Warm — Mammalia, not Rodentia' },
-  'pig':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'cow':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'horse':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'donkey':           { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'sheep':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'goat':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'dog':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'cat':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'bear':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'wolf':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'fox':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'deer':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'moose':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'elephant':         { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'giraffe':          { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'hippopotamus':     { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'rhinoceros':       { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'lion':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'tiger':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'monkey':           { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'gorilla':          { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'chimpanzee':       { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'human':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'whale':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'dolphin':          { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'seal':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'bat':              { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'hedgehog':         { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'mole':             { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'otter':            { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'badger':           { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'raccoon':          { clade: 6, label: '🌤️ Warm — Mammalia' },
-  'kangaroo':         { clade: 6, label: '🌤️ Warm — Mammalia (marsupial)' },
-  'koala':            { clade: 6, label: '🌤️ Warm — Mammalia (marsupial)' },
-  // Amniota non-Mammalia: reptiles & birds (clade 5)
-  'crocodile':        { clade: 5, label: '❄️ Cool — Amniota, not Mammalia (reptile)' },
-  'alligator':        { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'lizard':           { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'gecko':            { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'chameleon':        { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'snake':            { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'turtle':           { clade: 5, label: '❄️ Cool — Amniota (reptile)' },
-  'eagle':            { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'penguin':          { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'parrot':           { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'owl':              { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'flamingo':         { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'ostrich':          { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'crow':             { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  'pigeon':           { clade: 5, label: '❄️ Cool — Amniota (bird)' },
-  // Vertebrata non-Amniota: fish & amphibians (clade 4)
-  'salmon':           { clade: 4, label: '🧊 Cold — Vertebrata, not Amniota (fish)' },
-  'tuna':             { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
-  'clownfish':        { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
-  'shark':            { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
-  'ray':              { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
-  'zebrafish':        { clade: 4, label: '🧊 Cold — Vertebrata (fish)' },
-  'lamprey':          { clade: 4, label: '🧊 Cold — Vertebrata (jawless fish)' },
-  'frog':             { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
-  'toad':             { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
-  'salamander':       { clade: 4, label: '🧊 Cold — Vertebrata (amphibian)' },
-  // Chordata non-Vertebrata (clade 3)
-  'lancelet':         { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
-  'tunicate':         { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
-  'sea squirt':       { clade: 3, label: '❄️ Cold — Chordata, not Vertebrata' },
-  // Deuterostomia non-Chordata: echinoderms (clade 2)
-  'starfish':         { clade: 2, label: '🧊 Cold — Deuterostomia, not Chordata (echinoderm)' },
-  'sea urchin':       { clade: 2, label: '🧊 Cold — Deuterostomia (echinoderm)' },
-  'sea cucumber':     { clade: 2, label: '🧊 Cold — Deuterostomia (echinoderm)' },
-  // Protostomia: molluscs, arthropods, annelids (clade 1)
-  'octopus':          { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
-  'squid':            { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
-  'snail':            { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
-  'clam':             { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (mollusc)' },
-  'ant':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'bee':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'butterfly':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'fly':              { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'beetle':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'dragonfly':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (insect)' },
-  'crab':             { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
-  'lobster':          { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
-  'shrimp':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (crustacean)' },
-  'spider':           { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (arachnid)' },
-  'scorpion':         { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (arachnid)' },
-  'earthworm':        { clade: 1, label: '🧊 Cold — Bilateria, Protostomia (annelid)' },
-  // Non-Bilateria: sponges, cnidarians (clade 0)
-  'jellyfish':        { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
-  'coral':            { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
-  'sea anemone':      { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
-  'hydra':            { clade: 0, label: '🥶 Very cold — Non-Bilateria (cnidarian)' },
-  'sponge':           { clade: 0, label: '🥶 Very cold — Non-Bilateria (porifera)' },
+// ─── Possible Targets ─────────────────────────────────────────────────────────
+type TargetConfig = {
+  name: string; scientific: string; emoji: string;
+  path: string[];    // 8 phylogenetic group IDs (Bilateria → family)
+  labels: string[];  // display labels for each path node
+  others: string[];  // "other branch" label shown as sibling at each tree level
+  descs: string[];   // clade description shown in the panel (index 0–8)
 };
 
-const CLADE_DESC: Record<number, string> = {
-  0: '🥶 <strong>Non-Bilateria</strong> — The earliest-branching animals: sponges, jellyfish, corals. No bilateral symmetry.',
-  1: '🧊 <strong>Protostomia</strong> — Bilaterian animals where the mouth develops first. Includes molluscs, arthropods, and annelid worms.',
-  2: '🧊 <strong>Deuterostomia (non-Chordata)</strong> — Bilaterian animals where the anus develops first. Echinoderms: starfish, sea urchins, sea cucumbers.',
-  3: '❄️ <strong>Chordata (non-Vertebrata)</strong> — Animals with a notochord. Includes lancelets and tunicates but no backbone yet.',
-  4: '🧊 <strong>Vertebrata (non-Amniota)</strong> — Animals with a backbone. Jawless fish, cartilaginous fish, bony fish, and amphibians.',
-  5: '❄️ <strong>Amniota (non-Mammalia)</strong> — Vertebrates with an amniotic egg. Reptiles and birds.',
-  6: '🌤️ <strong>Mammalia</strong> — Warm-blooded amniotes that nurse young with milk. ~6,400 living species.',
-  7: '🌡️ <strong>Rodentia</strong> — The largest order of mammals (~2,500 species). Characterised by continuously growing incisors.',
-  8: '🔥 <strong>Caviidae</strong> — South American rodents including guinea pigs, maras, and their relatives. ~14 species.',
-};
+const POSSIBLE_TARGETS: TargetConfig[] = [
+  {
+    name: 'capybara', scientific: 'Hydrochoerus hydrochaeris', emoji: '🦫',
+    path:   ['bilateria','deuterostomia','chordata','vertebrata','amniota','mammalia','rodentia','caviidae'],
+    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Amniota','Mammalia','Rodentia','Caviidae'],
+    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata','Other Amniota','Other Mammalia','Other Rodentia'],
+    descs: [
+      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
+      '🧊 <strong>Bilateria — Protostomia</strong> — Wrong branch. Molluscs, arthropods, annelids.',
+      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
+      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
+      '❄️ <strong>Vertebrata — non-Amniota</strong> — Fish and amphibians.',
+      '🌤️ <strong>Amniota — non-Mammalia</strong> — Reptiles and birds.',
+      '🌤️ <strong>Mammalia — non-Rodentia</strong> — Warm-blooded, milk-producing, but not a rodent.',
+      '🌡️ <strong>Rodentia — non-Caviidae</strong> — Gnawing mammals, but not in the cavy family.',
+      '🔥 <strong>Caviidae</strong> — South American cavy rodents: guinea pigs, maras, and their relatives. Very close!',
+    ],
+  },
+  {
+    name: 'cat', scientific: 'Felis catus', emoji: '🐱',
+    path:   ['bilateria','deuterostomia','chordata','vertebrata','amniota','mammalia','carnivora','felidae'],
+    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Amniota','Mammalia','Carnivora','Felidae'],
+    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata','Other Amniota','Other Mammalia','Other Carnivora'],
+    descs: [
+      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
+      '🧊 <strong>Bilateria — Protostomia</strong> — Wrong branch. Molluscs, arthropods, annelids.',
+      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
+      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
+      '❄️ <strong>Vertebrata — non-Amniota</strong> — Fish and amphibians.',
+      '🌤️ <strong>Amniota — non-Mammalia</strong> — Reptiles and birds.',
+      '🌤️ <strong>Mammalia — non-Carnivora</strong> — Mammals, but not an order Carnivora member.',
+      '🌡️ <strong>Carnivora — non-Felidae</strong> — Dogs, bears, weasels — not the cat family.',
+      '🔥 <strong>Felidae</strong> — The cat family: lions, tigers, leopards. Very close!',
+    ],
+  },
+  {
+    name: 'red-eyed tree frog', scientific: 'Agalychnis callidryas', emoji: '🐸',
+    path:   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],
+    labels: ['Bilateria','Deuterostomia','Chordata','Vertebrata','Tetrapoda','Amphibia','Anura','Hylidae'],
+    others: ['Non-Bilateria','Protostomia','Other Deuterostomia','Other Chordata','Other Vertebrata (fish)','Amniota','Other Amphibia','Other Anura'],
+    descs: [
+      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
+      '🧊 <strong>Bilateria — Protostomia</strong> — Wrong branch. Molluscs, arthropods, annelids.',
+      '🧊 <strong>Deuterostomia — non-Chordata</strong> — Echinoderms: starfish, sea urchins.',
+      '❄️ <strong>Chordata — non-Vertebrata</strong> — Lancelets and tunicates.',
+      '❄️ <strong>Vertebrata — non-Tetrapoda</strong> — Fish (jawless, cartilaginous, bony).',
+      '🌤️ <strong>Tetrapoda — Amniota</strong> — Four-limbed vertebrates on the wrong branch: reptiles, birds, mammals.',
+      '🌤️ <strong>Amphibia — non-Anura</strong> — Salamanders, newts, axolotls.',
+      '🌡️ <strong>Anura — non-Hylidae</strong> — Frogs and toads, but not the tree frog family.',
+      '🔥 <strong>Hylidae</strong> — Tree frogs! Very close.',
+    ],
+  },
+  {
+    name: 'cicada', scientific: 'Magicicada septendecim', emoji: '🦗',
+    path:   ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],
+    labels: ['Bilateria','Protostomia','Ecdysozoa','Arthropoda','Insecta','Pterygota','Hemiptera','Cicadidae'],
+    others: ['Non-Bilateria','Deuterostomia','Lophotrochozoa','Other Ecdysozoa','Other Arthropoda','Apterygota','Other Pterygota','Other Hemiptera'],
+    descs: [
+      '🥶 <strong>Non-Bilateria</strong> — Sponges, jellyfish, corals. No bilateral symmetry.',
+      '🧊 <strong>Bilateria — Deuterostomia</strong> — Wrong branch. Vertebrates and echinoderms.',
+      '🧊 <strong>Protostomia — Lophotrochozoa</strong> — Wrong subgroup. Molluscs and annelids.',
+      '❄️ <strong>Ecdysozoa — non-Arthropoda</strong> — Moulting animals without jointed legs. Nematodes, tardigrades.',
+      '❄️ <strong>Arthropoda — non-Insecta</strong> — Jointed legs, but not insects. Spiders, crabs, centipedes.',
+      '🌤️ <strong>Insecta — non-Pterygota</strong> — Insects but primitively wingless.',
+      '🌤️ <strong>Pterygota — non-Hemiptera</strong> — Winged insects, wrong order. Beetles, bees, butterflies.',
+      '🌡️ <strong>Hemiptera — non-Cicadidae</strong> — True bugs! Aphids, stink bugs, leafhoppers.',
+      '🔥 <strong>Cicadidae</strong> — The cicada family. Extremely close!',
+    ],
+  },
+];
 
-const CLADE_NODE: Record<number, string> = {
-  0: 'node-metazoa',
-  1: 'node-bilateria',
-  2: 'node-deuterostomia',
-  3: 'node-chordata',
-  4: 'node-vertebrata',
-  5: 'node-amniota',
-  6: 'node-mammalia',
-  7: 'node-rodentia',
-  8: 'node-caviidae',
-};
+// ─── Select or restore target ─────────────────────────────────────────────────
+let targetIdx = parseInt(localStorage.getItem('gnomics_target') ?? '');
+if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
+  targetIdx = Math.floor(Math.random() * POSSIBLE_TARGETS.length);
+  localStorage.setItem('gnomics_target', String(targetIdx));
+}
+const TARGET = POSSIBLE_TARGETS[targetIdx];
+const CORRECT_CLADE = TARGET.path.length + 1; // 9
 
-const CLADE_BRANCH: Record<number, string> = {
-  0: 'branch-metazoa',
-  1: 'branch-bilateria',
-  2: 'branch-deuterostomia',
-  3: 'branch-chordata',
-  4: 'branch-vertebrata',
-  5: 'branch-amniota',
-  6: 'branch-mammalia',
-  7: 'branch-rodentia',
-  8: 'branch-caviidae',
-};
+// ─── Compute taxonomy dynamically ─────────────────────────────────────────────
+// For each species, find the deepest path node it shares with the target (in order).
+const WARMTH_ICON = ['🥶','🧊','🧊','❄️','❄️','🌤️','🌤️','🌡️','🔥'];
+const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot','Very hot'];
+
+const TAXONOMY: Record<string, { clade: number; label: string }> = {};
+for (const [species, data] of Object.entries(SPECIES_DB)) {
+  if (species === TARGET.name) {
+    TAXONOMY[species] = { clade: CORRECT_CLADE, label: '✅ Correct!' };
+    continue;
+  }
+  let clade = 0;
+  for (let i = 0; i < TARGET.path.length; i++) {
+    if (data.path.includes(TARGET.path[i])) {
+      clade = i + 1;
+    } else {
+      break;
+    }
+  }
+  const pathLabel = clade > 0 ? TARGET.labels[clade - 1] : 'Non-Bilateria';
+  const icon = WARMTH_ICON[clade] ?? '🧊';
+  const word = WARMTH_WORD[clade] ?? 'Cold';
+  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel} (${data.display})` };
+}
+
+// ─── Derive node/branch IDs from the chosen target's path ─────────────────────
+const CLADE_NODE: Record<number, string>   = { 0: 'node-metazoa' };
+const CLADE_BRANCH: Record<number, string> = { 0: 'branch-metazoa' };
+TARGET.path.forEach((id, i) => {
+  CLADE_NODE[i + 1]   = `node-${id}`;
+  CLADE_BRANCH[i + 1] = `branch-${id}`;
+});
 
 const CLADE_CLASS: Record<number, string> = {
-  0: 'hint-cold',
-  1: 'hint-cold',
-  2: 'hint-cold',
-  3: 'hint-cold',
-  4: 'hint-cold',
-  5: 'hint-warm',
-  6: 'hint-warm',
-  7: 'hint-hot',
-  8: 'hint-hot',
+  0: 'hint-cold', 1: 'hint-cold', 2: 'hint-cold', 3: 'hint-cold',
+  4: 'hint-cold', 5: 'hint-warm', 6: 'hint-warm', 7: 'hint-hot', 8: 'hint-hot',
 };
 
+// ─── Build phylogenomic tree HTML dynamically ─────────────────────────────────
+function buildTree(): void {
+  // Recursively builds the content to place inside the branch at depth-1.
+  // Returns two sibling subtrees: [correct path node + its branch, other branch label].
+  function buildFromDepth(depth: number): string {
+    if (depth >= TARGET.path.length) {
+      return `<div class="phylo-subtree"><div class="phylo-node phylo-target" id="node-target">???</div></div>`;
+    }
+    const id    = TARGET.path[depth];
+    const label = TARGET.labels[depth];
+    const other = TARGET.others[depth];
+    return `
+      <div class="phylo-subtree">
+        <div class="phylo-node" id="node-${id}">${label}</div>
+        <div class="phylo-branch" id="branch-${id}" style="display:none">
+          ${buildFromDepth(depth + 1)}
+        </div>
+      </div>
+      <div class="phylo-subtree"><div class="phylo-node">${other}</div></div>`;
+  }
+
+  const container = document.getElementById('phylo-tree')!;
+  container.innerHTML = `
+    <div class="phylo-node" id="node-metazoa">Metazoa</div>
+    <div class="phylo-branch" id="branch-metazoa" style="display:none">
+      ${buildFromDepth(0)}
+    </div>`;
+}
+buildTree();
+
+// ─── DOM references ───────────────────────────────────────────────────────────
 const MAX_GUESSES = 20;
 let guessesLeft = MAX_GUESSES;
 
@@ -335,30 +402,26 @@ const failArea     = document.getElementById('fail-area') as HTMLDivElement;
 const cladeDesc    = document.getElementById('clade-desc') as HTMLDivElement;
 const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 
-// Populate success/fail text from TARGET
-(document.getElementById('success-name') as HTMLElement).textContent = TARGET.name;
+// Populate success/fail target name
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+(document.getElementById('success-name') as HTMLElement).textContent = cap(TARGET.name);
 (document.getElementById('success-scientific') as HTMLElement).textContent = TARGET.scientific;
-(document.getElementById('fail-name') as HTMLElement).textContent = TARGET.name;
+(document.getElementById('fail-name') as HTMLElement).textContent = cap(TARGET.name);
 (document.getElementById('fail-scientific') as HTMLElement).textContent = TARGET.scientific;
 
-// Autocomplete: sorted list, shown only when letters are typed
-const ALL_SPECIES = Object.keys(TAXONOMY)
-  .map(n => n.charAt(0).toUpperCase() + n.slice(1))
-  .sort();
+// Autocomplete: sorted, shown only when letters are typed
+const ALL_SPECIES = Object.keys(TAXONOMY).map(cap).sort();
 
 function updateDatalist(query: string) {
   datalist.innerHTML = '';
   if (!query) return;
   const q = query.toLowerCase();
-  ALL_SPECIES
-    .filter(n => n.toLowerCase().startsWith(q))
-    .forEach(n => {
-      const opt = document.createElement('option');
-      opt.value = n;
-      datalist.appendChild(opt);
-    });
+  ALL_SPECIES.filter(n => n.toLowerCase().startsWith(q)).forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    datalist.appendChild(opt);
+  });
 }
-
 input.addEventListener('input', () => updateDatalist(input.value.trim()));
 
 // Restore if already done
@@ -368,15 +431,10 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function highlightNode(clade: number) {
-  // Light up all nodes up to this clade level and reveal their branches
-  for (let c = 0; c <= clade && c <= 8; c++) {
-    const nodeId = CLADE_NODE[c];
-    if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
-    const branchId = CLADE_BRANCH[c];
-    if (branchId) {
-      const el = document.getElementById(branchId);
-      if (el) el.style.display = '';
-    }
+  for (let c = 0; c <= clade && c <= TARGET.path.length; c++) {
+    document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
+    const el = document.getElementById(CLADE_BRANCH[c]);
+    if (el) el.style.display = '';
   }
 }
 
@@ -384,11 +442,13 @@ function updateGuessesLabel() {
   guessesLabel.textContent = `${guessesLeft} guess${guessesLeft === 1 ? '' : 'es'} remaining`;
   guessesLabel.style.color = guessesLeft <= 3 ? '#c0392b' : '';
 }
+updateGuessesLabel();
 
 function submitGuess() {
   const raw = input.value.trim().toLowerCase();
   if (!raw) return;
   input.value = '';
+  updateDatalist('');
 
   const data = TAXONOMY[raw];
   const li = document.createElement('li');
@@ -400,18 +460,15 @@ function submitGuess() {
     return;
   }
 
-  if (data.clade === 9) {
+  if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
-    document.getElementById('node-target')!.textContent = TARGET.name.charAt(0).toUpperCase() + TARGET.name.slice(1);
-    document.getElementById('node-target')!.classList.add('phylo-node-hit', 'phylo-node-correct');
-    for (let c = 0; c <= 8; c++) {
-      const nodeId = CLADE_NODE[c];
-      if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
-      const branchId = CLADE_BRANCH[c];
-      if (branchId) {
-        const el = document.getElementById(branchId);
-        if (el) el.style.display = '';
-      }
+    const targetNode = document.getElementById('node-target')!;
+    targetNode.textContent = cap(TARGET.name);
+    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
+    for (let c = 0; c <= TARGET.path.length; c++) {
+      document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
+      const el = document.getElementById(CLADE_BRANCH[c]);
+      if (el) el.style.display = '';
     }
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
@@ -422,11 +479,8 @@ function submitGuess() {
   updateGuessesLabel();
   highlightNode(data.clade);
 
-  // Show clade description
-  if (CLADE_DESC[data.clade]) {
-    cladeDesc.innerHTML = CLADE_DESC[data.clade];
-    cladeDesc.style.display = 'block';
-  }
+  const desc = TARGET.descs[data.clade];
+  if (desc) { cladeDesc.innerHTML = desc; cladeDesc.style.display = 'block'; }
 
   const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
   li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
@@ -443,9 +497,7 @@ retryBtn?.addEventListener('click', () => {
   updateGuessesLabel();
   list.innerHTML = '';
   cladeDesc.style.display = 'none';
-  document.querySelectorAll('.phylo-node').forEach(n => {
-    n.classList.remove('phylo-node-hit', 'phylo-node-correct');
-  });
+  document.querySelectorAll('.phylo-node').forEach(n => n.classList.remove('phylo-node-hit','phylo-node-correct'));
   Object.values(CLADE_BRANCH).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
