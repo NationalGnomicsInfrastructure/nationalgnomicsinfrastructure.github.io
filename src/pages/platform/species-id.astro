@@ -294,6 +294,9 @@ const CLADE_CLASS: Record<number, string> = {
 };
 
 // ─── Build phylogenomic tree HTML dynamically ─────────────────────────────────
+const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
+const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+
 function buildTree(): void {
   // Each path node is wrapped in a hidden subtree-{id} div; revealed on guess.
   function buildFromDepth(depth: number): string {
@@ -302,7 +305,7 @@ function buildTree(): void {
     const label = TARGET.labels[depth];
     return `
       <div class="phylo-subtree" id="subtree-${id}" style="display:none">
-        <div class="phylo-node" id="node-${id}">${label}</div>
+        <div class="phylo-node" id="node-${id}">${wikiLink(label)}</div>
         <div class="phylo-branch" id="branch-${id}" style="display:none">
           ${buildFromDepth(depth + 1)}
         </div>
@@ -312,7 +315,7 @@ function buildTree(): void {
   const container = document.getElementById('phylo-tree')!;
   // Metazoa is always visible + green; its branch is always open so ??? starts inside.
   container.innerHTML = `
-    <div class="phylo-node phylo-node-hit" id="node-metazoa">Metazoa</div>
+    <div class="phylo-node phylo-node-hit" id="node-metazoa">${wikiLink('Metazoa')}</div>
     <div class="phylo-branch" id="branch-metazoa">
       ${buildFromDepth(0)}
     </div>`;
@@ -401,10 +404,15 @@ function highlightNode(clade: number, raw: string) {
   if (divBranch) {
     divBranch.style.display = '';
     const label = cap(raw);
-    if (!Array.from(divBranch.children).some(el => el.classList.contains('phylo-node-miss') && el.textContent === label)) {
+    if (!Array.from(divBranch.children).some(el => el.classList.contains('phylo-node-miss') && el.querySelector('a')?.textContent === label)) {
       const missNode = document.createElement('div');
       missNode.className = 'phylo-node phylo-node-miss';
-      missNode.textContent = label;
+      const link = document.createElement('a');
+      link.href = wiki(label);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = label;
+      missNode.appendChild(link);
       const t = document.getElementById('target-subtree');
       t?.parentElement === divBranch ? divBranch.insertBefore(missNode, t) : divBranch.appendChild(missNode);
     }
@@ -447,7 +455,7 @@ function submitGuess() {
       if (el) el.style.display = '';
     }
     const targetNode = document.getElementById('node-target')!;
-    targetNode.textContent = cap(TARGET.name);
+    targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
     targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
