@@ -46,7 +46,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   <div id="timer-bar">
     <div class="timer-label">Session time remaining</div>
     <div class="timer-time" id="timer-display">--:--</div>
-    <button id="restart-btn" onclick="if(confirm('⚠️ This will clear your session and all progress. Are you sure?')){['gnomics_start','gnomics_team','gnomics_leader','gnomics_species_done','gnomics_mode'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="display:none;margin-top:0.5rem;width:100%;font-size:0.75rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.5);color:inherit;border-radius:4px;cursor:pointer;">🔄 Restart</button>
+    <button id="restart-btn" onclick="if(confirm('⚠️ This will clear your session and all progress. Are you sure?')){['gnomics_start','gnomics_team','gnomics_leader','gnomics_user','gnomics_species_done','gnomics_mode'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="display:none;margin-top:0.5rem;width:100%;font-size:0.75rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.5);color:inherit;border-radius:4px;cursor:pointer;">🔄 Restart</button>
   </div>
 )}
 

@@ -31,6 +31,22 @@ import Layout from '../../layouts/Layout.astro';
           <div id="access-code-error" style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;">Invalid access code. Please try again.</div>
         </div>
 
+        <!-- Online mode: single user -->
+        <div id="user-auth" style="display:none;">
+          <div class="card mt-3" style="text-align:left;">
+            <h3>User Authentication</h3>
+            <p class="text-muted" style="font-size:0.9rem;">Enter your name to begin your personal session.</p>
+            <div class="form-group">
+              <label for="user-name">Your Name</label>
+              <input type="text" id="user-name" placeholder="First name" />
+            </div>
+          </div>
+          <button id="launch-btn-online" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
+            🚀 Initialise Platform Session
+          </button>
+        </div>
+
+        <!-- Mixed mode: team -->
         <div id="team-auth" style="display:none;">
           <div class="card mt-3" style="text-align:left;">
             <h3>Team Authentication</h3>
@@ -44,8 +60,7 @@ import Layout from '../../layouts/Layout.astro';
               <input type="text" id="team-leader" placeholder="First name" />
             </div>
           </div>
-
-          <button id="launch-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
+          <button id="launch-btn-mixed" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
             🚀 Initialise Platform Session
           </button>
         </div>
@@ -93,21 +108,23 @@ import Layout from '../../layouts/Layout.astro';
              '8a88a25603494bf72ac434a30f32fd8143e0bdc18509b888ed7ef917b2bf3610'];
   const M = ['online', 'mixed'];
 
-  const launchBtn = document.getElementById('launch-btn');
+  const launchBtnOnline = document.getElementById('launch-btn-online');
+  const launchBtnMixed = document.getElementById('launch-btn-mixed');
   const verifyBtn = document.getElementById('verify-btn');
   const preLaunch = document.getElementById('pre-launch');
   const postLaunch = document.getElementById('post-launch');
   const displayTeam = document.getElementById('display-team');
+  const userAuth = document.getElementById('user-auth');
   const teamAuth = document.getElementById('team-auth');
   const codeError = document.getElementById('access-code-error');
 
   // Restore session if already started
   const existingStart = localStorage.getItem('gnomics_start');
   if (existingStart) {
-    const teamName = localStorage.getItem('gnomics_team') || 'your team';
+    const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
-    displayTeam!.textContent = teamName;
+    displayTeam!.textContent = displayName;
     if (localStorage.getItem('gnomics_species_done')) unlockCards();
   }
 
@@ -127,26 +144,38 @@ import Layout from '../../layouts/Layout.astro';
     }
     codeError!.style.display = 'none';
     localStorage.setItem('gnomics_mode', M[idx]);
-    teamAuth!.style.display = 'block';
+    if (M[idx] === 'online') {
+      userAuth!.style.display = 'block';
+    } else {
+      teamAuth!.style.display = 'block';
+    }
     verifyBtn!.style.display = 'none';
     (document.getElementById('access-code') as HTMLInputElement).disabled = true;
   });
 
-  launchBtn?.addEventListener('click', () => {
-    const teamName = (document.getElementById('team-name') as HTMLInputElement)?.value.trim();
-    const teamLeader = (document.getElementById('team-leader') as HTMLInputElement)?.value.trim();
-    if (!teamName || !teamLeader) {
-      alert('Please enter your team name and leader before starting.');
-      return;
-    }
+  function startSession(displayName: string) {
     localStorage.setItem('gnomics_start', String(Date.now()));
-    localStorage.setItem('gnomics_team', teamName);
-    localStorage.setItem('gnomics_leader', teamLeader);
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
-    displayTeam!.textContent = teamName;
+    displayTeam!.textContent = displayName;
     window.dispatchEvent(new Event('gnomics_started'));
     location.reload();
+  }
+
+  launchBtnOnline?.addEventListener('click', () => {
+    const name = (document.getElementById('user-name') as HTMLInputElement)?.value.trim();
+    if (!name) { alert('Please enter your name before starting.'); return; }
+    localStorage.setItem('gnomics_user', name);
+    startSession(name);
+  });
+
+  launchBtnMixed?.addEventListener('click', () => {
+    const teamName = (document.getElementById('team-name') as HTMLInputElement)?.value.trim();
+    const teamLeader = (document.getElementById('team-leader') as HTMLInputElement)?.value.trim();
+    if (!teamName || !teamLeader) { alert('Please enter your team name and leader before starting.'); return; }
+    localStorage.setItem('gnomics_team', teamName);
+    localStorage.setItem('gnomics_leader', teamLeader);
+    startSession(teamName);
   });
 
   function unlockCards() {
