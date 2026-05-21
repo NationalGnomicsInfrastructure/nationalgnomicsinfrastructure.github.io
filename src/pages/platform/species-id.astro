@@ -48,7 +48,7 @@ import Layout from '../../layouts/Layout.astro';
             <p class="text-muted" style="font-size:0.9rem;" id="success-next-msg">
               Please proceed to the next task.
             </p>
-            <a href="/platform/submit/" class="btn btn-primary mt-2">Continue to Project Submission →</a>
+            <a href="/platform/" class="btn btn-primary mt-2" id="success-btn">Back to Tools →</a>
           </div>
 
         </div>
@@ -389,10 +389,15 @@ if (localStorage.getItem('gnomics_species_done')) {
 
 function showSuccess() {
   const msg = document.getElementById('success-next-msg')!;
+  const btn = document.getElementById('success-btn') as HTMLAnchorElement;
   if (localStorage.getItem('gnomics_mode') === 'mixed') {
     msg.innerHTML = 'Proceed to the physical puzzle in your team box.<br/>Once assembled, return here to continue.';
+    btn.textContent = 'Back to Tools →';
+    btn.href = '/platform/';
   } else {
     msg.textContent = 'Please proceed to the next task.';
+    btn.textContent = 'Back to Tools →';
+    btn.href = '/platform/';
   }
   successArea.style.display = 'block';
 }
