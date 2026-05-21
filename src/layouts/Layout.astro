@@ -46,7 +46,10 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   <div id="timer-bar">
     <div class="timer-label">Session time remaining</div>
     <div class="timer-time" id="timer-display">--:--</div>
-    <button id="restart-btn" onclick="if(confirm('⚠️ This will clear your session and all progress. Are you sure?')){['gnomics_start','gnomics_team','gnomics_leader','gnomics_user','gnomics_species_done','gnomics_mode'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="display:none;margin-top:0.5rem;width:100%;font-size:0.75rem;padding:0.2rem 0.7rem;background:transparent;border:1px solid rgba(255,255,255,0.5);color:inherit;border-radius:4px;cursor:pointer;">🔄 Restart</button>
+    <div id="timer-btns" style="display:none;margin-top:0.5rem;display:none;gap:0.35rem;flex-direction:row;">
+      <button id="restart-btn" onclick="if(confirm('🔄 This will reset the timer and progress, but keep your team name and mode. Are you sure?')){['gnomics_start','gnomics_species_done'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="flex:1;font-size:0.75rem;padding:0.2rem 0.5rem;background:transparent;border:1px solid rgba(255,255,255,0.5);color:inherit;border-radius:4px;cursor:pointer;">⏮ Restart</button>
+      <button id="stop-btn" onclick="if(confirm('⏹ This will fully end the session and clear all data. Are you sure?')){['gnomics_start','gnomics_team','gnomics_leader','gnomics_user','gnomics_species_done','gnomics_mode'].forEach(k=>localStorage.removeItem(k));window.location.href='/platform/'}" style="flex:1;font-size:0.75rem;padding:0.2rem 0.5rem;background:transparent;border:1px solid rgba(255,100,100,0.5);color:inherit;border-radius:4px;cursor:pointer;">⏹ Stop</button>
+    </div>
   </div>
 )}
 
@@ -113,8 +116,8 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
         if (!startAt) return;
 
         bar.classList.add('running');
-        const restartBtn = document.getElementById('restart-btn');
-        if (restartBtn) restartBtn.style.display = 'inline-block';
+        const timerBtns = document.getElementById('timer-btns');
+        if (timerBtns) timerBtns.style.display = 'flex';
 
         function tick() {
           const elapsed = Date.now() - startAt;
@@ -143,6 +146,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
       } else {
         startTimer();
       }
+      window.addEventListener('gnomics_started', startTimer);
     })();
   </script>
 )}

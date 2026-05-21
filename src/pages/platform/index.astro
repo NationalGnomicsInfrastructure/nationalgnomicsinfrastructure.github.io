@@ -86,17 +86,11 @@ import Layout from '../../layouts/Layout.astro';
             <p>Identify an unknown specimen using our phylogenetic distance classifier. Required for all new gnomics projects.</p>
             <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;">Open Tool →</span>
           </a>
-          <div class="card" style="opacity:0.5;">
+          <div id="card-submit" class="card" style="display:none;">
             <div class="card-icon">📋</div>
             <h3>Project Submission</h3>
-            <p>Submit a new sequencing project. Available after species identification is complete.</p>
-            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;cursor:not-allowed;">Locked</span>
-          </div>
-          <div class="card" style="opacity:0.5;">
-            <div class="card-icon">📊</div>
-            <h3>Analysis Dashboard</h3>
-            <p>View results and download processed data for your projects.</p>
-            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;cursor:not-allowed;">Locked</span>
+            <p>Submit a new sequencing project.</p>
+            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;">Open Tool →</span>
           </div>
         </div>
       </div>
@@ -130,9 +124,14 @@ import Layout from '../../layouts/Layout.astro';
     toggleBtn.textContent = isHidden ? '🙈' : '👁';
   });
 
-  // Restore session if already started
+  // Restore session if already started, or auto-restart if credentials are present (after a restart)
   const existingStart = localStorage.getItem('gnomics_start');
-  if (existingStart) {
+  const existingMode  = localStorage.getItem('gnomics_mode');
+  if (existingMode && !existingStart) {
+    localStorage.setItem('gnomics_start', String(Date.now()));
+    window.dispatchEvent(new Event('gnomics_started'));
+  }
+  if (existingMode) {
     const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
     preLaunch!.style.display = 'none';
     postLaunch!.style.display = 'block';
@@ -190,16 +189,11 @@ import Layout from '../../layouts/Layout.astro';
   });
 
   function unlockCards() {
-    const cards = document.querySelectorAll('#post-launch .card');
-    cards.forEach((card, i) => {
-      if (i === 1) {
-        (card as HTMLElement).style.opacity = '1';
-        const link = card.querySelector('a') ?? card;
-        (card as HTMLElement).style.cursor = 'pointer';
-        (card as HTMLElement).onclick = () => { window.location.href = '/platform/submit/'; };
-        const btn = card.querySelector('.btn') as HTMLElement;
-        if (btn) { btn.textContent = 'Open Tool →'; btn.style.cursor = 'pointer'; }
-      }
-    });
+    const card = document.getElementById('card-submit') as HTMLElement;
+    if (card) {
+      card.style.display = 'block';
+      card.style.cursor = 'pointer';
+      card.onclick = () => { window.location.href = '/platform/submit/'; };
+    }
   }
 </script>
