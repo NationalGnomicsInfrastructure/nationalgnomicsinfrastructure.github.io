@@ -422,7 +422,14 @@ function updateDatalist(query: string) {
     datalist.appendChild(opt);
   });
 }
-input.addEventListener('input', () => updateDatalist(input.value.trim()));
+input.addEventListener('input', () => {
+  const val = input.value.trim();
+  updateDatalist(val);
+  // Auto-submit when an exact taxonomy match is selected (e.g. from datalist click)
+  if (val && TAXONOMY[val.toLowerCase()]) {
+    setTimeout(submitGuess, 50);
+  }
+});
 
 // Restore if already done
 if (localStorage.getItem('gnomics_species_done')) {
