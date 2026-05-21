@@ -392,18 +392,31 @@ function highlightNode(clade: number, raw: string) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
     if (subtreeEl) subtreeEl.style.display = '';
     const nodeEl = document.getElementById(CLADE_NODE[c]);
-    if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) nodeEl.style.display = 'none';
+    if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) {
+      nodeEl.style.display = 'none';
+      const subtreeEl = document.getElementById(CLADE_SUBTREE[c]);
+      if (subtreeEl) subtreeEl.style.marginTop = '0';
+    }
     const branchEl = document.getElementById(CLADE_BRANCH[c]);
-    if (branchEl) branchEl.style.display = '';
+    if (branchEl) {
+      branchEl.style.display = '';
+      if (nodeEl && !nodeEl.classList.contains('phylo-node-hit')) {
+        branchEl.style.paddingLeft = '0';
+        branchEl.style.borderLeft = 'none';
+        branchEl.style.marginLeft = '0';
+        branchEl.style.marginTop = '0';
+        branchEl.style.marginBottom = '0';
+      }
+    }
   }
   // Only show and green the single deepest shared clade.
   if (clade >= 1) {
     const subtreeEl = document.getElementById(CLADE_SUBTREE[clade]);
-    if (subtreeEl) subtreeEl.style.display = '';
+    if (subtreeEl) { subtreeEl.style.display = ''; subtreeEl.style.marginTop = ''; }
     const nodeEl = document.getElementById(CLADE_NODE[clade]);
     if (nodeEl) { nodeEl.style.display = ''; nodeEl.classList.remove('phylo-node-miss'); nodeEl.classList.add('phylo-node-hit'); }
     const branchEl = document.getElementById(CLADE_BRANCH[clade]);
-    if (branchEl) branchEl.style.display = '';
+    if (branchEl) { branchEl.style.display = ''; branchEl.style.paddingLeft = ''; branchEl.style.borderLeft = ''; branchEl.style.marginLeft = ''; branchEl.style.marginTop = ''; branchEl.style.marginBottom = ''; }
   }
   // Add guessed species name in red at the divergence point.
   const divBranch = document.getElementById(CLADE_BRANCH[clade]);
