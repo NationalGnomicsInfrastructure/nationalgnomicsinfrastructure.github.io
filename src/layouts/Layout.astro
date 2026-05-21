@@ -15,7 +15,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title} | NGnI</title>
   <meta name="description" content={description} />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧙</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -30,7 +30,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
 <header class="site-header">
   <div class="header-inner">
     <a href="/" class="site-logo">
-      <span class="abbr">NGnI</span>
+      <img src="/ngni-logo.png" alt="NGnI" style="height:2.8rem;vertical-align:middle;" />
       <span>National Gnomics Infrastructure</span>
     </a>
     <nav>
@@ -54,12 +54,17 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-grid">
-      <div class="footer-col">
+      <div class="footer-col" style="text-align:center;">
         <h4>NGnI</h4>
-        <p style="font-size:0.85rem;line-height:1.5;">National Gnomics Infrastructure — part of the Gnomics Platform at SciFiLab.</p>
-        <a href="https://github.com/SciFiLab" target="_blank" rel="noopener">
-          <img src="/scifilab-symbol.svg" alt="SciFiLab" style="height:2.5rem;margin-top:0.75rem;opacity:0.85;" />
-        </a>
+        <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.75rem;">
+          <a href="https://github.com/NationalGnomicsInfrastructure" target="_blank" rel="noopener">
+            <img src="/ngni-logo.png" alt="NGnI" style="height:3.5rem;opacity:0.85;" />
+          </a>
+          <a href="https://github.com/SciFiLab" target="_blank" rel="noopener">
+            <img src="/scifilab-symbol.svg" alt="SciFiLab" style="height:3.5rem;opacity:0.85;" />
+          </a>
+        </div>
+        <p style="font-size:0.85rem;line-height:1.5;margin-top:0.75rem;">Part of the Gnomics Platform at SciFiLab.</p>
       </div>
       <div class="footer-col">
         <h4>Applications</h4>
