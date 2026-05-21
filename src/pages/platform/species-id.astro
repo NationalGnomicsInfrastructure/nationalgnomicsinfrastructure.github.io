@@ -440,8 +440,10 @@ if (localStorage.getItem('gnomics_species_done')) {
 function highlightNode(clade: number) {
   for (let c = 0; c <= clade && c <= TARGET.path.length; c++) {
     document.getElementById(CLADE_NODE[c])?.classList.add('phylo-node-hit');
-    const el = document.getElementById(CLADE_BRANCH[c]);
-    if (el) el.style.display = '';
+    if (c < clade) {
+      const el = document.getElementById(CLADE_BRANCH[c]);
+      if (el) el.style.display = '';
+    }
   }
 }
 
