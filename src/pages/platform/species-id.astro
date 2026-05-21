@@ -7,37 +7,94 @@ import Layout from '../../layouts/Layout.astro';
     <div class="container">
       <div class="breadcrumb"><a href="/">Home</a> / <a href="/platform/">Platform</a> / Species Identification</div>
       <h1>Species Identification Tool</h1>
-      <p>Identify your target specimen using phylogenetic distance hints. Required before project submission.</p>
+      <p>Identify the spirit animal of the Project Coordinator who owns your gnomics sample.</p>
     </div>
   </div>
 
   <section>
     <div class="container">
-      <div class="species-game">
+      <div class="species-game-layout">
 
-        <div class="alert alert-info mb-2">
-          <strong>Instructions:</strong> We have detected an unknown specimen associated with your gnomics sample.
-          Enter a species name to receive a phylogenetic proximity hint. Identify the specimen to unlock project submission.
-        </div>
+        <!-- Left: game -->
+        <div class="species-game">
 
-        <div id="game-area">
-          <div class="species-input-row">
-            <input type="text" id="species-input" placeholder="Enter a species name…" autocomplete="off" />
-            <button class="btn btn-primary" id="guess-btn">Submit</button>
+          <div class="alert alert-info mb-2">
+            <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
+            Identify the spirit animal linked to your sample by entering species names below.
+            Each guess returns a phylogenetic proximity hint.
+            You have <strong>10 guesses</strong>.
           </div>
-          <ul class="guess-history" id="guess-list"></ul>
-          <p class="text-muted" style="font-size:0.85rem;" id="hint-msg"></p>
+
+          <div id="game-area">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+              <span id="guesses-left" style="font-size:0.85rem;" class="text-muted">10 guesses remaining</span>
+            </div>
+            <datalist id="species-list"></datalist>
+            <div class="species-input-row">
+              <input type="text" id="species-input" placeholder="Enter a species name…" list="species-list" autocomplete="off" />
+              <button class="btn btn-primary" id="guess-btn">Submit</button>
+            </div>
+            <ul class="guess-history" id="guess-list"></ul>
+          </div>
+
+          <div id="fail-area" style="display:none;" class="fail-box">
+            <div style="font-size:3rem;">😔</div>
+            <h3>Out of Guesses</h3>
+            <p>The spirit animal was a <strong id="fail-name"></strong> (<em id="fail-scientific"></em>).</p>
+            <button id="retry-btn" class="btn btn-outline mt-2">🔄 Try Again</button>
+          </div>
+
+          <div id="success-area" style="display:none;" class="success-box">
+            <div style="font-size:3rem;">🎉</div>
+            <h3>Spirit Animal Identified!</h3>
+            <p>The Project Coordinator's spirit animal is a <strong id="success-name"></strong> (<em id="success-scientific"></em>).</p>
+            <p class="text-muted" style="font-size:0.9rem;">
+              Proceed to the physical puzzle in your team box.<br/>
+              Once assembled, return here to continue.
+            </p>
+            <a href="/platform/submit/" class="btn btn-primary mt-2">Continue to Project Submission →</a>
+          </div>
+
         </div>
 
-        <div id="success-area" style="display:none;" class="success-box">
-          <div style="font-size:3rem;">🎉</div>
-          <h3>Specimen Identified!</h3>
-          <p>The target specimen is a <strong>capybara</strong> (<em>Hydrochoerus hydrochaeris</em>).</p>
-          <p class="text-muted" style="font-size:0.9rem;">
-            Proceed to the physical puzzle in your team box.<br/>
-            Once assembled, return here to continue.
-          </p>
-          <a href="/platform/submit/" class="btn btn-primary mt-2">Continue to Project Submission →</a>
+        <!-- Right: phylogenetic tree -->
+        <div class="phylo-panel">
+          <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenetic Tree</h4>
+          <div class="phylo-tree">
+            <div class="phylo-node" id="node-animalia">🌍 Animalia</div>
+            <div class="phylo-branch">
+              <div class="phylo-subtree">
+                <div class="phylo-node" id="node-vertebrata">🦴 Vertebrata</div>
+                <div class="phylo-branch">
+                  <div class="phylo-subtree">
+                    <div class="phylo-node" id="node-mammalia">🤱 Mammalia</div>
+                    <div class="phylo-branch">
+                      <div class="phylo-subtree">
+                        <div class="phylo-node" id="node-rodentia">🐀 Rodentia</div>
+                        <div class="phylo-branch">
+                          <div class="phylo-subtree">
+                            <div class="phylo-node" id="node-caviidae">🐹 Caviidae</div>
+                            <div class="phylo-branch">
+                              <div class="phylo-subtree">
+                                <div class="phylo-node phylo-target" id="node-target">❓ ???</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="phylo-subtree">
+                    <div class="phylo-node" id="node-other-mammal">… Other Mammalia</div>
+                  </div>
+                </div>
+              </div>
+              <div class="phylo-subtree">
+                <div class="phylo-node" id="node-other-vertebrata">… Other Vertebrata</div>
+              </div>
+            </div>
+          </div>
+          <div id="clade-desc" class="clade-desc" style="display:none;"></div>
         </div>
 
       </div>
@@ -47,57 +104,133 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-// ─── Minimal animal taxonomy for proximity hints ──────────────────────────────
-// Clades: 0 = Rodentia, 1 = Mammalia, 2 = Vertebrata, 3 = Animalia
-// Higher score = closer to capybara (Rodentia)
+// ─── Target configuration (change here to update the spirit animal) ───────────
+const TARGET = {
+  name:       'capybara',
+  scientific: 'Hydrochoerus hydrochaeris',
+  emoji:      '🦫',
+};
+
+// ─── Taxonomy ─────────────────────────────────────────────────────────────────
+// clade: 0 = Invertebrata, 1 = Vertebrata (non-mammal), 2 = Mammalia (non-rodent),
+//        3 = Rodentia (non-caviid), 4 = Caviidae, 5 = target (correct)
 const TAXONOMY: Record<string, { clade: number; label: string }> = {
-  // Very close (Rodentia)
-  'guinea pig':   { clade: 4, label: 'Extremely close — same family!' },
-  'nutria':       { clade: 4, label: 'Extremely close — same family!' },
-  'capybara':     { clade: 5, label: '✅ Correct!' },
-  'rat':          { clade: 3, label: 'Very warm — same order (Rodentia)' },
-  'mouse':        { clade: 3, label: 'Very warm — same order (Rodentia)' },
-  'squirrel':     { clade: 3, label: 'Warm — Rodentia' },
-  'beaver':       { clade: 3, label: 'Warm — Rodentia' },
-  'hamster':      { clade: 3, label: 'Warm — Rodentia' },
-  'porcupine':    { clade: 3, label: 'Warm — Rodentia' },
-  'chinchilla':   { clade: 3, label: 'Warm — Rodentia' },
-  'gerbil':       { clade: 3, label: 'Warm — Rodentia' },
-  'marmot':       { clade: 3, label: 'Warm — Rodentia' },
-  // Mammal
-  'rabbit':       { clade: 2, label: 'Tepid — Mammalia but not Rodentia' },
-  'hare':         { clade: 2, label: 'Tepid — Mammalia but not Rodentia' },
-  'pig':          { clade: 2, label: 'Tepid — Mammalia' },
-  'cow':          { clade: 2, label: 'Tepid — Mammalia' },
-  'horse':        { clade: 2, label: 'Tepid — Mammalia' },
-  'dog':          { clade: 2, label: 'Tepid — Mammalia' },
-  'cat':          { clade: 2, label: 'Tepid — Mammalia' },
-  'bear':         { clade: 2, label: 'Tepid — Mammalia' },
-  'deer':         { clade: 2, label: 'Tepid — Mammalia' },
-  'elephant':     { clade: 2, label: 'Tepid — Mammalia' },
-  'monkey':       { clade: 2, label: 'Tepid — Mammalia' },
-  'gorilla':      { clade: 2, label: 'Tepid — Mammalia' },
-  'human':        { clade: 2, label: 'Tepid — Mammalia' },
-  'whale':        { clade: 2, label: 'Tepid — Mammalia' },
-  'dolphin':      { clade: 2, label: 'Tepid — Mammalia' },
-  'bat':          { clade: 2, label: 'Tepid — Mammalia' },
-  // Vertebrate
-  'crocodile':    { clade: 1, label: 'Cold — Vertebrata but not Mammalia' },
-  'lizard':       { clade: 1, label: 'Cold — Vertebrata' },
-  'snake':        { clade: 1, label: 'Cold — Vertebrata' },
-  'frog':         { clade: 1, label: 'Cold — Vertebrata' },
-  'salmon':       { clade: 1, label: 'Cold — Vertebrata' },
-  'shark':        { clade: 1, label: 'Cold — Vertebrata' },
-  'eagle':        { clade: 1, label: 'Cold — Vertebrata (bird)' },
-  'penguin':      { clade: 1, label: 'Cold — Vertebrata (bird)' },
-  'parrot':       { clade: 1, label: 'Cold — Vertebrata (bird)' },
-  // Invertebrate / other
-  'octopus':      { clade: 0, label: 'Very cold — Animalia, not Vertebrata' },
-  'jellyfish':    { clade: 0, label: 'Very cold — Animalia' },
-  'ant':          { clade: 0, label: 'Very cold — Animalia' },
-  'bee':          { clade: 0, label: 'Very cold — Animalia' },
-  'fly':          { clade: 0, label: 'Very cold — Animalia' },
-  'crab':         { clade: 0, label: 'Very cold — Animalia' },
+  // Caviidae (clade 4)
+  'guinea pig':       { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
+  'nutria':           { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
+  'rock cavy':        { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
+  'patagonian mara':  { clade: 4, label: '🔥 Extremely close — same family (Caviidae)!' },
+  [TARGET.name]:      { clade: 5, label: '✅ Correct!' },
+  // Rodentia (clade 3)
+  'rat':              { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'mouse':            { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'squirrel':         { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'beaver':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'hamster':          { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'porcupine':        { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'chinchilla':       { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'gerbil':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'marmot':           { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'vole':             { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'lemming':          { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'prairie dog':      { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'woodchuck':        { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  'degu':             { clade: 3, label: '🌡️ Very warm — Rodentia' },
+  // Mammalia non-rodent (clade 2)
+  'rabbit':           { clade: 2, label: '🌤️ Warm — Mammalia, not Rodentia' },
+  'hare':             { clade: 2, label: '🌤️ Warm — Mammalia, not Rodentia' },
+  'pig':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'cow':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'horse':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'donkey':           { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'sheep':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'goat':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'dog':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'cat':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'bear':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'wolf':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'fox':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'deer':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'moose':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'elephant':         { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'giraffe':          { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'hippopotamus':     { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'rhinoceros':       { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'lion':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'tiger':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'monkey':           { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'gorilla':          { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'chimpanzee':       { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'human':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'whale':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'dolphin':          { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'seal':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'bat':              { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'hedgehog':         { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'mole':             { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'otter':            { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'badger':           { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'raccoon':          { clade: 2, label: '🌤️ Warm — Mammalia' },
+  'kangaroo':         { clade: 2, label: '🌤️ Warm — Mammalia (marsupial)' },
+  'koala':            { clade: 2, label: '🌤️ Warm — Mammalia (marsupial)' },
+  // Vertebrata non-mammal (clade 1)
+  'crocodile':        { clade: 1, label: '❄️ Cold — Vertebrata, not Mammalia' },
+  'alligator':        { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'lizard':           { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'gecko':            { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'chameleon':        { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'snake':            { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'turtle':           { clade: 1, label: '❄️ Cold — Vertebrata (reptile)' },
+  'frog':             { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
+  'toad':             { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
+  'salamander':       { clade: 1, label: '❄️ Cold — Vertebrata (amphibian)' },
+  'salmon':           { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
+  'tuna':             { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
+  'clownfish':        { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
+  'shark':            { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
+  'ray':              { clade: 1, label: '❄️ Cold — Vertebrata (fish)' },
+  'eagle':            { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'penguin':          { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'parrot':           { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'owl':              { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'flamingo':         { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'ostrich':          { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'crow':             { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  'pigeon':           { clade: 1, label: '❄️ Cold — Vertebrata (bird)' },
+  // Invertebrata (clade 0)
+  'octopus':          { clade: 0, label: '🧊 Very cold — Animalia, not Vertebrata' },
+  'squid':            { clade: 0, label: '🧊 Very cold — Animalia (mollusc)' },
+  'snail':            { clade: 0, label: '🧊 Very cold — Animalia (mollusc)' },
+  'jellyfish':        { clade: 0, label: '🧊 Very cold — Animalia' },
+  'ant':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'bee':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'butterfly':        { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'fly':              { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'beetle':           { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'dragonfly':        { clade: 0, label: '🧊 Very cold — Animalia (insect)' },
+  'crab':             { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
+  'lobster':          { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
+  'shrimp':           { clade: 0, label: '🧊 Very cold — Animalia (crustacean)' },
+  'spider':           { clade: 0, label: '🧊 Very cold — Animalia (arachnid)' },
+  'scorpion':         { clade: 0, label: '🧊 Very cold — Animalia (arachnid)' },
+  'starfish':         { clade: 0, label: '🧊 Very cold — Animalia (echinoderm)' },
+  'earthworm':        { clade: 0, label: '🧊 Very cold — Animalia (annelid)' },
+};
+
+const CLADE_DESC: Record<number, string> = {
+  0: '🧊 <strong>Invertebrata</strong> — Animals without a backbone. The vast majority of animal species on Earth.',
+  1: '❄️ <strong>Vertebrata</strong> — Animals with a backbone. Includes fish, amphibians, reptiles, birds, and mammals.',
+  2: '🌤️ <strong>Mammalia</strong> — Warm-blooded vertebrates that nurse young with milk. ~6,400 living species.',
+  3: '🌡️ <strong>Rodentia</strong> — The largest order of mammals (~2,500 species). Characterised by continuously growing incisors.',
+  4: '🔥 <strong>Caviidae</strong> — South American rodents including guinea pigs, maras, and their relatives. ~14 species.',
+};
+
+const CLADE_NODE: Record<number, string> = {
+  0: 'node-animalia',
+  1: 'node-vertebrata',
+  2: 'node-mammalia',
+  3: 'node-rodentia',
+  4: 'node-caviidae',
 };
 
 const CLADE_CLASS: Record<number, string> = {
@@ -108,17 +241,50 @@ const CLADE_CLASS: Record<number, string> = {
   4: 'hint-hot',
 };
 
-const input   = document.getElementById('species-input') as HTMLInputElement;
-const btn     = document.getElementById('guess-btn') as HTMLButtonElement;
-const list    = document.getElementById('guess-list') as HTMLUListElement;
-const hintMsg = document.getElementById('hint-msg') as HTMLParagraphElement;
-const gameArea    = document.getElementById('game-area') as HTMLDivElement;
-const successArea = document.getElementById('success-area') as HTMLDivElement;
+const MAX_GUESSES = 10;
+let guessesLeft = MAX_GUESSES;
+
+const input        = document.getElementById('species-input') as HTMLInputElement;
+const datalist     = document.getElementById('species-list') as HTMLDataListElement;
+const btn          = document.getElementById('guess-btn') as HTMLButtonElement;
+const list         = document.getElementById('guess-list') as HTMLUListElement;
+const guessesLabel = document.getElementById('guesses-left') as HTMLSpanElement;
+const gameArea     = document.getElementById('game-area') as HTMLDivElement;
+const successArea  = document.getElementById('success-area') as HTMLDivElement;
+const failArea     = document.getElementById('fail-area') as HTMLDivElement;
+const cladeDesc    = document.getElementById('clade-desc') as HTMLDivElement;
+const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
+
+// Populate success/fail text from TARGET
+(document.getElementById('success-name') as HTMLElement).textContent = TARGET.name;
+(document.getElementById('success-scientific') as HTMLElement).textContent = TARGET.scientific;
+(document.getElementById('fail-name') as HTMLElement).textContent = TARGET.name;
+(document.getElementById('fail-scientific') as HTMLElement).textContent = TARGET.scientific;
+
+// Populate autocomplete datalist
+Object.keys(TAXONOMY).forEach(name => {
+  const opt = document.createElement('option');
+  opt.value = name.charAt(0).toUpperCase() + name.slice(1);
+  datalist.appendChild(opt);
+});
 
 // Restore if already done
 if (localStorage.getItem('gnomics_species_done')) {
   gameArea.style.display = 'none';
   successArea.style.display = 'block';
+}
+
+function highlightNode(clade: number) {
+  // Light up all nodes up to this clade level
+  for (let c = 0; c <= clade && c <= 4; c++) {
+    const nodeId = CLADE_NODE[c];
+    if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
+  }
+}
+
+function updateGuessesLabel() {
+  guessesLabel.textContent = `${guessesLeft} guess${guessesLeft === 1 ? '' : 'es'} remaining`;
+  guessesLabel.style.color = guessesLeft <= 3 ? '#c0392b' : '';
 }
 
 function submitGuess() {
@@ -132,24 +298,54 @@ function submitGuess() {
 
   if (!data) {
     li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill hint-cold">Unknown species</span>`;
-    hintMsg.textContent = 'Species not found in our database. Try a more common name.';
     list.prepend(li);
     return;
   }
 
   if (data.clade === 5) {
-    // Correct!
     localStorage.setItem('gnomics_species_done', '1');
+    document.getElementById('node-target')!.textContent = `${TARGET.emoji} ${TARGET.name.charAt(0).toUpperCase() + TARGET.name.slice(1)}`;
+    document.getElementById('node-target')!.classList.add('phylo-node-hit', 'phylo-node-correct');
+    for (let c = 0; c <= 4; c++) {
+      const nodeId = CLADE_NODE[c];
+      if (nodeId) document.getElementById(nodeId)?.classList.add('phylo-node-hit');
+    }
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
     return;
   }
 
+  guessesLeft--;
+  updateGuessesLabel();
+  highlightNode(data.clade);
+
+  // Show clade description
+  if (CLADE_DESC[data.clade]) {
+    cladeDesc.innerHTML = CLADE_DESC[data.clade];
+    cladeDesc.style.display = 'block';
+  }
+
   const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
   li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
   list.prepend(li);
-  hintMsg.textContent = '';
+
+  if (guessesLeft === 0) {
+    gameArea.style.display = 'none';
+    failArea.style.display = 'block';
+  }
 }
+
+retryBtn?.addEventListener('click', () => {
+  guessesLeft = MAX_GUESSES;
+  updateGuessesLabel();
+  list.innerHTML = '';
+  cladeDesc.style.display = 'none';
+  document.querySelectorAll('.phylo-node').forEach(n => {
+    n.classList.remove('phylo-node-hit', 'phylo-node-correct');
+  });
+  failArea.style.display = 'none';
+  gameArea.style.display = 'block';
+});
 
 btn.addEventListener('click', submitGuess);
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(); });
