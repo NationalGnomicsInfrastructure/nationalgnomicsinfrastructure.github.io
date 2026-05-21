@@ -388,15 +388,10 @@ if (localStorage.getItem('gnomics_species_done')) {
 }
 
 function showSuccess() {
-  const msg = document.getElementById('success-next-msg')!;
   const btn = document.getElementById('success-btn') as HTMLAnchorElement;
   btn.textContent = 'Proceed to Next Task →';
   btn.href = '/platform/';
-  if (localStorage.getItem('gnomics_mode') === 'mixed') {
-    msg.innerHTML = 'Proceed to the physical puzzle in your team box.<br/>Once assembled, return here to continue.';
-  } else {
-    msg.style.display = 'none';
-  }
+  document.getElementById('success-next-msg')!.style.display = 'none';
   successArea.style.display = 'block';
 }
 
