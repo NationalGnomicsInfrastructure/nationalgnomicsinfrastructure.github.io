@@ -412,6 +412,10 @@ function submitGuess() {
 
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
+    const targetNode = document.getElementById('node-target')!;
+    targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
+    targetNode.classList.remove('phylo-target');
+    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
     gameArea.style.display = 'none';
     successArea.style.display = 'block';
     return;
