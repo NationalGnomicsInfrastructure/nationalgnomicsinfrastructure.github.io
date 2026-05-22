@@ -65,13 +65,13 @@ import '../../styles/species-id.css';
 
 <script>
 import PHYLO_RAW from '../../data/phylo-tree.csv?raw';
-import { ENCODED_TARGETS } from '../../data/philo-targets';
-import type { TargetConfig } from '../../data/philo-targets';
+import TARGETS_RAW from '../../data/philo-targets.txt?raw';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
-const POSSIBLE_TARGETS: TargetConfig[] = atob(ENCODED_TARGETS).trim().split('\n').map(row => {
-  const name = row.trim();
+type TargetConfig = { name: string; scientific: string; path: string[] };
+const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row => {
+  const name = atob(row.trim());
   const entry = SPECIES_DB.find(e => e[e.length - 2] === name)!;
   const scientific = entry[entry.length - 1];
   const path = entry.slice(0, -2);
