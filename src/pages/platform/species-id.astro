@@ -71,9 +71,10 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
 const POSSIBLE_TARGETS: TargetConfig[] = atob(ENCODED_TARGETS).trim().split('\n').map(row => {
-  const [name, scientific] = row.split(',');
-  const entry = SPECIES_DB.find(e => e[e.length - 1] === name)!;
-  const path = entry.slice(0, -1);
+  const name = row.trim();
+  const entry = SPECIES_DB.find(e => e[e.length - 2] === name)!;
+  const scientific = entry[entry.length - 1];
+  const path = entry.slice(0, -2);
   return { name, scientific, path };
 });
 
@@ -94,7 +95,7 @@ const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot'
 
 const TAXONOMY: Record<string, { clade: number; label: string }> = {};
 for (const entry of SPECIES_DB) {
-  const species = entry[entry.length - 1];
+  const species = entry[entry.length - 2];
   if (species === TARGET.name) {
     TAXONOMY[species] = { clade: CORRECT_CLADE, label: '✅ Correct!' };
     continue;
