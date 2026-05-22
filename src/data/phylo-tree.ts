@@ -92,6 +92,7 @@ export const SPECIES_DB: string[][] = [
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','testudines','turtle'],
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','bufonidae','toad'],
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','dendrobatidae','poison dart frog'],
+  ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae','red-eyed tree frog'],
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae','tree frog'],
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae','bullfrog'],
   ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','ranidae','frog'],
