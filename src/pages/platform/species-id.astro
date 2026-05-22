@@ -86,14 +86,15 @@ const WARMTH_ICON = ['🥶','🧊','🧊','❄️','❄️','🌤️','🌤️',
 const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot','Very hot'];
 
 const TAXONOMY: Record<string, { clade: number; label: string }> = {};
-for (const [species, data] of Object.entries(SPECIES_DB)) {
+for (const entry of SPECIES_DB) {
+  const species = entry[entry.length - 1];
   if (species === TARGET.name) {
     TAXONOMY[species] = { clade: CORRECT_CLADE, label: '✅ Correct!' };
     continue;
   }
   let clade = 0;
   for (let i = 0; i < TARGET.path.length; i++) {
-    if (data.path.includes(TARGET.path[i])) {
+    if (entry.includes(TARGET.path[i])) {
       clade = i + 1;
     } else {
       break;
