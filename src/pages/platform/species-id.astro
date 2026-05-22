@@ -8,7 +8,7 @@ import '../../styles/species-id.css';
     <div class="container">
       <div class="breadcrumb"><a href="/">Home</a> / <a href="/platform/">Platform</a> / Species Identification</div>
       <h1>Species Identification Tool</h1>
-      <p>Identify the spirit animal of the Project Coordinator who owns your gnomics sample.</p>
+      <p>Identify the spirit animal of the Project Coordinator in charge of the project you are tasked to deliver.</p>
     </div>
   </div>
 
@@ -21,8 +21,9 @@ import '../../styles/species-id.css';
 
           <div class="alert alert-info mb-2">
             <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
-            Identify the spirit animal linked to your sample by entering species names below.
-            Each guess returns a phylogenetic proximity hint.<br>
+            To proceed with project delivery, you must identify the spirit animal of the Project Coordinator in charge of your project.
+            Enter animal names below — each guess returns a phylogenetic proximity hint.
+            Every name in the tree is linked to its Wikipedia entry.<br>
             <span id="guesses-left">13 guesses remaining</span>
           </div>
 
@@ -64,11 +65,19 @@ import '../../styles/species-id.css';
 </Layout>
 
 <script>
-import { SPECIES_DB } from '../../data/phylo-tree';
-import { ENCODED_TARGETS } from '../../data/philo-targets';
-import type { TargetConfig } from '../../data/philo-targets';
+import PHYLO_RAW from '../../data/phylo-tree.csv?raw';
+import TARGETS_RAW from '../../data/philo-targets.txt?raw';
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
-const POSSIBLE_TARGETS: TargetConfig[] = ENCODED_TARGETS.map(s => JSON.parse(decodeURIComponent(escape(atob(s)))));
+type TargetConfig = { name: string; scientific: string; path: string[] };
+const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row => {
+  const name = atob(row.trim());
+  const entry = SPECIES_DB.find(e => e[e.length - 2] === name)!;
+  const scientific = entry[entry.length - 1];
+  const path = entry.slice(0, -2);
+  return { name, scientific, path };
+});
 
 
 // ─── Select or restore target ─────────────────────────────────────────────────
@@ -86,20 +95,21 @@ const WARMTH_ICON = ['🥶','🧊','🧊','❄️','❄️','🌤️','🌤️',
 const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot','Very hot'];
 
 const TAXONOMY: Record<string, { clade: number; label: string }> = {};
-for (const [species, data] of Object.entries(SPECIES_DB)) {
+for (const entry of SPECIES_DB) {
+  const species = entry[entry.length - 2];
   if (species === TARGET.name) {
     TAXONOMY[species] = { clade: CORRECT_CLADE, label: '✅ Correct!' };
     continue;
   }
   let clade = 0;
   for (let i = 0; i < TARGET.path.length; i++) {
-    if (data.path.includes(TARGET.path[i])) {
+    if (entry.includes(TARGET.path[i])) {
       clade = i + 1;
     } else {
       break;
     }
   }
-  const pathLabel = clade > 0 ? TARGET.labels[clade - 1] : 'Non-Bilateria';
+  const pathLabel = clade > 0 ? cap(TARGET.path[clade - 1]) : 'Non-Bilateria';
   const icon = WARMTH_ICON[clade] ?? '🧊';
   const word = WARMTH_WORD[clade] ?? 'Cold';
   TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel}` };
@@ -135,7 +145,7 @@ function rebuildTree(won = false) {
     if (won) {
       // Full tree: show all remaining path nodes then the target
       if (clade < TARGET.path.length) {
-        const label = TARGET.labels[clade];
+        const label = cap(TARGET.path[clade]);
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(clade + 1)}</div></div>`);
       } else {
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit phylo-node-correct" id="node-target"><a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a></div></div>`);
@@ -147,7 +157,7 @@ function rebuildTree(won = false) {
         if (revealedClades.has(c)) { nextRevealed = c; break; }
       }
       if (nextRevealed !== -1) {
-        const label = TARGET.labels[nextRevealed - 1]; // nextRevealed is 1-indexed
+        const label = cap(TARGET.path[nextRevealed - 1]); // nextRevealed is 1-indexed
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(nextRevealed)}</div></div>`);
       } else {
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-target" id="node-target">???</div></div>`);
@@ -184,7 +194,6 @@ const failArea     = document.getElementById('fail-area') as HTMLDivElement;
 const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 
 // Populate success/fail target name
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 (document.getElementById('success-name') as HTMLElement).textContent = cap(TARGET.name);
 (document.getElementById('success-scientific') as HTMLElement).textContent = TARGET.scientific;
 (document.getElementById('fail-name') as HTMLElement).textContent = cap(TARGET.name);
@@ -196,8 +205,15 @@ const ALL_SPECIES = Object.keys(TAXONOMY).map(cap).sort();
 function updateDatalist(query: string) {
   datalist.innerHTML = '';
   if (!query) return;
-  const q = query.toLowerCase();
-  ALL_SPECIES.filter(n => n.toLowerCase().startsWith(q)).forEach(n => {
+  const ql = query.toLowerCase();
+  const matches = ALL_SPECIES.filter(n => n.toLowerCase().includes(ql));
+  matches.sort((a, b) => {
+    const al = a.toLowerCase(), bl = b.toLowerCase();
+    const aStart = al.startsWith(ql), bStart = bl.startsWith(ql);
+    if (aStart !== bStart) return aStart ? -1 : 1;
+    return al.localeCompare(bl);
+  });
+  matches.forEach(n => {
     const opt = document.createElement('option');
     opt.value = n;
     datalist.appendChild(opt);
