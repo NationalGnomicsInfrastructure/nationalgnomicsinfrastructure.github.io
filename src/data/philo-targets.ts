@@ -1,4 +1,4 @@
-// ─── Game Targets (base64-encoded to avoid spoilers in source) ───────────────
+// ─── Encoded game data ────────────────────────────────────────────────────────
 
 export type TargetConfig = {
   name: string; scientific: string;

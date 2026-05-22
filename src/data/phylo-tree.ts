@@ -1,6 +1,6 @@
 // ─── Phylogenomic Tree Data ───────────────────────────────────────────────────
 // Species database: each entry has an ordered phylogenetic path (broad → specific)
-// and a display label. Taxonomy clade is computed dynamically against the target.
+// and a display label. Taxonomy clade is computed dynamically during the game.
 
 export type SpeciesEntry = { path: string[]; display: string };
 
@@ -152,7 +152,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'mole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','talpidae'],       display: 'Talpidae' },
   'kangaroo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
   'koala':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
-  // ─── Target species (included so they appear in autocomplete for other targets) ───
+
   'capybara':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'],                display: 'Caviidae' },
   'cat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'],                 display: 'Felidae' },
   'red-eyed tree frog':  { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],                             display: 'Hylidae' },
