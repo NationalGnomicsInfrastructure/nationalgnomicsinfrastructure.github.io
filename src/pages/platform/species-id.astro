@@ -67,9 +67,13 @@ import '../../styles/species-id.css';
 import PHYLO_RAW from '../../data/phylo-tree.csv?raw';
 import { ENCODED_TARGETS } from '../../data/philo-targets';
 import type { TargetConfig } from '../../data/philo-targets';
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
-const POSSIBLE_TARGETS: TargetConfig[] = ENCODED_TARGETS.map(s => JSON.parse(decodeURIComponent(escape(atob(s)))));
+const POSSIBLE_TARGETS: TargetConfig[] = atob(ENCODED_TARGETS).trim().split('\n').map(row => {
+  const [name, scientific, ...path] = row.split(',');
+  return { name, scientific, path };
+});
 
 
 // ─── Select or restore target ─────────────────────────────────────────────────
@@ -101,7 +105,7 @@ for (const entry of SPECIES_DB) {
       break;
     }
   }
-  const pathLabel = clade > 0 ? TARGET.labels[clade - 1] : 'Non-Bilateria';
+  const pathLabel = clade > 0 ? cap(TARGET.path[clade - 1]) : 'Non-Bilateria';
   const icon = WARMTH_ICON[clade] ?? '🧊';
   const word = WARMTH_WORD[clade] ?? 'Cold';
   TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel}` };
@@ -137,7 +141,7 @@ function rebuildTree(won = false) {
     if (won) {
       // Full tree: show all remaining path nodes then the target
       if (clade < TARGET.path.length) {
-        const label = TARGET.labels[clade];
+        const label = cap(TARGET.path[clade]);
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(clade + 1)}</div></div>`);
       } else {
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit phylo-node-correct" id="node-target"><a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a></div></div>`);
@@ -149,7 +153,7 @@ function rebuildTree(won = false) {
         if (revealedClades.has(c)) { nextRevealed = c; break; }
       }
       if (nextRevealed !== -1) {
-        const label = TARGET.labels[nextRevealed - 1]; // nextRevealed is 1-indexed
+        const label = cap(TARGET.path[nextRevealed - 1]); // nextRevealed is 1-indexed
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(nextRevealed)}</div></div>`);
       } else {
         items.push(`<div class="phylo-item"><div class="phylo-node phylo-target" id="node-target">???</div></div>`);
@@ -186,7 +190,6 @@ const failArea     = document.getElementById('fail-area') as HTMLDivElement;
 const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 
 // Populate success/fail target name
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 (document.getElementById('success-name') as HTMLElement).textContent = cap(TARGET.name);
 (document.getElementById('success-scientific') as HTMLElement).textContent = TARGET.scientific;
 (document.getElementById('fail-name') as HTMLElement).textContent = cap(TARGET.name);
