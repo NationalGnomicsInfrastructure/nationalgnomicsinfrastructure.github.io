@@ -16,13 +16,12 @@ import Layout from '../../layouts/Layout.astro';
       <!-- Pre-launch state (default) -->
       <div id="pre-launch" style="max-width:640px;margin:0 auto;text-align:center;">
         <div class="alert alert-info">
-          <strong>New session.</strong> Authenticate with your team credentials and press the button below to begin your platform session.
-          Your session will be active for <strong>45 minutes</strong>.
+          <strong>New delivery.</strong> Authenticate with your delivery code and press the button below to begin your delivery.
         </div>
 
         <div id="access-code-card" class="card mt-3" style="text-align:left;">
-          <h3>Session Access Code</h3>
-          <p class="text-muted" style="font-size:0.9rem;">Enter the access code provided by your session coordinator.</p>
+          <h3>Delivery Code</h3>
+          <p class="text-muted" style="font-size:0.9rem;">Enter the access code provided by your project coordinator.</p>
           <div class="form-group">
             <label for="access-code">Access Code</label>
             <div style="display:flex;gap:0.5rem;align-items:center;">
@@ -37,14 +36,14 @@ import Layout from '../../layouts/Layout.astro';
         <div id="user-auth" style="display:none;">
           <div class="card mt-3" style="text-align:left;">
             <h3>User Authentication</h3>
-            <p class="text-muted" style="font-size:0.9rem;">Enter your name to begin your personal session.</p>
+            <p class="text-muted" style="font-size:0.9rem;">Enter your name to begin your delivery.</p>
             <div class="form-group">
               <label for="user-name">Your Name</label>
               <input type="text" id="user-name" placeholder="First name" />
             </div>
           </div>
           <button id="launch-btn-online" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-            🚀 Initialise Platform Session
+            🚀 Initialise Platform
           </button>
         </div>
 
@@ -52,7 +51,7 @@ import Layout from '../../layouts/Layout.astro';
         <div id="team-auth" style="display:none;">
           <div class="card mt-3" style="text-align:left;">
             <h3>Team Authentication</h3>
-            <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your session form.</p>
+            <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your form.</p>
             <div class="form-group">
               <label for="team-name">Team Name</label>
               <input type="text" id="team-name" placeholder="e.g. The Gnome Rangers" />
@@ -63,12 +62,12 @@ import Layout from '../../layouts/Layout.astro';
             </div>
           </div>
           <button id="launch-btn-mixed" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-            🚀 Initialise Platform Session
+            🚀 Initialise Platform
           </button>
         </div>
 
         <button id="verify-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-          🔑 Verify Access Code
+          🔑 Verify Delivery Code
         </button>
       </div>
 
