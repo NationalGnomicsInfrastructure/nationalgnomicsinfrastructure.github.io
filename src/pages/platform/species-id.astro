@@ -7,7 +7,7 @@ import '../../styles/species-id.css';
   <div class="page-header">
     <div class="container">
       <h1>Species Identification Tool</h1>
-      <p>Identify the spirit animal of the Project Coordinator in charge of the project you are tasked to deliver.</p>
+      <p>Identify the spirit animal of the Project Coordinator in charge of your delivery project.</p>
     </div>
   </div>
 
@@ -18,10 +18,13 @@ import '../../styles/species-id.css';
         <!-- Left: game -->
         <div class="species-game">
 
+          <p class="text-muted" style="font-size:0.95rem;margin-bottom:1rem;">
+            Each Project Coordinator has a spirit animal. To know which project you are tasked to deliver,
+            you must first identify your Project Coordinator — and to do that, you need to find their spirit animal.
+          </p>
+
           <div class="alert alert-info mb-2">
-            <strong>Instructions:</strong> Every Project Coordinator has a spirit animal.
-            To proceed with project delivery, you must identify the spirit animal of the Project Coordinator in charge of your project.
-            Enter animal names below — each guess returns a phylogenetic proximity hint.
+            <strong>Instructions:</strong> Enter animal names below — each guess returns a phylogenetic proximity hint.
             Every name in the tree is linked to its Wikipedia entry.<br>
             <span id="guesses-left">13 guesses remaining</span>
           </div>
