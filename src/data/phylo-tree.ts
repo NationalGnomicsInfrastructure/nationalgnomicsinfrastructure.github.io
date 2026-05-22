@@ -74,6 +74,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'chameleon':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
   'crocodile':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','crocodilia'], display: 'Reptilia' },
   'gecko':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
+  'komodo dragon':       { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
   'lizard':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
   'snake':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
   'turtle':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','testudines'], display: 'Reptilia' },
@@ -98,6 +99,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – non-Felidae
   'badger':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
   'bear':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','ursidae'],   display: 'Carnivora (Ursidae)' },
+  'panda':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','ursidae'],    display: 'Carnivora (Ursidae)' },
   'dog':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
   'fox':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
   'otter':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','mustelidae'], display: 'Carnivora (Mustelidae)' },
@@ -133,6 +135,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'deer':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
   'dolphin':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Cetacea' },
   'donkey':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','perissodactyla'], display: 'Perissodactyla' },
+  'dugong':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','sirenia'],        display: 'Sirenia' },
   'elephant':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','proboscidea'],    display: 'Proboscidea' },
   'giraffe':             { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
   'goat':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','artiodactyla'],   display: 'Artiodactyla' },
