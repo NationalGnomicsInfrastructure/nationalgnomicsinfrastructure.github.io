@@ -33,11 +33,12 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'mosquito':            { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','diptera'],     display: 'Diptera' },
   'dragonfly':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','odonata'],     display: 'Odonata' },
   'grasshopper':         { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','orthoptera'],  display: 'Orthoptera' },
-  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – Hemiptera – non-Cicadidae
+  // Bilateria – Protostomia – Ecdysozoa – Arthropoda – Insecta – Pterygota – Hemiptera
   'aphid':               { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','sternorrhyncha'], display: 'Hemiptera' },
   'stink bug':           { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
   'leafhopper':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadellidae'],  display: 'Hemiptera' },
   'shield bug':          { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','pentatomidae'],  display: 'Hemiptera' },
+  'cicada':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],                          display: 'Cicadidae' },
   // Bilateria – Protostomia – Ecdysozoa – non-Arthropoda
   'roundworm':           { path: ['bilateria','protostomia','ecdysozoa','nematoda'],   display: 'Nematoda' },
   'tardigrade':          { path: ['bilateria','protostomia','ecdysozoa','tardigrada'], display: 'Tardigrada' },
@@ -71,6 +72,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   "white's tree frog":   { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
   'gray tree frog':      { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
   'spring peeper':       { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'], display: 'Hylidae' },
+  'red-eyed tree frog':  { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],                             display: 'Hylidae' },
   // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Reptilia
   'snake':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
   'lizard':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','reptilia','squamata'],   display: 'Reptilia' },
@@ -96,6 +98,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'jaguar':              { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
   'lynx':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
   'puma':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'], display: 'Felidae' },
+  'cat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'],                 display: 'Felidae' },
   // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Carnivora – non-Felidae
   'dog':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
   'wolf':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','canidae'],    display: 'Carnivora (Canidae)' },
@@ -110,6 +113,7 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'guinea pig':          { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
   'rock cavy':           { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
   'patagonian mara':     { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'], display: 'Caviidae' },
+  'capybara':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'],                display: 'Caviidae' },
   // Bilateria – Deuterostomia – Chordata – Vertebrata – Tetrapoda – Amniota – Mammalia – Rodentia – non-Caviidae
   'rat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
   'mouse':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','muridae'],    display: 'Rodentia (Muridae)' },
@@ -152,9 +156,4 @@ export const SPECIES_DB: Record<string, SpeciesEntry> = {
   'mole':                { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','talpidae'],       display: 'Talpidae' },
   'kangaroo':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
   'koala':               { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','marsupialia'],    display: 'Marsupialia' },
-
-  'capybara':            { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','rodentia','caviidae'],                display: 'Caviidae' },
-  'cat':                 { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amniota','mammalia','carnivora','felidae'],                 display: 'Felidae' },
-  'red-eyed tree frog':  { path: ['bilateria','deuterostomia','chordata','vertebrata','tetrapoda','amphibia','anura','hylidae'],                             display: 'Hylidae' },
-  'cicada':              { path: ['bilateria','protostomia','ecdysozoa','arthropoda','insecta','pterygota','hemiptera','cicadidae'],                          display: 'Cicadidae' },
 };
