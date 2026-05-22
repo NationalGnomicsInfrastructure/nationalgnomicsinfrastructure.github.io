@@ -71,7 +71,9 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
 const POSSIBLE_TARGETS: TargetConfig[] = atob(ENCODED_TARGETS).trim().split('\n').map(row => {
-  const [name, scientific, ...path] = row.split(',');
+  const [name, scientific] = row.split(',');
+  const entry = SPECIES_DB.find(e => e[e.length - 1] === name)!;
+  const path = entry.slice(0, -1);
   return { name, scientific, path };
 });
 
