@@ -197,8 +197,15 @@ const ALL_SPECIES = Object.keys(TAXONOMY).map(cap).sort();
 function updateDatalist(query: string) {
   datalist.innerHTML = '';
   if (!query) return;
-  const q = query.toLowerCase();
-  ALL_SPECIES.filter(n => n.toLowerCase().startsWith(q)).forEach(n => {
+  const ql = query.toLowerCase();
+  const matches = ALL_SPECIES.filter(n => n.toLowerCase().includes(ql));
+  matches.sort((a, b) => {
+    const al = a.toLowerCase(), bl = b.toLowerCase();
+    const aStart = al.startsWith(ql), bStart = bl.startsWith(ql);
+    if (aStart !== bStart) return aStart ? -1 : 1;
+    return al.localeCompare(bl);
+  });
+  matches.forEach(n => {
     const opt = document.createElement('option');
     opt.value = n;
     datalist.appendChild(opt);
