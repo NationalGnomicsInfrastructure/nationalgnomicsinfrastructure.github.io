@@ -1,206 +1,313 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
 ---
+
 <Layout title="Platform Access" showTimer={true}>
-
-  <div class="page-header">
-    <div class="container">
-      <h1>Platform Access</h1>
-      <p>Welcome to the NGnI analysis and project management portal.</p>
+    <div class="page-header">
+        <div class="container">
+            <h1>Platform Access</h1>
+            <p>Welcome to the NGnI analysis and project management portal.</p>
+        </div>
     </div>
-  </div>
 
-  <section>
-    <div class="container">
+    <section>
+        <div class="container">
+            <!-- Pre-launch state (default) -->
+            <div
+                id="pre-launch"
+                style="max-width:640px;margin:0 auto;text-align:center;"
+            >
+                <div class="alert alert-info">
+                    <strong>New delivery.</strong> Authenticate with your delivery
+                    code and press the button below to begin your delivery.
+                </div>
 
-      <!-- Pre-launch state (default) -->
-      <div id="pre-launch" style="max-width:640px;margin:0 auto;text-align:center;">
-        <div class="alert alert-info">
-          <strong>New delivery.</strong> Authenticate with your delivery code and press the button below to begin your delivery.
-        </div>
+                <div
+                    id="access-code-card"
+                    class="card mt-3"
+                    style="text-align:left;"
+                >
+                    <h3>Delivery Code</h3>
+                    <p class="text-muted" style="font-size:0.9rem;">
+                        Enter the access code provided by your project
+                        coordinator.
+                    </p>
+                    <div class="form-group">
+                        <label for="access-code">Access Code</label>
+                        <div
+                            style="display:flex;gap:0.5rem;align-items:center;"
+                        >
+                            <input
+                                type="password"
+                                id="access-code"
+                                placeholder="••••••••••••"
+                                autocomplete="off"
+                                style="flex:1;"
+                            />
+                            <button
+                                type="button"
+                                id="toggle-code"
+                                title="Show/hide code"
+                                style="background:transparent;border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:0.35rem 0.6rem;cursor:pointer;font-size:1rem;line-height:1;"
+                                >🔓</button
+                            >
+                        </div>
+                    </div>
+                    <div
+                        id="access-code-error"
+                        style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;"
+                    >
+                        ❌ Invalid access code. Please try again.
+                    </div>
+                </div>
 
-        <div id="access-code-card" class="card mt-3" style="text-align:left;">
-          <h3>Delivery Code</h3>
-          <p class="text-muted" style="font-size:0.9rem;">Enter the access code provided by your project coordinator.</p>
-          <div class="form-group">
-            <label for="access-code">Access Code</label>
-            <div style="display:flex;gap:0.5rem;align-items:center;">
-              <input type="password" id="access-code" placeholder="••••••••••••" autocomplete="off" style="flex:1;" />
-              <button type="button" id="toggle-code" title="Show/hide code" style="background:transparent;border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:0.35rem 0.6rem;cursor:pointer;font-size:1rem;line-height:1;">👁</button>
+                <!-- Online mode: single user -->
+                <div id="user-auth" style="display:none;">
+                    <div class="card mt-3" style="text-align:left;">
+                        <h3>User Authentication</h3>
+                        <p class="text-muted" style="font-size:0.9rem;">
+                            Enter your name to begin your delivery.
+                        </p>
+                        <div class="form-group">
+                            <label for="user-name">Your Name</label>
+                            <input
+                                type="text"
+                                id="user-name"
+                                placeholder="First name"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        id="launch-btn-online"
+                        class="btn btn-primary mt-3"
+                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
+                    >
+                        🚀 Initialise Platform
+                    </button>
+                </div>
+
+                <!-- Mixed mode: team -->
+                <div id="team-auth" style="display:none;">
+                    <div class="card mt-3" style="text-align:left;">
+                        <h3>Team Authentication</h3>
+                        <p class="text-muted" style="font-size:0.9rem;">
+                            Enter your team name and leader as registered in
+                            your form.
+                        </p>
+                        <div class="form-group">
+                            <label for="team-name">Team Name</label>
+                            <input
+                                type="text"
+                                id="team-name"
+                                placeholder="e.g. The Gnome Rangers"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="team-leader">Team Leader</label>
+                            <input
+                                type="text"
+                                id="team-leader"
+                                placeholder="First name"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        id="launch-btn-mixed"
+                        class="btn btn-primary mt-3"
+                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
+                    >
+                        🚀 Initialise Platform
+                    </button>
+                </div>
+
+                <button
+                    id="verify-btn"
+                    class="btn btn-primary mt-3"
+                    style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
+                >
+                    🔑 Verify Delivery Code
+                </button>
             </div>
-          </div>
-          <div id="access-code-error" style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;">❌ Invalid access code. Please try again.</div>
-        </div>
 
-        <!-- Online mode: single user -->
-        <div id="user-auth" style="display:none;">
-          <div class="card mt-3" style="text-align:left;">
-            <h3>User Authentication</h3>
-            <p class="text-muted" style="font-size:0.9rem;">Enter your name to begin your delivery.</p>
-            <div class="form-group">
-              <label for="user-name">Your Name</label>
-              <input type="text" id="user-name" placeholder="First name" />
+            <!-- Post-launch state (hidden until button press) -->
+            <div
+                id="post-launch"
+                style="display:none;max-width:800px;margin:0 auto;"
+            >
+                <div class="alert alert-success">
+                    Welcome <span id="display-team"></span>, Project Delivery
+                    starting.
+                </div>
+
+                <div class="cards mt-3">
+                    <a
+                        href="/platform/species-id/"
+                        class="card"
+                        id="card-species-id"
+                        style="text-decoration:none;cursor:pointer;"
+                    >
+                        <div class="card-icon">🔬</div>
+                        <h3>Species Identification Tool</h3>
+                        <p>
+                            Identify the spirit animal of the Project
+                            Coordinator in charge of your delivery project.
+                        </p>
+                        <span
+                            class="btn btn-outline"
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;"
+                            >Open Tool →</span
+                        >
+                    </a>
+                    <div id="card-submit" class="card" style="display:none;">
+                        <div class="card-icon">📋</div>
+                        <h3>Project Submission</h3>
+                        <p>
+                            Submit your gnomics project to retrieve your
+                            assigned accession ID.
+                        </p>
+                        <span
+                            class="btn btn-outline"
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;"
+                            >Open Tool →</span
+                        >
+                    </div>
+                </div>
             </div>
-          </div>
-          <button id="launch-btn-online" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-            🚀 Initialise Platform
-          </button>
         </div>
-
-        <!-- Mixed mode: team -->
-        <div id="team-auth" style="display:none;">
-          <div class="card mt-3" style="text-align:left;">
-            <h3>Team Authentication</h3>
-            <p class="text-muted" style="font-size:0.9rem;">Enter your team name and leader as registered in your form.</p>
-            <div class="form-group">
-              <label for="team-name">Team Name</label>
-              <input type="text" id="team-name" placeholder="e.g. The Gnome Rangers" />
-            </div>
-            <div class="form-group">
-              <label for="team-leader">Team Leader</label>
-              <input type="text" id="team-leader" placeholder="First name" />
-            </div>
-          </div>
-          <button id="launch-btn-mixed" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-            🚀 Initialise Platform
-          </button>
-        </div>
-
-        <button id="verify-btn" class="btn btn-primary mt-3" style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;">
-          🔑 Verify Delivery Code
-        </button>
-      </div>
-
-      <!-- Post-launch state (hidden until button press) -->
-      <div id="post-launch" style="display:none;max-width:800px;margin:0 auto;">
-        <div class="alert alert-success">
-          Welcome <span id="display-team"></span>, Project Delivery starting.
-        </div>
-
-        <div class="cards mt-3">
-          <a href="/platform/species-id/" class="card" id="card-species-id" style="text-decoration:none;cursor:pointer;">
-            <div class="card-icon">🔬</div>
-            <h3>Species Identification Tool</h3>
-            <p>Identify the spirit animal of the Project Coordinator in charge of your delivery project.</p>
-            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;">Open Tool →</span>
-          </a>
-          <div id="card-submit" class="card" style="display:none;">
-            <div class="card-icon">📋</div>
-            <h3>Project Submission</h3>
-            <p>Submit your gnomics project to retrieve your assigned accession ID.</p>
-            <span class="btn btn-outline" style="font-size:0.85rem;padding:0.4rem 0.9rem;">Open Tool →</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
+    </section>
 </Layout>
 
 <script>
-  const H = ['06770edea421d96182c10ddc3dc192c2a4ac39c05670beb3738e38a43b300d37',
-             '8a88a25603494bf72ac434a30f32fd8143e0bdc18509b888ed7ef917b2bf3610'];
-  const M = ['online', 'mixed'];
+    const H = [
+        "06770edea421d96182c10ddc3dc192c2a4ac39c05670beb3738e38a43b300d37",
+        "8a88a25603494bf72ac434a30f32fd8143e0bdc18509b888ed7ef917b2bf3610",
+    ];
+    const M = ["online", "mixed"];
 
-  const launchBtnOnline = document.getElementById('launch-btn-online');
-  const launchBtnMixed = document.getElementById('launch-btn-mixed');
-  const verifyBtn = document.getElementById('verify-btn');
-  const preLaunch = document.getElementById('pre-launch');
-  const postLaunch = document.getElementById('post-launch');
-  const displayTeam = document.getElementById('display-team');
-  const userAuth = document.getElementById('user-auth');
-  const teamAuth = document.getElementById('team-auth');
-  const codeCard = document.getElementById('access-code-card');
-  const codeError = document.getElementById('access-code-error');
-  const toggleBtn = document.getElementById('toggle-code');
-  const codeInput = document.getElementById('access-code') as HTMLInputElement;
+    const launchBtnOnline = document.getElementById("launch-btn-online");
+    const launchBtnMixed = document.getElementById("launch-btn-mixed");
+    const verifyBtn = document.getElementById("verify-btn");
+    const preLaunch = document.getElementById("pre-launch");
+    const postLaunch = document.getElementById("post-launch");
+    const displayTeam = document.getElementById("display-team");
+    const userAuth = document.getElementById("user-auth");
+    const teamAuth = document.getElementById("team-auth");
+    const codeCard = document.getElementById("access-code-card");
+    const codeError = document.getElementById("access-code-error");
+    const toggleBtn = document.getElementById("toggle-code");
+    const codeInput = document.getElementById(
+        "access-code",
+    ) as HTMLInputElement;
 
-  toggleBtn?.addEventListener('click', () => {
-    const isHidden = codeInput.type === 'password';
-    codeInput.type = isHidden ? 'text' : 'password';
-    toggleBtn.textContent = isHidden ? '🙈' : '👁';
-  });
+    toggleBtn?.addEventListener("click", () => {
+        const isHidden = codeInput.type === "password";
+        codeInput.type = isHidden ? "text" : "password";
+        toggleBtn.textContent = isHidden ? "🔒" : "🔓";
+    });
 
-  // Restore session if already started, or auto-restart if credentials are present (after a restart)
-  const existingStart = localStorage.getItem('gnomics_start');
-  const existingMode  = localStorage.getItem('gnomics_mode');
-  if (existingMode && !existingStart) {
-    localStorage.setItem('gnomics_start', String(Date.now()));
-    window.dispatchEvent(new Event('gnomics_started'));
-  }
-  if (existingMode) {
-    const displayName = localStorage.getItem('gnomics_team') || localStorage.getItem('gnomics_user') || 'you';
-    preLaunch!.style.display = 'none';
-    postLaunch!.style.display = 'block';
-    displayTeam!.textContent = displayName;
-    if (localStorage.getItem('gnomics_species_done')) {
-      unlockCards();
-      const card = document.getElementById('card-species-id') as HTMLAnchorElement;
-      if (card) {
-        card.removeAttribute('href');
-        card.style.cursor = 'default';
-        card.style.opacity = '0.5';
-        card.querySelector('.btn')!.textContent = '✅ Completed';
-      }
+    // Restore session if already started, or auto-restart if credentials are present (after a restart)
+    const existingStart = localStorage.getItem("gnomics_start");
+    const existingMode = localStorage.getItem("gnomics_mode");
+    if (existingMode && !existingStart) {
+        localStorage.setItem("gnomics_start", String(Date.now()));
+        window.dispatchEvent(new Event("gnomics_started"));
     }
-  }
-
-  async function sha256(str: string): Promise<string> {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-
-  verifyBtn?.addEventListener('click', async () => {
-    const code = codeInput?.value.trim();
-    if (!code) return;
-    const hash = await sha256(code);
-    const idx = H.indexOf(hash);
-    if (idx === -1) {
-      codeError!.style.display = 'block';
-      return;
+    if (existingMode) {
+        const displayName =
+            localStorage.getItem("gnomics_team") ||
+            localStorage.getItem("gnomics_user") ||
+            "you";
+        preLaunch!.style.display = "none";
+        postLaunch!.style.display = "block";
+        displayTeam!.textContent = displayName;
+        if (localStorage.getItem("gnomics_species_done")) {
+            unlockCards();
+            const card = document.getElementById(
+                "card-species-id",
+            ) as HTMLAnchorElement;
+            if (card) {
+                card.removeAttribute("href");
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                card.querySelector(".btn")!.textContent = "✅ Completed";
+            }
+        }
     }
-    codeCard!.style.display = 'none';
-    verifyBtn!.style.display = 'none';
-    localStorage.setItem('gnomics_mode', M[idx]);
-    if (M[idx] === 'online') {
-      userAuth!.style.display = 'block';
-    } else {
-      teamAuth!.style.display = 'block';
+
+    async function sha256(str: string): Promise<string> {
+        const buf = await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode(str),
+        );
+        return Array.from(new Uint8Array(buf))
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
     }
-  });
 
-  function startSession(displayName: string) {
-    localStorage.setItem('gnomics_start', String(Date.now()));
-    preLaunch!.style.display = 'none';
-    postLaunch!.style.display = 'block';
-    displayTeam!.textContent = displayName;
-    window.dispatchEvent(new Event('gnomics_started'));
-    location.reload();
-  }
+    verifyBtn?.addEventListener("click", async () => {
+        const code = codeInput?.value.trim();
+        if (!code) return;
+        const hash = await sha256(code);
+        const idx = H.indexOf(hash);
+        if (idx === -1) {
+            codeError!.style.display = "block";
+            return;
+        }
+        codeCard!.style.display = "none";
+        verifyBtn!.style.display = "none";
+        localStorage.setItem("gnomics_mode", M[idx]);
+        if (M[idx] === "online") {
+            userAuth!.style.display = "block";
+        } else {
+            teamAuth!.style.display = "block";
+        }
+    });
 
-  launchBtnOnline?.addEventListener('click', () => {
-    const name = (document.getElementById('user-name') as HTMLInputElement)?.value.trim();
-    if (!name) { alert('Please enter your name before starting.'); return; }
-    localStorage.setItem('gnomics_user', name);
-    startSession(name);
-  });
-
-  launchBtnMixed?.addEventListener('click', () => {
-    const teamName = (document.getElementById('team-name') as HTMLInputElement)?.value.trim();
-    const teamLeader = (document.getElementById('team-leader') as HTMLInputElement)?.value.trim();
-    if (!teamName || !teamLeader) { alert('Please enter your team name and leader before starting.'); return; }
-    localStorage.setItem('gnomics_team', teamName);
-    localStorage.setItem('gnomics_leader', teamLeader);
-    startSession(teamName);
-  });
-
-  function unlockCards() {
-    const card = document.getElementById('card-submit') as HTMLElement;
-    if (card) {
-      card.style.display = 'block';
-      card.style.cursor = 'pointer';
-      card.onclick = () => { window.location.href = '/platform/submit/'; };
+    function startSession(displayName: string) {
+        localStorage.setItem("gnomics_start", String(Date.now()));
+        preLaunch!.style.display = "none";
+        postLaunch!.style.display = "block";
+        displayTeam!.textContent = displayName;
+        window.dispatchEvent(new Event("gnomics_started"));
+        location.reload();
     }
-  }
+
+    launchBtnOnline?.addEventListener("click", () => {
+        const name = (
+            document.getElementById("user-name") as HTMLInputElement
+        )?.value.trim();
+        if (!name) {
+            alert("Please enter your name before starting.");
+            return;
+        }
+        localStorage.setItem("gnomics_user", name);
+        startSession(name);
+    });
+
+    launchBtnMixed?.addEventListener("click", () => {
+        const teamName = (
+            document.getElementById("team-name") as HTMLInputElement
+        )?.value.trim();
+        const teamLeader = (
+            document.getElementById("team-leader") as HTMLInputElement
+        )?.value.trim();
+        if (!teamName || !teamLeader) {
+            alert("Please enter your team name and leader before starting.");
+            return;
+        }
+        localStorage.setItem("gnomics_team", teamName);
+        localStorage.setItem("gnomics_leader", teamLeader);
+        startSession(teamName);
+    });
+
+    function unlockCards() {
+        const card = document.getElementById("card-submit") as HTMLElement;
+        if (card) {
+            card.style.display = "block";
+            card.style.cursor = "pointer";
+            card.onclick = () => {
+                window.location.href = "/platform/submit/";
+            };
+        }
+    }
 </script>

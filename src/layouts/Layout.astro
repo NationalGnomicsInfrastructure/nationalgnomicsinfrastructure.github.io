@@ -27,20 +27,34 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   Visit <a href="https://ngisweden.scilifelab.se/" target="_blank" rel="noopener">ngisweden.scilifelab.se</a>
 </div>
 
-<header class="site-header">
+<header class="site-header" id="site-header">
   <div class="header-inner">
     <a href="/" class="site-logo">
       <img src="/ngni-logo.png" alt="NGnI" style="height:2.8rem;vertical-align:middle;" />
       <span>National Gnomics Infrastructure</span>
     </a>
-    <nav>
+    <button class="burger" id="burger" aria-label="Toggle navigation" aria-expanded="false">
+      <span class="burger-bar"></span>
+      <span class="burger-bar"></span>
+      <span class="burger-bar"></span>
+    </button>
+    <nav id="nav">
       <a href="/applications/">Applications</a>
       <a href="/technologies/">Technologies</a>
+      <a href="/database/">Database</a>
+      <a href="/platform/">Platform</a>
       <a href="/about/">About</a>
-      <a href="/platform/" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;">Platform Access</a>
     </nav>
   </div>
 </header>
+
+<script>
+  document.getElementById('burger')?.addEventListener('click', function () {
+    document.getElementById('site-header')?.classList.toggle('nav-open');
+    const expanded = this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true';
+    this.setAttribute('aria-expanded', expanded);
+  });
+</script>
 
 {showTimer && (
   <div id="timer-bar">
@@ -82,15 +96,15 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
       <div class="footer-col">
         <h4>Resources</h4>
         <ul>
-          <li><a href="/platform/">Platform Access</a></li>
-          <li><a href="/database/">Gnomics Database</a></li>
+          <li><a href="/platform/">Platform</a></li>
+          <li><a href="/database/">Database</a></li>
           <li><a href="https://github.com/NationalGnomicsInfrastructure/gnomics-pipeline">Pipeline Code</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>About us</h4>
+        <h4>About</h4>
         <ul>
-          <li><a href="/about/">About us</a></li>
+          <li><a href="/about/">About</a></li>
           <li><a href="/about/#contact">Contact form</a></li>
         </ul>
       </div>

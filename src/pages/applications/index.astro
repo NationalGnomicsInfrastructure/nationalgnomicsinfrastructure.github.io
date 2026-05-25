@@ -1,47 +1,92 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
 ---
+
 <Layout title="Applications">
-  <div class="page-header">
-    <div class="container">
-      <h1>Applications</h1>
-      <p>Explore the full range of gnomics applications offered by NGnI.</p>
+    <div class="page-header">
+        <div class="container">
+            <h1>Applications</h1>
+            <p>
+                Explore the full range of gnomics applications offered by NGnI.
+            </p>
+        </div>
     </div>
-  </div>
-  <section>
-    <div class="container">
-      <div class="cards">
-        <div class="card">
-          <div class="card-icon">🧬</div>
-          <h3>Gnome Sequencing</h3>
-          <p>Whole-gnome, exome, amplicon and metagnomics sequencing using short- and long-read platforms.</p>
+    <section>
+        <div class="container">
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon">🧬</div>
+                    <h3>Gnome Sequencing</h3>
+                    <p>
+                        Whole-gnome, exome, amplicon and metagnomics sequencing
+                        using short- and long-read platforms.
+                    </p>
+                    <a
+                        href="/applications/gnome-sequencing/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+                <div class="card">
+                    <div class="card-icon">🗺️</div>
+                    <h3>Spatial Gnomics</h3>
+                    <p>
+                        Resolve spatial gene expression patterns within gnome
+                        tissue sections at single-cell resolution.
+                    </p>
+                    <a
+                        href="/applications/spatial-gnomics/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+                <div class="card">
+                    <div class="card-icon">🏺</div>
+                    <h3>Ancient Gnomics</h3>
+                    <p>
+                        Specialised library preparation and analysis workflows
+                        for degraded or low-input gnome DNA.
+                    </p>
+                    <a
+                        href="/applications/ancient-gnomics/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+                <div class="card">
+                    <div class="card-icon">🍄</div>
+                    <h3>Mycognomics</h3>
+                    <p>
+                        Fungal community profiling and single-gnome sequencing
+                        from forest and grassland habitats.
+                    </p>
+                    <a
+                        href="/applications/mycognomics/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌱</div>
+                    <h3>Epignomics</h3>
+                    <p>
+                        Methylation profiling and chromatin accessibility assays
+                        for gnome epigenome characterisation.
+                    </p>
+                    <a
+                        href="/applications/epignomics/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+                <div class="card">
+                    <div class="card-icon">💊</div>
+                    <h3>Pharmagnomics</h3>
+                    <p>
+                        Genotype–phenotype association studies and variant
+                        calling for gnome drug-response research.
+                    </p>
+                    <a
+                        href="/applications/pharmagnomics/"
+                        class="btn btn-outline">Learn more</a
+                    >
+                </div>
+            </div>
         </div>
-        <div class="card">
-          <div class="card-icon">🗺️</div>
-          <h3>Spatial Gnomics</h3>
-          <p>Resolve spatial gene expression patterns within gnome tissue sections at single-cell resolution.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🏺</div>
-          <h3>Ancient Gnomics</h3>
-          <p>Specialised library preparation and analysis workflows for degraded or low-input gnome DNA.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🍄</div>
-          <h3>Mycognomics</h3>
-          <p>Fungal community profiling and single-gnome sequencing from forest and grassland habitats.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🌱</div>
-          <h3>Epignomics</h3>
-          <p>Methylation profiling and chromatin accessibility assays for gnome epigenome characterisation.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">💊</div>
-          <h3>Pharmagnomics</h3>
-          <p>Genotype–phenotype association studies and variant calling for gnome drug-response research.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 </Layout>
