@@ -76,7 +76,7 @@ const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row 
 
 
 // ─── Select target based on access code ───────────────────────────────────────
-const targetIdx = parseInt(localStorage.getItem('gnomics_code_idx') ?? '');
+const targetIdx = parseInt(localStorage.getItem('code_idx') ?? '');
 if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
   window.location.href = '/platform/';
   throw new Error('No valid access code found — redirecting to platform.');
@@ -218,7 +218,7 @@ input.addEventListener('input', () => {
 });
 
 // Restore if already done
-if (localStorage.getItem('gnomics_species_done')) {
+if (localStorage.getItem('species_done')) {
   gameArea.style.display = 'none';
   showSuccess();
 }

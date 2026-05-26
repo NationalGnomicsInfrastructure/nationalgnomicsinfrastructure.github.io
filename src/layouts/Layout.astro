@@ -128,7 +128,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
         const display = document.getElementById('timer-display');
         if (!bar || !display) return;
 
-        let startAt = parseInt(localStorage.getItem('gnomics_start') || '0', 10);
+        let startAt = parseInt(localStorage.getItem('start') || '0', 10);
         if (!startAt) return;
 
         bar.classList.add('running');
@@ -162,7 +162,7 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
       } else {
         startTimer();
       }
-      window.addEventListener('gnomics_started', startTimer);
+      window.addEventListener('started', startTimer);
     })();
   </script>
 )}

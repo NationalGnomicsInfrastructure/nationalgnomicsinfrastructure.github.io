@@ -66,7 +66,7 @@ const notFound  = document.getElementById('not-found') as HTMLDivElement;
 const record    = document.getElementById('record') as HTMLDivElement;
 
 // Pre-fill from localStorage if keyphrase was already submitted
-const saved = localStorage.getItem('gnomics_accession');
+const saved = localStorage.getItem('accession');
 if (saved) accInput.value = saved;
 
 function search() {
