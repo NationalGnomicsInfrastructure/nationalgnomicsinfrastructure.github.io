@@ -2,11 +2,11 @@
 import Layout from '../../layouts/Layout.astro';
 import '../../styles/species-id.css';
 ---
-<Layout title="Species Identification Tool" showTimer={true}>
+<Layout title="Species Identification" showTimer={true}>
 
   <div class="page-header">
     <div class="container">
-      <h1>Species Identification Tool</h1>
+      <h1>Species Identification</h1>
       <p>Identify the spirit animal of the Project Coordinator in charge of your delivery project.</p>
     </div>
   </div>
@@ -249,6 +249,7 @@ function submitGuess() {
 
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('gnomics_species_done', '1');
+    localStorage.setItem('gnomics_spirit_animal', TARGET.name);
     const targetNode = document.getElementById('node-target')!;
     targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
     targetNode.classList.remove('phylo-target');
