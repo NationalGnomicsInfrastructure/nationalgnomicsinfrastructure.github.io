@@ -133,7 +133,7 @@ import Layout from "../../layouts/Layout.astro";
                             >Open Tool →</span
                         >
                     </a>
-                    <div id="card-submit" class="card" style="display:none;">
+                    <div id="card-retrieval" class="card" style="display:none;">
                         <div class="card-icon">🔍</div>
                         <h3>Project Retrieval</h3>
                         <p>
@@ -226,7 +226,7 @@ import Layout from "../../layouts/Layout.astro";
         }
         if (localStorage.getItem("gnomics_accession")) {
             const card = document.getElementById(
-                "card-submit",
+                "card-retrieval",
             ) as HTMLElement;
             if (card) {
                 card.style.cursor = "default";
@@ -299,7 +299,7 @@ import Layout from "../../layouts/Layout.astro";
     });
 
     function unlockCards() {
-        const card = document.getElementById("card-submit") as HTMLElement;
+        const card = document.getElementById("card-retrieval") as HTMLElement;
         if (card) {
             card.style.display = "block";
             card.style.cursor = "pointer";
