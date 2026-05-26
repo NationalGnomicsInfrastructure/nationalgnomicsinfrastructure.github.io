@@ -207,12 +207,12 @@ import Layout from "../../layouts/Layout.astro";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
         if (
-            localStorage.getItem("gnomics_species_done") ||
-            localStorage.getItem("gnomics_accession")
+            localStorage.getItem("species_done") ||
+            localStorage.getItem("accession")
         ) {
             document.getElementById("delivery-status")!.textContent = "ongoing";
         }
-        if (localStorage.getItem("gnomics_species_done")) {
+        if (localStorage.getItem("species_done")) {
             unlockCards();
             const card = document.getElementById(
                 "card-species-id",
@@ -224,7 +224,7 @@ import Layout from "../../layouts/Layout.astro";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
             }
         }
-        if (localStorage.getItem("gnomics_accession")) {
+        if (localStorage.getItem("accession")) {
             const card = document.getElementById(
                 "card-retrieval",
             ) as HTMLElement;

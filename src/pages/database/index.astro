@@ -102,10 +102,6 @@ const notFound  = document.getElementById('not-found') as HTMLDivElement;
 const record    = document.getElementById('record') as HTMLDivElement;
 const resultsEl = document.getElementById('category-results') as HTMLDivElement;
 
-// Pre-fill from localStorage if keyphrase was already submitted
-const saved = localStorage.getItem('accession');
-if (saved) accInput.value = saved;
-
 function search() {
   const q = accInput.value.trim().toLowerCase();
   notFound.style.display = 'none';
@@ -153,8 +149,7 @@ function searchHash() {
 window.addEventListener('hashchange', searchHash);
 if (location.hash) searchHash();
 
-// Auto-search if pre-filled
-if (saved && !location.hash) search();
+
 
 // Category filter
 const filterCats = document.querySelectorAll('.btn-filter') as NodeListOf<HTMLButtonElement>;
