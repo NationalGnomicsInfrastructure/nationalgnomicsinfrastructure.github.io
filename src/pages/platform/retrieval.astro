@@ -1,0 +1,89 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Project Retrieval" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Project Retrieval</h1>
+      <p>Recover your project using the Project Coordinator's identified spirit animal.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="submit-form">
+
+        <div class="alert alert-info mb-2">
+          <strong>Project retrieval.</strong><br/>
+          Enter the Project Coordinator's spirit animal you identified to recover your project and learn which envelope to open.
+        </div>
+
+        <div id="form-area">
+          <div class="form-group">
+            <label for="spirit-animal">Spirit Animal</label>
+            <input type="text" id="spirit-animal" placeholder="Enter the spirit animal" autocomplete="off" style="font-size:1.1rem;" />
+          </div>
+          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
+            Recover Project
+          </button>
+        </div>
+
+        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
+          That's not the Project Coordinator's spirit animal. Try again.
+        </div>
+
+        <div id="result-area" style="display:none;">
+          <div class="alert alert-success">
+            Project retrieved. Your delivery continues.
+          </div>
+          <div class="card mt-3" style="padding:1.25rem;">
+            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
+              "The language of life has many words but a small alphabet,
+              my count is the envelope you need."
+            </p>
+            <p class="text-muted mt-2" style="font-size:0.9rem;">
+              Find the envelope with that number and open it to continue your delivery.
+            </p>
+            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+const formArea = document.getElementById('form-area') as HTMLDivElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
+const input = document.getElementById('spirit-animal') as HTMLInputElement;
+
+const savedAnimal = localStorage.getItem('gnomics_spirit_animal');
+if (!savedAnimal) {
+  window.location.href = '/platform/';
+}
+
+if (localStorage.getItem('gnomics_accession')) {
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+submitBtn.addEventListener('click', () => {
+  const answer = input.value.trim().toLowerCase();
+  if (answer !== savedAnimal) {
+    errorMsg.style.display = 'block';
+    return;
+  }
+  errorMsg.style.display = 'none';
+  localStorage.setItem('gnomics_accession', '1');
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitBtn.click();
+});
+</script>

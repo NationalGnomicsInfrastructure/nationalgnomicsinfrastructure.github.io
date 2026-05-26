@@ -107,11 +107,11 @@ import Layout from "../../layouts/Layout.astro";
             <!-- Post-launch state (hidden until button press) -->
             <div
                 id="post-launch"
-                style="display:none;max-width:800px;margin:0 auto;"
+                style="display:none;margin:0 auto;"
             >
-                <div class="alert alert-success">
+                <div class="alert alert-success" style="max-width:888px;margin-left:auto;margin-right:auto;">
                     Welcome <span id="display-team"></span>, Project Delivery
-                    starting.
+                    <span id="delivery-status">starting</span>.
                 </div>
 
                 <div class="cards mt-3">
@@ -122,7 +122,7 @@ import Layout from "../../layouts/Layout.astro";
                         style="text-decoration:none;cursor:pointer;"
                     >
                         <div class="card-icon">🔬</div>
-                        <h3>Species Identification Tool</h3>
+                        <h3>Species Identification</h3>
                         <p>
                             Identify the spirit animal of the Project
                             Coordinator in charge of your delivery project.
@@ -134,11 +134,11 @@ import Layout from "../../layouts/Layout.astro";
                         >
                     </a>
                     <div id="card-submit" class="card" style="display:none;">
-                        <div class="card-icon">📋</div>
-                        <h3>Project Submission</h3>
+                        <div class="card-icon">🔍</div>
+                        <h3>Project Retrieval</h3>
                         <p>
-                            Submit your gnomics project to retrieve your
-                            assigned accession ID.
+                             Enter the Project Coordinator's spirit animal to retrieve your project
+                            and learn which envelope to open.
                         </p>
                         <span
                             class="btn btn-outline"
@@ -146,8 +146,20 @@ import Layout from "../../layouts/Layout.astro";
                             >Open Tool →</span
                         >
                     </div>
+                    <div id="card-next" class="card" style="display:none;">
+                        <div class="card-icon">🔮</div>
+                        <h3>Next Step</h3>
+                        <p>
+                            The next challenge will appear here once you've
+                            opened the envelope.
+                        </p>
+                        <span
+                            class="btn btn-outline"
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;opacity:0.5;"
+                            >Coming Soon</span
+                        >
+                    </div>
                 </div>
-            </div>
         </div>
     </section>
 </Layout>
@@ -194,6 +206,12 @@ import Layout from "../../layouts/Layout.astro";
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
+        if (
+            localStorage.getItem("gnomics_species_done") ||
+            localStorage.getItem("gnomics_accession")
+        ) {
+            document.getElementById("delivery-status")!.textContent = "ongoing";
+        }
         if (localStorage.getItem("gnomics_species_done")) {
             unlockCards();
             const card = document.getElementById(
@@ -205,6 +223,17 @@ import Layout from "../../layouts/Layout.astro";
                 card.style.opacity = "0.5";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
             }
+        }
+        if (localStorage.getItem("gnomics_accession")) {
+            const card = document.getElementById(
+                "card-submit",
+            ) as HTMLElement;
+            if (card) {
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                card.querySelector(".btn")!.textContent = "✅ Completed";
+            }
+            document.getElementById("card-next")!.style.display = "block";
         }
     }
 
@@ -275,7 +304,7 @@ import Layout from "../../layouts/Layout.astro";
             card.style.display = "block";
             card.style.cursor = "pointer";
             card.onclick = () => {
-                window.location.href = "/platform/submit/";
+                window.location.href = "/platform/retrieval/";
             };
         }
     }
