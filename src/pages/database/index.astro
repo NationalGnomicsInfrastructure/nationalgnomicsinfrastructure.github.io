@@ -13,37 +13,47 @@ import Layout from '../../layouts/Layout.astro';
   <section>
     <div class="container" style="max-width:760px;margin:0 auto;">
 
+      <div id="record" style="display:none;margin-bottom:2rem;margin-top:-2.5rem;">
+        <div class="accession-card">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;">
+            <h3 id="rec-title" style="margin:0;">—</h3>
+            <div class="acc-id" id="rec-id">—</div>
+          </div>
+          <table>
+            <tr><td><i class="fa-solid fa-map-location-dot"></i> Collection site</td><td id="rec-site">—</td></tr>
+            <tr><td><i class="fa-solid fa-folder"></i> Category</td><td id="rec-category">—</td></tr>
+            <tr><td><i class="fa-solid fa-tags"></i> Keywords</td><td id="rec-keywords">—</td></tr>
+          </table>
+          <p id="rec-desc" style="margin-top:1rem;font-size:0.92rem;color:var(--text-muted);"></p>
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="acc-input">Search by Accession ID</label>
         <div style="display:flex;gap:0.75rem;">
-          <input type="text" id="acc-input" placeholder="e.g. GNI-2026-001"
+          <input type="text" id="acc-input" placeholder="e.g. GNI-P000002"
             style="font-family:var(--font-mono);font-size:1rem;letter-spacing:0.05em;" />
           <button class="btn btn-primary" id="search-btn">Search</button>
         </div>
       </div>
 
-      <div id="not-found" style="display:none;" class="alert alert-warning">
-        ❌ Accession ID not found. Please check the ID and try again.
+      <div class="form-group" id="category-filters">
+        <label>Filter by Category</label>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+          <button class="btn btn-sm btn-filter active" data-cat="all">All</button>
+          <button class="btn btn-sm btn-filter" data-cat="Food">Food</button>
+          <button class="btn btn-sm btn-filter" data-cat="Office Supplies">Office Supplies</button>
+          <button class="btn btn-sm btn-filter" data-cat="Electronics">Electronics</button>
+          <button class="btn btn-sm btn-filter" data-cat="Home &amp; Decor">Home &amp; Decor</button>
+          <button class="btn btn-sm btn-filter" data-cat="Accessories">Accessories</button>
+          <button class="btn btn-sm btn-filter" data-cat="Plants">Plants</button>
+          <button class="btn btn-sm btn-filter" data-cat="Furniture">Furniture</button>
+        </div>
+        <div id="category-results" style="margin-top:0.75rem;font-size:0.9rem;color:var(--text-muted);"></div>
       </div>
 
-      <div id="record" style="display:none;">
-        <div class="accession-card">
-          <div class="acc-id" id="rec-id">—</div>
-          <h3 id="rec-title" style="margin-bottom:1rem;">—</h3>
-          <table>
-            <tr><td>Organism</td><td id="rec-organism">—</td></tr>
-            <tr><td>Collection site</td><td id="rec-site">—</td></tr>
-            <tr><td>Collector</td><td id="rec-collector">—</td></tr>
-            <tr><td>Date</td><td id="rec-date">—</td></tr>
-            <tr><td>Keywords</td><td id="rec-keywords">—</td></tr>
-          </table>
-          <p id="rec-desc" style="margin-top:1rem;font-size:0.92rem;color:var(--text-muted);"></p>
-        </div>
-
-        <div class="alert alert-info mt-3" style="font-size:0.9rem;">
-          <strong>Next step:</strong> Use the metadata above to identify the item you must deliver.
-          Find the matching picture in your team's final envelope.
-        </div>
+      <div id="not-found" style="display:none;" class="alert alert-warning">
+        ❌ Accession ID not found. Please check the ID and try again.
       </div>
 
     </div>
@@ -52,44 +62,133 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-const DB: Record<string, { title: string; organism: string; site: string; collector: string; date: string; keywords: string[]; description: string; }> = {
-  'GNI-2026-001': { title: 'Gnome Forest Sample #42B',     organism: 'Hydrochoerus hydrochaeris', site: 'Ethiopian Highlands, Kaffa Province',          collector: 'Dr. A. Mocha',     date: '2026-01-14', keywords: ['dark-roast habitat','bitter soil profile','aromatic substrate','highland forest'],                   description: "Whole-gnome sequencing of a capybara specimen collected from the Kaffa Province, historically known as the birthplace of the arabica bean. Habitat shows strong aromatic soil signatures consistent with the region's agricultural heritage." },
-  'GNI-2026-002': { title: 'Gnome Meadow Sample #7',        organism: 'Hydrochoerus hydrochaeris', site: 'São Paulo Province, Brazil',                   collector: 'Dr. S. Saccharum', date: '2026-02-03', keywords: ['sweet grassland','sucrose-rich substrate','Saccharum officinarum habitat','tropical meadow'],          description: 'Spatial gnomics analysis of capybara tissue collected adjacent to extensive Saccharum officinarum (sugarcane) cultivation. Metabolomic profiling indicates elevated sucrose signatures in surrounding vegetation.' },
-  'GNI-2026-003': { title: 'Gnome Spice Corridor Sample #3',organism: 'Hydrochoerus hydrochaeris', site: 'Central Province, Sri Lanka',                  collector: 'Dr. C. Verum',     date: '2026-02-28', keywords: ['bark substrate','spice corridor','Cinnamomum verum habitat','tropical dry forest'],                description: 'Ancient gnomics sample from the Central Province of Sri Lanka, centre of global Cinnamomum verum production. The specimen was recovered from a bark-rich soil layer characteristic of cinnamon-growing regions.' },
-  'GNI-2026-004': { title: 'Gnome Valley Sample #19',       organism: 'Hydrochoerus hydrochaeris', site: 'Bordeaux Valley, Gironde, France',               collector: 'Dr. V. Vinifera', date: '2026-03-11', keywords: ['vineyard microbiome','Vitis vinifera association','tannin-rich soil','terroir signature'],              description: 'Metagnomics study of capybara gut microbiome in a specimen from the Bordeaux valley. Strong Vitis vinifera (grapevine) associations detected in dietary analysis; tannin-rich soil signatures confirmed.' },
-  'GNI-2026-005': { title: 'Gnome Garden Sample #11',       organism: 'Hydrochoerus hydrochaeris', site: 'Fragaria Research Station, Syldavia',    collector: 'Dr. F. Ananassa',  date: '2026-03-22', keywords: ['Fragaria ananassa habitat','red-berry substrate','Nordic berry corridor','anthocyanin-rich soil'],    description: 'Spatial gnomics profiling of a capybara specimen from the experimental Fragaria ananassa (strawberry) cultivation plots at the Fragaria Research Station in Syldavia. Red-berry substrate signatures are strongly represented in the surrounding soil metatranscriptome.' },
-};
+import DB_RAW from '../../data/gnomics-db.csv?raw';
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let cur = '';
+  let q = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (q) {
+      if (c === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++; }
+        else { q = false; }
+      } else { cur += c; }
+    } else {
+      if (c === '"') { q = true; }
+      else if (c === ',') { result.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+const DB: Record<string, { title: string; site: string; keywords: string[]; description: string; category: string; }> = {};
+
+for (const line of DB_RAW.trim().split('\n').slice(1)) {
+  const v = parseCSVLine(line);
+  DB[v[0]] = {
+    title: v[1], site: v[2], category: v[3],
+    keywords: v[4].split('|').filter(Boolean),
+    description: v[5],
+  };
+}
 
 const accInput  = document.getElementById('acc-input') as HTMLInputElement;
 const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
 const notFound  = document.getElementById('not-found') as HTMLDivElement;
 const record    = document.getElementById('record') as HTMLDivElement;
+const resultsEl = document.getElementById('category-results') as HTMLDivElement;
 
 // Pre-fill from localStorage if keyphrase was already submitted
 const saved = localStorage.getItem('accession');
 if (saved) accInput.value = saved;
 
 function search() {
-  const id = accInput.value.trim().toUpperCase();
-  const entry = DB[id];
+  const q = accInput.value.trim().toLowerCase();
   notFound.style.display = 'none';
   record.style.display = 'none';
-  if (!entry) { notFound.style.display = 'block'; return; }
 
-  (document.getElementById('rec-id') as HTMLElement).textContent = id;
-  (document.getElementById('rec-title') as HTMLElement).textContent = entry.title;
-  (document.getElementById('rec-organism') as HTMLElement).textContent = entry.organism;
-  (document.getElementById('rec-site') as HTMLElement).textContent = entry.site;
-  (document.getElementById('rec-collector') as HTMLElement).textContent = entry.collector;
-  (document.getElementById('rec-date') as HTMLElement).textContent = entry.date;
-  (document.getElementById('rec-keywords') as HTMLElement).textContent = entry.keywords.join(', ');
-  (document.getElementById('rec-desc') as HTMLElement).textContent = entry.description;
-  record.style.display = 'block';
+  // Exact ID match → show full record
+  const exact = DB[q.toUpperCase()];
+  if (exact) {
+    const id = q.toUpperCase();
+    (document.getElementById('rec-id') as HTMLElement).innerHTML = `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;cursor:pointer;">${id}</a>`;
+    (document.getElementById('rec-title') as HTMLElement).textContent = exact.title;
+    (document.getElementById('rec-site') as HTMLElement).textContent = exact.site;
+    (document.getElementById('rec-category') as HTMLElement).textContent = exact.category;
+    (document.getElementById('rec-keywords') as HTMLElement).textContent = exact.keywords.join(', ');
+    (document.getElementById('rec-desc') as HTMLElement).textContent = exact.description;
+    record.style.display = 'block';
+    return;
+  }
+
+  // No query → clear results
+  if (!q) { resultsEl.innerHTML = ''; return; }
+
+  // Full-text search across title, category, site, description, keywords
+  const matches = Object.keys(DB).filter(id => {
+    const e = DB[id];
+    return e.title.toLowerCase().includes(q) ||
+           e.category.toLowerCase().includes(q) ||
+           e.site.toLowerCase().includes(q) ||
+           e.description.toLowerCase().includes(q) ||
+           e.keywords.some(k => k.toLowerCase().includes(q));
+  });
+  if (matches.length === 0) { notFound.style.display = 'block'; return; }
+const list = matches.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');
+  resultsEl.innerHTML = `<strong>${matches.length}</strong> result${matches.length === 1 ? '' : 's'} — ${list}`;
 }
 
 searchBtn.addEventListener('click', search);
 accInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
 
+// Hash-based navigation
+function searchHash() {
+  const hash = location.hash.replace('#', '').trim().toUpperCase();
+  if (hash && DB[hash]) { accInput.value = hash; search(); }
+}
+window.addEventListener('hashchange', searchHash);
+if (location.hash) searchHash();
+
 // Auto-search if pre-filled
-if (saved) search();
+if (saved && !location.hash) search();
+
+// Category filter
+const filterCats = document.querySelectorAll('.btn-filter') as NodeListOf<HTMLButtonElement>;
+let activeCat = 'all';
+
+function showResults() {
+  const ids = Object.keys(DB).filter(id => activeCat === 'all' || DB[id].category === activeCat);
+  if (ids.length === 0) {
+    resultsEl.textContent = 'No entries in this category.';
+    return;
+  }
+  const list = ids.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');
+  resultsEl.innerHTML = `<strong>${ids.length}</strong> result${ids.length === 1 ? '' : 's'} — ${list}`;
+}
+
+filterCats.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterCats.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat!;
+    showResults();
+  });
+});
+
+// Delegated click on result links
+document.addEventListener('click', (e) => {
+  const link = (e.target as HTMLElement).closest('a[data-id]');
+  if (!link) return;
+  e.preventDefault();
+  const id = link.getAttribute('data-id')!;
+  (document.getElementById('acc-input') as HTMLInputElement).value = id;
+  window.location.hash = id;
+  search();
+  document.querySelector('.page-header')!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 </script>
