@@ -61,12 +61,12 @@ const resultArea = document.getElementById('result-area') as HTMLDivElement;
 const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
 const input = document.getElementById('spirit-animal') as HTMLInputElement;
 
-const savedAnimal = localStorage.getItem('spirit_animal');
+const savedAnimal = localStorage.getItem('gnomics_spirit_animal');
 if (!savedAnimal) {
   window.location.href = '/platform/';
 }
 
-if (localStorage.getItem('accession')) {
+if (localStorage.getItem('gnomics_accession')) {
   formArea.style.display = 'none';
   resultArea.style.display = 'block';
 }
@@ -78,7 +78,7 @@ submitBtn.addEventListener('click', () => {
     return;
   }
   errorMsg.style.display = 'none';
-  localStorage.setItem('accession', '1');
+  localStorage.setItem('gnomics_accession', '1');
   formArea.style.display = 'none';
   resultArea.style.display = 'block';
 });

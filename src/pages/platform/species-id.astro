@@ -248,8 +248,8 @@ function submitGuess() {
   }
 
   if (data.clade === CORRECT_CLADE) {
-    localStorage.setItem('species_done', '1');
-    localStorage.setItem('spirit_animal', TARGET.name);
+    localStorage.setItem('gnomics_species_done', '1');
+    localStorage.setItem('gnomics_spirit_animal', TARGET.name);
     const targetNode = document.getElementById('node-target')!;
     targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
     targetNode.classList.remove('phylo-target');
