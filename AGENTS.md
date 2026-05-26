@@ -20,7 +20,7 @@ There is no test suite. `npm run check` is the primary correctness gate and is r
 - **Single layout** — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title`, `description`, and `showTimer` props.
 - **File-based routing** — pages in `src/pages/` map directly to URL routes (Astro convention). Sub-directories become path segments (e.g. `src/pages/applications/gnome-sequencing/index.astro` → `/applications/gnome-sequencing/`).
 - **Global styles** — all CSS lives in `src/styles/global.css`; there are no CSS modules or component-scoped styles. Inline `style=` attributes are used heavily within `.astro` files.
-- **Platform section** — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project submission). State is kept in `localStorage` under the keys: `gnomics_start`, `gnomics_team`, `gnomics_leader`, `gnomics_user`, `gnomics_species_done`, `gnomics_mode`.
+- **Platform section** — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). State is kept in `localStorage` under the keys: `start`, `team`, `leader`, `species_done`, `spirit_animal`, `accession`, `code_idx`, `mode`.
 - **Session timer** — `<Layout showTimer={true}>` enables a 45-minute countdown bar rendered in the layout header; used only by platform pages.
 
 ## Key conventions

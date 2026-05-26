@@ -194,25 +194,25 @@ import Layout from "../../layouts/Layout.astro";
     });
 
     // Restore session if already started, or auto-restart if credentials are present (after a restart)
-    const existingStart = localStorage.getItem("gnomics_start");
-    const existingMode = localStorage.getItem("gnomics_mode");
+    const existingStart = localStorage.getItem("start");
+    const existingMode = localStorage.getItem("mode");
     if (existingMode && !existingStart) {
-        localStorage.setItem("gnomics_start", String(Date.now()));
-        window.dispatchEvent(new Event("gnomics_started"));
+        localStorage.setItem("start", String(Date.now()));
+        window.dispatchEvent(new Event("started"));
     }
     if (existingMode) {
         const displayName =
-            localStorage.getItem("gnomics_team") || "you";
+            localStorage.getItem("team") || "you";
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
         if (
-            localStorage.getItem("gnomics_species_done") ||
-            localStorage.getItem("gnomics_accession")
+            localStorage.getItem("species_done") ||
+            localStorage.getItem("accession")
         ) {
             document.getElementById("delivery-status")!.textContent = "ongoing";
         }
-        if (localStorage.getItem("gnomics_species_done")) {
+        if (localStorage.getItem("species_done")) {
             unlockCards();
             const card = document.getElementById(
                 "card-species-id",
@@ -224,7 +224,7 @@ import Layout from "../../layouts/Layout.astro";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
             }
         }
-        if (localStorage.getItem("gnomics_accession")) {
+        if (localStorage.getItem("accession")) {
             const card = document.getElementById(
                 "card-submit",
             ) as HTMLElement;
@@ -261,17 +261,17 @@ import Layout from "../../layouts/Layout.astro";
         }
         codeCard!.style.display = "none";
         verifyBtn!.style.display = "none";
-        localStorage.setItem("gnomics_mode", "mixed");
-        localStorage.setItem("gnomics_code_idx", String(H.indexOf(hash)));
+        localStorage.setItem("mode", "mixed");
+        localStorage.setItem("code_idx", String(H.indexOf(hash)));
         teamAuth!.style.display = "block";
     });
 
     function startSession(displayName: string) {
-        localStorage.setItem("gnomics_start", String(Date.now()));
+        localStorage.setItem("start", String(Date.now()));
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
-        window.dispatchEvent(new Event("gnomics_started"));
+        window.dispatchEvent(new Event("started"));
         location.reload();
     }
 
@@ -293,8 +293,8 @@ import Layout from "../../layouts/Layout.astro";
             alert("Please enter your team name and leader before starting.");
             return;
         }
-        localStorage.setItem("gnomics_team", teamName);
-        localStorage.setItem("gnomics_leader", teamLeader);
+        localStorage.setItem("team", teamName);
+        localStorage.setItem("leader", teamLeader);
         startSession(teamName);
     });
 
