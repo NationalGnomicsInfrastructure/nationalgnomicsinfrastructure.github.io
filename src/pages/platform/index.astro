@@ -61,32 +61,7 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
                 </div>
 
-                <!-- Online mode: single user -->
-                <div id="user-auth" style="display:none;">
-                    <div class="card mt-3" style="text-align:left;">
-                        <h3>User Authentication</h3>
-                        <p class="text-muted" style="font-size:0.9rem;">
-                            Enter your name to begin your delivery.
-                        </p>
-                        <div class="form-group">
-                            <label for="user-name">Your Name</label>
-                            <input
-                                type="text"
-                                id="user-name"
-                                placeholder="First name"
-                            />
-                        </div>
-                    </div>
-                    <button
-                        id="launch-btn-online"
-                        class="btn btn-primary mt-3"
-                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
-                    >
-                        🚀 Initialise Platform
-                    </button>
-                </div>
-
-                <!-- Mixed mode: team -->
+                <!-- Team mode -->
                 <div id="team-auth" style="display:none;">
                     <div class="card mt-3" style="text-align:left;">
                         <h3>Team Authentication</h3>
@@ -179,18 +154,19 @@ import Layout from "../../layouts/Layout.astro";
 
 <script>
     const H = [
-        "06770edea421d96182c10ddc3dc192c2a4ac39c05670beb3738e38a43b300d37",
-        "8a88a25603494bf72ac434a30f32fd8143e0bdc18509b888ed7ef917b2bf3610",
+        "b2b330e0386fe31701efbf1e9538cc4908c91c184a70bb2f32585f442e9f4869",
+        "b9009c67797d87e79c78875dbf16270f6fe0f9f372b6068e492f6befec213b19",
+        "469d6bce0f02660b066ab925af9636f76a29d04ade3020edddcbd79f5cfbd00e",
+        "fc6b45835d52afa67df948550ec275ef285fb5b2c6dad04e818f0cd75df796c9",
+        "9b395e132d77dfd654391e2e4735250e796fcaa5ab3dc64d002a1ee0669c5d91",
+        "714ac0a71d346e132d7080b74c871550fe8012d34db6567866224f4fbf0a8627",
     ];
-    const M = ["online", "mixed"];
 
-    const launchBtnOnline = document.getElementById("launch-btn-online");
     const launchBtnMixed = document.getElementById("launch-btn-mixed");
     const verifyBtn = document.getElementById("verify-btn");
     const preLaunch = document.getElementById("pre-launch");
     const postLaunch = document.getElementById("post-launch");
     const displayTeam = document.getElementById("display-team");
-    const userAuth = document.getElementById("user-auth");
     const teamAuth = document.getElementById("team-auth");
     const codeCard = document.getElementById("access-code-card");
     const codeError = document.getElementById("access-code-error");
@@ -214,9 +190,7 @@ import Layout from "../../layouts/Layout.astro";
     }
     if (existingMode) {
         const displayName =
-            localStorage.getItem("gnomics_team") ||
-            localStorage.getItem("gnomics_user") ||
-            "you";
+            localStorage.getItem("gnomics_team") || "you";
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
@@ -244,23 +218,23 @@ import Layout from "../../layouts/Layout.astro";
             .join("");
     }
 
+    codeInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verifyBtn?.click();
+    });
+
     verifyBtn?.addEventListener("click", async () => {
         const code = codeInput?.value.trim();
         if (!code) return;
         const hash = await sha256(code);
-        const idx = H.indexOf(hash);
-        if (idx === -1) {
+        if (!H.includes(hash)) {
             codeError!.style.display = "block";
             return;
         }
         codeCard!.style.display = "none";
         verifyBtn!.style.display = "none";
-        localStorage.setItem("gnomics_mode", M[idx]);
-        if (M[idx] === "online") {
-            userAuth!.style.display = "block";
-        } else {
-            teamAuth!.style.display = "block";
-        }
+        localStorage.setItem("gnomics_mode", "mixed");
+        localStorage.setItem("gnomics_code_idx", String(H.indexOf(hash)));
+        teamAuth!.style.display = "block";
     });
 
     function startSession(displayName: string) {
@@ -272,16 +246,11 @@ import Layout from "../../layouts/Layout.astro";
         location.reload();
     }
 
-    launchBtnOnline?.addEventListener("click", () => {
-        const name = (
-            document.getElementById("user-name") as HTMLInputElement
-        )?.value.trim();
-        if (!name) {
-            alert("Please enter your name before starting.");
-            return;
-        }
-        localStorage.setItem("gnomics_user", name);
-        startSession(name);
+    document.getElementById("team-name")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") launchBtnMixed?.click();
+    });
+    document.getElementById("team-leader")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") launchBtnMixed?.click();
     });
 
     launchBtnMixed?.addEventListener("click", () => {

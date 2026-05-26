@@ -26,7 +26,7 @@ import '../../styles/species-id.css';
           <div class="alert alert-info mb-2">
             <strong>Instructions:</strong> Enter animal names below — each guess returns a phylogenetic proximity hint.
             Every name in the tree is linked to its Wikipedia entry.<br>
-            <span id="guesses-left">13 guesses remaining</span>
+            <span id="guesses-left">0 guesses made</span>
           </div>
 
           <div id="game-area">
@@ -36,13 +36,6 @@ import '../../styles/species-id.css';
               <button class="btn btn-primary" id="guess-btn">Submit</button>
             </div>
             <ul class="guess-history" id="guess-list"></ul>
-          </div>
-
-          <div id="fail-area" style="display:none;" class="fail-box">
-            <div style="font-size:3rem;">😔</div>
-            <h3>Out of Guesses</h3>
-            <p>The spirit animal was a <strong id="fail-name"></strong> (<em id="fail-scientific"></em>).</p>
-            <button id="retry-btn" class="btn btn-outline mt-2">🔄 Try Again</button>
           </div>
 
           <div id="success-area" style="display:none;" class="success-box">
@@ -82,11 +75,11 @@ const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row 
 });
 
 
-// ─── Select or restore target ─────────────────────────────────────────────────
-let targetIdx = parseInt(localStorage.getItem('gnomics_target') ?? '');
+// ─── Select target based on access code ───────────────────────────────────────
+const targetIdx = parseInt(localStorage.getItem('gnomics_code_idx') ?? '');
 if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
-  targetIdx = Math.floor(Math.random() * POSSIBLE_TARGETS.length);
-  localStorage.setItem('gnomics_target', String(targetIdx));
+  window.location.href = '/platform/';
+  throw new Error('No valid access code found — redirecting to platform.');
 }
 const TARGET = POSSIBLE_TARGETS[targetIdx];
 const CORRECT_CLADE = TARGET.path.length + 1; // 9
@@ -95,6 +88,8 @@ const CORRECT_CLADE = TARGET.path.length + 1; // 9
 // For each species, find the deepest path node it shares with the target (in order).
 const WARMTH_ICON = ['🥶','🧊','🧊','❄️','❄️','🌤️','🌤️','🌡️','🔥'];
 const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot','Very hot'];
+const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
+const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 
 const TAXONOMY: Record<string, { clade: number; label: string }> = {};
 for (const entry of SPECIES_DB) {
@@ -111,10 +106,10 @@ for (const entry of SPECIES_DB) {
       break;
     }
   }
-  const pathLabel = clade > 0 ? cap(TARGET.path[clade - 1]) : 'Non-Bilateria';
   const icon = WARMTH_ICON[clade] ?? '🧊';
   const word = WARMTH_WORD[clade] ?? 'Cold';
-  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${pathLabel}` };
+  const link = clade > 0 ? wikiLink(cap(TARGET.path[clade - 1])) : wikiLink('Metazoa');
+  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${link}` };
 }
 
 // ─── Derive node/branch/subtree IDs from the chosen target's path ────────────
@@ -124,9 +119,6 @@ const CLADE_CLASS: Record<number, string> = {
 };
 
 // ─── Tree state ───────────────────────────────────────────────────────────────
-const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
-const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-
 // revealedClades: set of clade indices (1-based) that have been shown green.
 // missAtClade[c]: list of raw species names guessed that diverge at clade c.
 const revealedClades = new Set<number>();
@@ -182,8 +174,7 @@ function highlightNode(clade: number, raw: string) {
 }
 
 // ─── DOM references ───────────────────────────────────────────────────────────
-const MAX_GUESSES = 13;
-let guessesLeft = MAX_GUESSES;
+let guessCount = 0;
 
 const input        = document.getElementById('species-input') as HTMLInputElement;
 const datalist     = document.getElementById('species-list') as HTMLDataListElement;
@@ -192,14 +183,10 @@ const list         = document.getElementById('guess-list') as HTMLUListElement;
 const guessesLabel = document.getElementById('guesses-left') as HTMLSpanElement;
 const gameArea     = document.getElementById('game-area') as HTMLDivElement;
 const successArea  = document.getElementById('success-area') as HTMLDivElement;
-const failArea     = document.getElementById('fail-area') as HTMLDivElement;
-const retryBtn     = document.getElementById('retry-btn') as HTMLButtonElement;
 
-// Populate success/fail target name
+// Populate success target name
 (document.getElementById('success-name') as HTMLElement).textContent = cap(TARGET.name);
 (document.getElementById('success-scientific') as HTMLElement).textContent = TARGET.scientific;
-(document.getElementById('fail-name') as HTMLElement).textContent = cap(TARGET.name);
-(document.getElementById('fail-scientific') as HTMLElement).textContent = TARGET.scientific;
 
 // Autocomplete: sorted, shown only when letters are typed
 const ALL_SPECIES = Object.keys(TAXONOMY).map(cap).sort();
@@ -241,10 +228,8 @@ function showSuccess() {
 }
 
 function updateGuessesLabel() {
-  guessesLabel.textContent = `${guessesLeft} guess${guessesLeft === 1 ? '' : 'es'} remaining`;
-  guessesLabel.style.color = guessesLeft <= 3 ? '#c0392b' : '';
+  guessesLabel.textContent = `${guessCount} guess${guessCount === 1 ? '' : 'es'} made`;
 }
-updateGuessesLabel();
 
 function submitGuess() {
   const raw = input.value.trim().toLowerCase();
@@ -273,24 +258,14 @@ function submitGuess() {
     return;
   }
 
-  guessesLeft--;
+  guessCount++;
   updateGuessesLabel();
   highlightNode(data.clade, raw);
 
   const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
   li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
   list.prepend(li);
-
-  if (guessesLeft === 0) {
-    gameArea.style.display = 'none';
-    failArea.style.display = 'block';
-  }
 }
-
-retryBtn?.addEventListener('click', () => {
-  localStorage.removeItem('gnomics_target');
-  window.location.reload();
-});
 
 btn.addEventListener('click', submitGuess);
 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(); });
