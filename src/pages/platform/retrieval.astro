@@ -6,7 +6,7 @@ import Layout from '../../layouts/Layout.astro';
   <div class="page-header">
     <div class="container">
       <h1>Project Retrieval</h1>
-      <p>Recover your project using your identified spirit animal.</p>
+      <p>Recover your project using the Project Coordinator's identified spirit animal.</p>
     </div>
   </div>
 
@@ -16,13 +16,13 @@ import Layout from '../../layouts/Layout.astro';
 
         <div class="alert alert-info mb-2">
           <strong>Project retrieval.</strong><br/>
-          Enter the spirit animal you identified to recover your project and learn which envelope to open.
+          Enter the Project Coordinator's spirit animal you identified to recover your project and learn which envelope to open.
         </div>
 
         <div id="form-area">
           <div class="form-group">
             <label for="spirit-animal">Spirit Animal</label>
-            <input type="text" id="spirit-animal" placeholder="Enter the spirit animal name" autocomplete="off" style="font-size:1.1rem;" />
+            <input type="text" id="spirit-animal" placeholder="Enter the spirit animal" autocomplete="off" style="font-size:1.1rem;" />
           </div>
           <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
             Recover Project
@@ -30,7 +30,7 @@ import Layout from '../../layouts/Layout.astro';
         </div>
 
         <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
-          That's not the spirit animal you identified. Try again.
+          That's not the Project Coordinator's spirit animal. Try again.
         </div>
 
         <div id="result-area" style="display:none;">
