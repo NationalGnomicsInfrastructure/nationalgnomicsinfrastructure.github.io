@@ -182,6 +182,10 @@ nav a.active { color: var(--gnomics-lime); }
   border: 2px solid var(--gnomics-green);
 }
 .btn-outline:hover { background: var(--gnomics-green-l); text-decoration: none; }
+.btn-sm { padding: 0.35rem 0.85rem; font-size: 0.82rem; }
+.btn-filter { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
+.btn-filter:hover { border-color: var(--gnomics-green); background: var(--gnomics-green-l); }
+.btn-filter.active { background: var(--gnomics-green); color: white; border-color: var(--gnomics-green); }
 
 /* ── Cards ────────────────────────────────────────────────── */
 .cards {
