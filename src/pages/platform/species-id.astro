@@ -50,7 +50,7 @@ import '../../styles/species-id.css';
         <!-- Right: phylogenomic tree -->
         <div class="phylo-panel">
           <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
-          <div class="phylo-tree" id="phylo-tree"></div>
+          <div class="phylo-db" id="phylo-db"></div>
         </div>
 
       </div>
@@ -60,7 +60,7 @@ import '../../styles/species-id.css';
 </Layout>
 
 <script>
-import PHYLO_RAW from '../../data/phylo-tree.csv?raw';
+import PHYLO_RAW from '../../data/phylo-db.csv?raw';
 import TARGETS_RAW from '../../data/philo-targets.txt?raw';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
@@ -125,7 +125,7 @@ const revealedClades = new Set<number>();
 const missAtClade    = new Map<number, string[]>();
 
 function rebuildTree(won = false) {
-  const container = document.getElementById('phylo-tree')!;
+  const container = document.getElementById('phylo-db')!;
 
   function buildBranch(clade: number): string {
     const items: string[] = [];
