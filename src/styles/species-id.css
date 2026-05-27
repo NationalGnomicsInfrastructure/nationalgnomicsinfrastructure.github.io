@@ -1,17 +1,4 @@
 /* ── Species ID Game ─────────────────────────────────────────── */
-.species-game {
-  max-width: 640px;
-  margin: 0 auto;
-}
-.species-game-layout {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 2rem;
-  align-items: start;
-}
-@media (max-width: 860px) {
-  .species-game-layout { grid-template-columns: 1fr; }
-}
 .species-input-row {
   display: flex;
   gap: 0.75rem;
@@ -65,80 +52,69 @@
 }
 .success-box h3 { color: var(--gnomics-green-d); }
 
+/* ── Layout ──────────────────────────────────────────────────── */
+.game-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 700px) {
+  .game-bottom { grid-template-columns: 1fr; }
+}
+
 /* ── Phylogenomic tree ───────────────────────────────────────── */
 .phylo-panel {
-  position: sticky;
-  top: 6rem;
   background: var(--bg-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem;
+  overflow-x: auto;
 }
-.phylo-db { font-size: 0.82rem; font-family: var(--font-mono); }
-.phylo-node {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  margin-bottom: 0.3rem;
+.phylo-db { font-family: var(--font-mono); }
+
+/* ── SVG tree nodes ──────────────────────────────────────────── */
+@keyframes phyloPop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.phylo-svg-node {
+  cursor: pointer;
+  animation: phyloPop 0.25s ease-out;
+}
+.phylo-svg-node rect {
+  fill: var(--bg);
+  stroke: var(--border);
+  stroke-width: 1;
+  rx: 4;
   opacity: 0.45;
-  transition: opacity 0.3s, background 0.3s, border-color 0.3s;
+  transition: opacity 0.3s;
 }
-.phylo-node-hit    { opacity: 1; border-color: var(--gnomics-green); background: var(--gnomics-green-l); }
-.phylo-node-miss   { display: block; opacity: 1; border-color: #c0392b; background: #fde8e8; color: #c0392b; }
-.phylo-node-correct { border-color: var(--gnomics-lime); background: var(--gnomics-green-d); color: #fff; }
-.phylo-target { font-style: italic; }
-.phylo-branch {
-  padding-left: 1.2rem;
-  margin-left: 0.3rem;
-  margin-top: 0.1rem;
-}
-.phylo-node a { color: inherit; text-decoration: none; }
-.phylo-node a:hover { text-decoration: underline; }
-.phylo-item {
-  position: relative;
-  margin-top: 0.3rem;
-}
-/* Non-last child: full-height vertical line + horizontal arm */
-.phylo-item:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: -1.2rem;
-  top: 0;
-  bottom: -0.3rem;
-  width: 2px;
-  background: var(--border);
-  pointer-events: none;
-}
-.phylo-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: -1.2rem;
-  top: 0.62rem;
-  width: 1.15rem;
-  height: 2px;
-  background: var(--border);
-  pointer-events: none;
-}
-/* Last child: L-shape connector */
-.phylo-item:last-child::before {
-  content: '';
-  position: absolute;
-  left: -1.2rem;
-  top: 0;
-  height: 0.65rem;
-  width: 1.15rem;
-  border-left: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
-  pointer-events: none;
-}
-.clade-desc {
-  margin-top: 1rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--bg);
-  border-left: 3px solid var(--gnomics-green);
-  border-radius: 0 var(--radius) var(--radius) 0;
+.phylo-svg-node text {
+  fill: inherit;
+  font-family: var(--font-mono);
   font-size: 0.82rem;
-  line-height: 1.5;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
+.phylo-svg-node-hit rect { opacity: 1; fill: var(--gnomics-green-l); stroke: var(--gnomics-green); }
+.phylo-svg-node-miss rect,
+.phylo-svg-node-miss-clade rect { opacity: 1; fill: #fde8e8; stroke: #c0392b; }
+.phylo-svg-node-miss text,
+.phylo-svg-node-miss-clade text { fill: #c0392b; }
+.phylo-svg-node-shared rect { opacity: 1; fill: var(--gnomics-green-l); stroke: var(--gnomics-green); }
+.phylo-svg-node-correct rect { opacity: 1; fill: var(--gnomics-green-d); stroke: var(--gnomics-lime); }
+.phylo-svg-node-correct text { fill: #fff; }
+
+/* Tree container */
+.phylo-tree {
+  position: relative;
+}
+.phylo-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+.phylo-svg .phylo-link { pointer-events: none; }
