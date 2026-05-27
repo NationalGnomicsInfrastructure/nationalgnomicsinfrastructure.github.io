@@ -92,7 +92,7 @@ submitBtn.addEventListener('click', () => {
     return;
   }
   errorMsg.style.display = 'none';
-  localStorage.setItem('delivery_done', '1');
+  localStorage.setItem('delivery_done', String(Date.now()));
   formArea.style.display = 'none';
   resultArea.style.display = 'block';
 });

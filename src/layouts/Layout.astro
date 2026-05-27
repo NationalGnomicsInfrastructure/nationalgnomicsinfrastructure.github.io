@@ -129,10 +129,24 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
         const display = document.getElementById('timer-display');
         if (!bar || !display) return;
 
-        if (localStorage.getItem('delivery_done')) {
+        const doneAt = parseInt(localStorage.getItem('delivery_done') || '0', 10);
+        if (doneAt) {
           const label = document.querySelector('.timer-label');
           if (label) label.textContent = 'Delivery completed';
-          display.textContent = '✅ Project Delivered';
+          const RESTART_DELAY = 2 * 60 * 1000;
+          function restartTick() {
+            const elapsed = Date.now() - doneAt;
+            const remaining = Math.max(0, RESTART_DELAY - elapsed);
+            if (remaining <= 0) {
+              ['start','team','leader','species_done','spirit_animal','accession','code_idx','mode','detangled','identification_done','delivery_done'].forEach(k=>localStorage.removeItem(k));
+              window.location.href = '/platform/';
+              return;
+            }
+            const sec = Math.ceil(remaining / 1000);
+            display!.textContent = `⏳ ${sec}s`;
+            requestAnimationFrame(restartTick);
+          }
+          restartTick();
           return;
         }
 
