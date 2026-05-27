@@ -113,6 +113,9 @@ import Layout from "../../layouts/Layout.astro";
                     Welcome <span id="display-team"></span>, Project Delivery
                     <span id="delivery-status">starting</span>.
                 </div>
+                <div id="delivery-banner" class="alert alert-success" style="display:none;max-width:888px;margin:0.75rem auto 0;text-align:center;font-size:1.1rem;font-weight:600;">
+                    ✅ Your project has been delivered. Thank you for participating!
+                </div>
 
                 <div class="cards mt-3">
                     <a
@@ -312,6 +315,9 @@ import Layout from "../../layouts/Layout.astro";
                 card.style.opacity = "0.5";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
             }
+            document.getElementById("delivery-status")!.textContent = "completed";
+            const banner = document.getElementById("delivery-banner");
+            if (banner) banner.style.display = "block";
         }
     }
 
