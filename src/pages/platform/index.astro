@@ -134,7 +134,7 @@ import Layout from "../../layouts/Layout.astro";
                         >
                     </a>
                     <div id="card-retrieval" class="card" style="display:none;">
-                        <div class="card-icon">🔍</div>
+                        <div class="card-icon">🎣</div>
                         <h3>Project Retrieval</h3>
                         <p>
                              Enter the Project Coordinator's spirit animal to retrieve your project
@@ -157,6 +157,23 @@ import Layout from "../../layouts/Layout.astro";
                         <p>
                             Use the second animal from your envelope to uncover
                             the next clue.
+                        </p>
+                        <span
+                            class="btn btn-outline"
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;"
+                            >Open Tool →</span
+                        >
+                    </a>
+                    <a
+                        href="/platform/identification/"
+                        class="card"
+                        id="card-project-id"
+                        style="display:none;text-decoration:none;cursor:pointer;"
+                    >
+                        <div class="card-icon">🔍</div>
+                        <h3>Project Identification</h3>
+                        <p>
+                            Solve the riddle to identify your next envelope.
                         </p>
                         <span
                             class="btn btn-outline"
@@ -255,6 +272,18 @@ import Layout from "../../layouts/Layout.astro";
         if (localStorage.getItem("detangled")) {
             const card = document.getElementById(
                 "card-next",
+            ) as HTMLAnchorElement;
+            if (card) {
+                card.removeAttribute("href");
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                card.querySelector(".btn")!.textContent = "✅ Completed";
+            }
+            document.getElementById("card-project-id")!.style.display = "block";
+        }
+        if (localStorage.getItem("identification_done")) {
+            const card = document.getElementById(
+                "card-project-id",
             ) as HTMLAnchorElement;
             if (card) {
                 card.removeAttribute("href");

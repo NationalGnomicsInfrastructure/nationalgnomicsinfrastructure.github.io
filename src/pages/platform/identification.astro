@@ -1,0 +1,98 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Project Identification" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Project Identification</h1>
+      <p>Solve the riddle to identify your next envelope.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="submit-form">
+
+        <div class="alert alert-info mb-2">
+          <strong>Riddle.</strong><br/>
+          Read the riddle below and enter your answer.
+        </div>
+
+        <div class="card mt-2 mb-3" style="padding:1.25rem;text-align:center;">
+          <p style="font-style:italic;font-size:1.15rem;line-height:1.6;">
+            "The language of life has many words,<br/>
+            they all have the same length.<br/>
+            Open my number."
+          </p>
+        </div>
+
+        <div id="form-area">
+          <div class="form-group">
+            <label for="riddle-answer">Your Answer</label>
+            <input type="text" id="riddle-answer" placeholder="Enter the number" autocomplete="off" style="font-size:1.1rem;" />
+          </div>
+          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
+            Submit Answer
+          </button>
+        </div>
+
+        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
+          That's not the right answer. Think about the language of life.
+        </div>
+
+        <div id="result-area" style="display:none;">
+          <div class="alert alert-success">
+            Correct. Your delivery continues.
+          </div>
+          <div class="card mt-3" style="padding:1.25rem;">
+            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
+              Open envelope number 3 to continue your delivery.
+            </p>
+            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+const ANSWER = 'Mw==';
+
+function b64dec(s: string): string {
+  return atob(s);
+}
+
+const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+const formArea = document.getElementById('form-area') as HTMLDivElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
+const input = document.getElementById('riddle-answer') as HTMLInputElement;
+
+if (!localStorage.getItem('detangled')) {
+  window.location.href = '/platform/';
+}
+
+if (localStorage.getItem('identification_done')) {
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+submitBtn.addEventListener('click', () => {
+  const answer = input.value.trim();
+  if (answer !== b64dec(ANSWER)) {
+    errorMsg.style.display = 'block';
+    return;
+  }
+  errorMsg.style.display = 'none';
+  localStorage.setItem('identification_done', '1');
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitBtn.click();
+});
+</script>
