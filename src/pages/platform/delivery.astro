@@ -1,0 +1,103 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Project Delivery" showTimer={true}>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Project Delivery</h1>
+      <p>Find your project in the database to complete your delivery.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="submit-form">
+
+        <div class="alert alert-info mb-2">
+          <strong>Project delivery.</strong><br/>
+          Look for me in the database.
+        </div>
+
+        <div id="form-area">
+          <div class="form-group">
+            <label for="project-name">Project</label>
+            <input type="text" id="project-name" placeholder="Enter the project" autocomplete="off" style="font-size:1.1rem;" />
+          </div>
+          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
+            Deliver Project
+          </button>
+        </div>
+
+        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
+          That's not the right project. Look again in the database.
+        </div>
+
+        <div id="result-area" style="display:none;">
+          <div class="alert alert-success">
+            Project delivered. Your delivery is complete.
+          </div>
+          <div class="card mt-3" style="padding:1.25rem;">
+            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
+              Open envelope 6, find and deliver me.
+            </p>
+            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+const PROJECTS = [
+  'Z3JhcGVz',
+  'S2FuZWxidWxsZQ==',
+  'U3RyYXdiZXJyeQ==',
+  'U3VnYXI=',
+  'Y29mZmVl',
+  'Y3JvaXNzYW50',
+];
+
+function b64dec(s: string): string {
+  return atob(s);
+}
+
+const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+const formArea = document.getElementById('form-area') as HTMLDivElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
+const input = document.getElementById('project-name') as HTMLInputElement;
+
+const codeIdx = parseInt(localStorage.getItem('code_idx') ?? '');
+if (isNaN(codeIdx) || codeIdx < 0 || codeIdx >= PROJECTS.length) {
+  window.location.href = '/platform/';
+}
+
+if (!localStorage.getItem('identification_done')) {
+  window.location.href = '/platform/';
+}
+
+if (localStorage.getItem('delivery_done')) {
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+submitBtn.addEventListener('click', () => {
+  const answer = input.value.trim();
+  const correct = b64dec(PROJECTS[codeIdx]);
+  if (answer !== correct) {
+    errorMsg.style.display = 'block';
+    return;
+  }
+  errorMsg.style.display = 'none';
+  localStorage.setItem('delivery_done', '1');
+  formArea.style.display = 'none';
+  resultArea.style.display = 'block';
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitBtn.click();
+});
+</script>

@@ -176,16 +176,16 @@ import Layout from "../../layouts/Layout.astro";
                             >Open Tool →</span
                         >
                     </div>
-                    <div id="card-coming-soon" class="card" style="display:none;">
+                    <div id="card-delivery" class="card" style="display:none;">
                         <div class="card-icon">🔮</div>
-                        <h3>Coming Soon</h3>
+                        <h3>Project Delivery</h3>
                         <p>
-                            The next challenge will appear here once it's ready.
+                            Look for me in the database.
                         </p>
                         <span
                             class="btn btn-outline"
-                            style="font-size:0.85rem;padding:0.4rem 0.9rem;opacity:0.5;"
-                            >Coming Soon</span
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;"
+                            >Open Tool →</span
                         >
                     </div>
                 </div>
@@ -293,7 +293,25 @@ import Layout from "../../layouts/Layout.astro";
                 card.style.opacity = "0.5";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
             }
-            document.getElementById("card-coming-soon")!.style.display = "block";
+            const delCard = document.getElementById("card-delivery") as HTMLElement;
+            if (delCard) {
+                delCard.style.display = "block";
+                delCard.style.cursor = "pointer";
+                delCard.onclick = () => {
+                    window.location.href = "/platform/delivery/";
+                };
+            }
+        }
+        if (localStorage.getItem("delivery_done")) {
+            const card = document.getElementById(
+                "card-delivery",
+            ) as HTMLElement;
+            if (card) {
+                card.onclick = null;
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                card.querySelector(".btn")!.textContent = "✅ Completed";
+            }
         }
     }
 
