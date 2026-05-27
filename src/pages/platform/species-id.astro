@@ -13,54 +13,52 @@ import '../../styles/species-id.css';
 
   <section>
     <div class="container">
-      <div class="species-game-layout">
 
-        <!-- Left: game -->
-        <div class="species-game">
+      <p class="text-muted description-wide" style="font-size:0.95rem;margin-bottom:1.5rem;">
+        Each Project Coordinator has a spirit animal. To know which project you are tasked to deliver,
+        you must first identify your Project Coordinator — and to do that, you need to find their spirit animal.
+      </p>
 
-          <p class="text-muted" style="font-size:0.95rem;margin-bottom:1rem;">
-            Each Project Coordinator has a spirit animal. To know which project you are tasked to deliver,
-            you must first identify your Project Coordinator — and to do that, you need to find their spirit animal.
-          </p>
+      <div class="phylo-panel">
+        <h4 style="margin-bottom:0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
+        <div class="phylo-db" id="phylo-db"></div>
+      </div>
 
+      <div class="game-bottom">
+        <div class="game-controls" id="game-controls">
           <div class="alert alert-info mb-2">
             <strong>Instructions:</strong> Enter animal names below — each guess returns a phylogenetic proximity hint.
-            Every name in the tree is linked to its Wikipedia entry.<br>
-            <span id="guesses-left">0 guesses made</span>
+            Every name in the tree is linked to its Wikipedia entry.
           </div>
-
-          <div id="game-area">
-            <datalist id="species-list"></datalist>
-            <div class="species-input-row">
-              <input type="text" id="species-input" placeholder="Enter a species name…" list="species-list" autocomplete="off" />
-              <button class="btn btn-primary" id="guess-btn">Submit</button>
-            </div>
-            <ul class="guess-history" id="guess-list"></ul>
+          <datalist id="species-list"></datalist>
+          <div class="species-input-row">
+            <input type="text" id="species-input" placeholder="Enter a species name…" list="species-list" autocomplete="off" />
+            <button class="btn btn-primary" id="guess-btn">Submit</button>
           </div>
-
-          <div id="success-area" style="display:none;" class="success-box">
-            <div style="font-size:3rem;">🎉</div>
-            <h3>Spirit Animal Identified!</h3>
-            <p>The Project Coordinator's spirit animal is a <strong id="success-name"></strong> (<em id="success-scientific"></em>).</p>
-            <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
-          </div>
-
         </div>
-
-        <!-- Right: phylogenomic tree -->
-        <div class="phylo-panel">
-          <h4 style="margin-bottom:1rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Phylogenomic Tree</h4>
-          <div class="phylo-tree" id="phylo-tree"></div>
+        <div class="game-guesses">
+          <h4 style="margin-bottom:0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">
+            Guesses <span id="guesses-left" style="font-weight:400;">(0)</span>
+          </h4>
+          <ul class="guess-history" id="guess-list"></ul>
         </div>
-
       </div>
+
+      <div id="success-area" style="display:none;" class="success-box">
+        <div style="font-size:3rem;">🎉</div>
+        <h3>Spirit Animal Identified!</h3>
+        <p>The Project Coordinator's spirit animal is a <strong id="success-name"></strong> (<em id="success-scientific"></em>).</p>
+        <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
+      </div>
+
     </div>
   </section>
 
 </Layout>
 
 <script>
-import PHYLO_RAW from '../../data/phylo-tree.csv?raw';
+import * as d3 from 'd3';
+import PHYLO_RAW from '../../data/phylo-db.csv?raw';
 import TARGETS_RAW from '../../data/philo-targets.txt?raw';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
@@ -91,7 +89,7 @@ const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot'
 const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
 const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 
-const TAXONOMY: Record<string, { clade: number; label: string }> = {};
+const TAXONOMY: Record<string, { clade: number; label: string; divergent?: string }> = {};
 for (const entry of SPECIES_DB) {
   const species = entry[entry.length - 2];
   if (species === TARGET.name) {
@@ -109,7 +107,8 @@ for (const entry of SPECIES_DB) {
   const icon = WARMTH_ICON[clade] ?? '🧊';
   const word = WARMTH_WORD[clade] ?? 'Cold';
   const link = clade > 0 ? wikiLink(cap(TARGET.path[clade - 1])) : wikiLink('Metazoa');
-  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${link}` };
+  const divergent = clade > 0 && clade < entry.length - 2 ? cap(entry[clade]) : undefined;
+  TAXONOMY[species] = { clade, label: `${icon} ${word} — ${link}`, divergent };
 }
 
 // ─── Derive node/branch/subtree IDs from the chosen target's path ────────────
@@ -119,54 +118,215 @@ const CLADE_CLASS: Record<number, string> = {
 };
 
 // ─── Tree state ───────────────────────────────────────────────────────────────
-// revealedClades: set of clade indices (1-based) that have been shown green.
 // missAtClade[c]: list of raw species names guessed that diverge at clade c.
-const revealedClades = new Set<number>();
-const missAtClade    = new Map<number, string[]>();
+const missAtClade = new Map<number, string[]>();
 
-function rebuildTree(won = false) {
-  const container = document.getElementById('phylo-tree')!;
+// ─── D3 tree data types ──────────────────────────────────────────
+interface D3Node {
+  id: string;
+  name: string;
+  url?: string;
+  type: 'hit' | 'miss' | 'miss-clade' | 'target' | 'correct' | 'shared';
+  children?: D3Node[];
+}
+let _idCounter = 0;
+function uid(prefix = 'n'): string { return `pn${prefix}${++_idCounter}`; }
 
-  function buildBranch(clade: number): string {
-    const items: string[] = [];
+// ─── Build D3 tree data from misses ──────────────────────────────
+function buildTreeData(): D3Node {
+  const cladeLevels = [...missAtClade.keys()].sort((a, b) => a - b);
+  const root: D3Node = { id: 'node-root', name: 'Metazoa', url: wiki('Metazoa'), type: 'hit', children: [] };
 
-    // Miss nodes at this branch level
-    for (const m of (missAtClade.get(clade) ?? [])) {
-      const label = cap(m);
-      items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-miss">${wikiLink(label)}</div></div>`);
-    }
-
-    if (won) {
-      // Full tree: show all remaining path nodes then the target
-      if (clade < TARGET.path.length) {
-        const label = cap(TARGET.path[clade]);
-        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(clade + 1)}</div></div>`);
-      } else {
-        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit phylo-node-correct" id="node-target"><a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a></div></div>`);
-      }
-    } else {
-      // Find the shallowest revealed clade deeper than current
-      let nextRevealed = -1;
-      for (let c = clade + 1; c <= TARGET.path.length; c++) {
-        if (revealedClades.has(c)) { nextRevealed = c; break; }
-      }
-      if (nextRevealed !== -1) {
-        const label = cap(TARGET.path[nextRevealed - 1]); // nextRevealed is 1-indexed
-        items.push(`<div class="phylo-item"><div class="phylo-node phylo-node-hit">${wikiLink(label)}</div><div class="phylo-branch">${buildBranch(nextRevealed)}</div></div>`);
-      } else {
-        items.push(`<div class="phylo-item"><div class="phylo-node phylo-target" id="node-target">???</div></div>`);
-      }
-    }
-
-    return items.join('');
+  if (cladeLevels.length === 0) {
+    const targetName = _won ? cap(TARGET.name) : '???';
+    const targetUrl = _won ? wiki(TARGET.scientific) : undefined;
+    root.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
+    return root;
   }
 
-  container.innerHTML = `<div class="phylo-node phylo-node-hit">${wikiLink('Metazoa')}</div><div class="phylo-branch">${buildBranch(0)}</div>`;
+  function addMisses(parent: D3Node, level: number) {
+    const names = missAtClade.get(level)!;
+    const divMap = new Map<string, string[]>();
+    for (const n of names) {
+      const t = TAXONOMY[n];
+      const d = t?.divergent && t.divergent !== cap(n) ? t.divergent : '';
+      if (!divMap.has(d)) divMap.set(d, []);
+      divMap.get(d)!.push(n);
+    }
+    for (const [d, members] of divMap) {
+      if (d && members.length >= 2) {
+        const mc: D3Node = { id: uid(), name: d, url: wiki(d), type: 'miss-clade', children: [] };
+        for (const n of members) mc.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
+        parent.children!.push(mc);
+      } else {
+        for (const n of members) parent.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
+      }
+    }
+  }
+
+  let cur = root;
+  for (const clade of cladeLevels) {
+    const name = clade > 0 ? cap(TARGET.path[clade - 1]) : '';
+    const shared: D3Node = { id: uid(), name, url: name ? wiki(name) : undefined, type: 'shared', children: [] };
+    addMisses(shared, clade);
+    cur.children!.push(shared);
+    cur = shared;
+  }
+
+  const targetName = _won ? cap(TARGET.name) : '???';
+  const targetUrl = _won ? wiki(TARGET.scientific) : undefined;
+  cur.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
+  return root;
 }
+
+let _won = false;
+function rebuildTree() {
+  const container = document.getElementById('phylo-db')!;
+  const data = buildTreeData();
+
+  container.innerHTML = `<div class="phylo-tree" id="T"><svg class="phylo-svg" id="S"></svg></div>`;
+
+  requestAnimationFrame(() => requestAnimationFrame(() => drawD3Tree(data)));
+}
+
+function drawD3Tree(root: D3Node) {
+  const svgEl = document.getElementById('S') as unknown as SVGSVGElement;
+  const T = document.getElementById('T') as HTMLDivElement;
+  if (!svgEl || !T) return;
+
+  const hierarchy = d3.hierarchy(root);
+  const pointRoot = d3.tree<D3Node>().nodeSize([140, 60])(hierarchy);
+
+  // Push target node to the bottom of the tree
+  let maxNonTargetY = 0;
+  pointRoot.each(d => { if (d.data.id !== 'node-target' && d.y > maxNonTargetY) maxNonTargetY = d.y; });
+  pointRoot.each(d => { if (d.data.id === 'node-target') d.y = maxNonTargetY + 60; });
+
+  // Recompute bounds after moving target
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  pointRoot.each(d => {
+    if (d.x < minX) minX = d.x;
+    if (d.x > maxX) maxX = d.x;
+    if (d.y < minY) minY = d.y;
+    if (d.y > maxY) maxY = d.y;
+  });
+
+  // Position target at bottom of panel with minimal gap
+  const panel = T.closest('.phylo-panel');
+  const panelH = panel ? panel.clientHeight : 400;
+  const topPad = 15;
+  const botPad = 15;
+  const gap = 25;
+  const minH = 300;
+  const cH = Math.max(panelH, minH, maxY + botPad + gap);
+
+  // Scale non-target y positions to fit between topPad and (targetY - gap)
+  const targetNode = pointRoot.find(d => d.data.id === 'node-target');
+  const targetY = cH - botPad;
+  if (targetNode) targetNode.y = targetY;
+  const d3Span = maxNonTargetY - minY || 1;
+  const availY = targetY - topPad - gap;
+  pointRoot.each(d => {
+    if (d.data.id !== 'node-target') {
+      d.y = topPad + ((d.y - minY) / d3Span) * availY;
+    }
+  });
+
+  // Final bounds
+  minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
+  pointRoot.each(d => {
+    if (d.x < minX) minX = d.x;
+    if (d.x > maxX) maxX = d.x;
+    if (d.y < minY) minY = d.y;
+    if (d.y > maxY) maxY = d.y;
+  });
+
+  const panelWidth = T.parentElement?.clientWidth ?? 280;
+  const pad = 20;
+  const cw = Math.max(panelWidth, maxX - minX + pad * 2);
+  const xOff = cw / 2 - (minX + maxX) / 2;
+
+  pointRoot.each(d => { d.x += xOff; });
+
+  // Align spine nodes (last-child chain) to panel center
+  const spineIds = new Set<string>();
+  for (let s: (typeof pointRoot) | null = pointRoot; s; s = s.children?.length ? s.children[s.children.length - 1] : null) {
+    spineIds.add(s.data.id);
+  }
+  const centerX = cw / 2;
+  pointRoot.each(d => { if (spineIds.has(d.data.id)) d.x = centerX; });
+
+  // Distribute side-branch children around the spine with no overlap
+  pointRoot.each(d => {
+    if (!spineIds.has(d.data.id) || !d.children || d.children.length < 2) return;
+    const lastI = d.children.length - 1;
+    const base = 80;
+    const step = 70;
+    for (let i = 0; i < lastI; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const off = base + Math.floor(i / 2) * step;
+      const newX = d.x + side * off;
+      const dx = newX - d.children[i].x;
+      d.children[i].each((desc: any) => { desc.x += dx; });
+    }
+  });
+
+  // Ensure children of non-spine nodes stay on the same side (away from spine)
+  pointRoot.each(d => {
+    if (spineIds.has(d.data.id) || !d.children) return;
+    const isLeft = d.x < centerX;
+    const base = 80;
+    const step = 70;
+    for (let i = 0; i < d.children.length; i++) {
+      const off = base + i * step;
+      d.children[i].x = d.x + (isLeft ? -off : off);
+    }
+  });
+
+  const svg = d3.select(svgEl);
+  svg.attr('viewBox', `0 0 ${cw} ${cH}`)
+     .attr('width', cw)
+     .attr('height', cH);
+
+  T.style.width = `${cw}px`;
+  T.style.height = `${cH}px`;
+
+  // Draw links (from bottom of parent rect to top of child rect)
+  svg.selectAll('.phylo-link')
+    .data(pointRoot.links())
+    .join('path')
+    .attr('class', 'phylo-link')
+    .attr('d', (d: any) => {
+      const s = d.source, t = d.target;
+      const sy = s.y + 11, ty = t.y - 11;
+      const my = Math.max(sy, ty - 15);
+      return `M${s.x},${sy}C${s.x},${my} ${t.x},${my} ${t.x},${ty}`;
+    })
+    .attr('fill', 'none')
+    .attr('stroke', '#999')
+    .attr('stroke-width', 2);
+
+  // Draw nodes
+  const nodeGroups = svg.selectAll('.phylo-svg-node')
+    .data(pointRoot.descendants())
+    .join('g')
+    .attr('class', d => `phylo-svg-node phylo-svg-node-${d.data.type}`)
+    .attr('transform', d => `translate(${d.x},${d.y})`);
+
+  nodeGroups.each(function(d) {
+    const group = d3.select(this);
+    const el = d.data.url
+      ? group.append('a').attr('href', d.data.url).attr('target', '_blank').attr('rel', 'noopener noreferrer')
+      : group;
+    const bw = d.data.name.length * 7.5 + 14;
+    el.append('rect').attr('x', -bw / 2).attr('y', -11).attr('width', bw).attr('height', 22).attr('rx', 4);
+    el.append('text').text(d.data.name);
+  });
+}
+
 rebuildTree();
 
 function highlightNode(clade: number, raw: string) {
-  if (clade > 0) revealedClades.add(clade);
   if (!missAtClade.has(clade)) missAtClade.set(clade, []);
   const existing = missAtClade.get(clade)!;
   if (!existing.includes(raw)) existing.push(raw);
@@ -181,7 +341,7 @@ const datalist     = document.getElementById('species-list') as HTMLDataListElem
 const btn          = document.getElementById('guess-btn') as HTMLButtonElement;
 const list         = document.getElementById('guess-list') as HTMLUListElement;
 const guessesLabel = document.getElementById('guesses-left') as HTMLSpanElement;
-const gameArea     = document.getElementById('game-area') as HTMLDivElement;
+const gameControls = document.getElementById('game-controls') as HTMLDivElement;
 const successArea  = document.getElementById('success-area') as HTMLDivElement;
 
 // Populate success target name
@@ -194,8 +354,9 @@ const ALL_SPECIES = Object.keys(TAXONOMY).map(cap).sort();
 function updateDatalist(query: string) {
   datalist.innerHTML = '';
   if (!query) return;
+  const guessed = new Set([...missAtClade.values()].flat());
   const ql = query.toLowerCase();
-  const matches = ALL_SPECIES.filter(n => n.toLowerCase().includes(ql));
+  const matches = ALL_SPECIES.filter(n => !guessed.has(n.toLowerCase()) && n.toLowerCase().includes(ql));
   matches.sort((a, b) => {
     const al = a.toLowerCase(), bl = b.toLowerCase();
     const aStart = al.startsWith(ql), bStart = bl.startsWith(ql);
@@ -219,7 +380,7 @@ input.addEventListener('input', () => {
 
 // Restore if already done
 if (localStorage.getItem('species_done')) {
-  gameArea.style.display = 'none';
+  gameControls.style.display = 'none';
   showSuccess();
 }
 
@@ -228,7 +389,21 @@ function showSuccess() {
 }
 
 function updateGuessesLabel() {
-  guessesLabel.textContent = `${guessCount} guess${guessCount === 1 ? '' : 'es'} made`;
+  guessesLabel.textContent = `(${guessCount})`;
+}
+
+function renderGuesses() {
+  list.innerHTML = '';
+  for (const [clade, names] of missAtClade) {
+    for (const n of names) {
+      const cls = CLADE_CLASS[clade] ?? 'hint-cold';
+      const t = TAXONOMY[n];
+      const li = document.createElement('li');
+      li.className = 'guess-row';
+      li.innerHTML = `<span class="guess-name">${cap(n)}</span><span class="hint-pill ${cls}">${t?.label ?? ''}</span>`;
+      list.appendChild(li);
+    }
+  }
 }
 
 function submitGuess() {
@@ -238,10 +413,11 @@ function submitGuess() {
   updateDatalist('');
 
   const data = TAXONOMY[raw];
-  const li = document.createElement('li');
-  li.className = 'guess-row';
+  if (data && [...missAtClade.values()].some(list => list.includes(raw))) return;
 
   if (!data) {
+    const li = document.createElement('li');
+    li.className = 'guess-row';
     li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill hint-cold">Unknown species</span>`;
     list.prepend(li);
     return;
@@ -250,11 +426,9 @@ function submitGuess() {
   if (data.clade === CORRECT_CLADE) {
     localStorage.setItem('species_done', '1');
     localStorage.setItem('spirit_animal', TARGET.name);
-    const targetNode = document.getElementById('node-target')!;
-    targetNode.innerHTML = `<a href="${wiki(TARGET.scientific)}" target="_blank" rel="noopener noreferrer">${cap(TARGET.name)}</a>`;
-    targetNode.classList.remove('phylo-target');
-    targetNode.classList.add('phylo-node-hit', 'phylo-node-correct');
-    gameArea.style.display = 'none';
+    _won = true;
+    rebuildTree();
+    gameControls.style.display = 'none';
     showSuccess();
     return;
   }
@@ -262,10 +436,7 @@ function submitGuess() {
   guessCount++;
   updateGuessesLabel();
   highlightNode(data.clade, raw);
-
-  const cls = CLADE_CLASS[data.clade] ?? 'hint-cold';
-  li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill ${cls}">${data.label}</span>`;
-  list.prepend(li);
+  renderGuesses();
 }
 
 btn.addEventListener('click', submitGuess);
