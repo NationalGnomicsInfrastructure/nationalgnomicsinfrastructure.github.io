@@ -134,7 +134,7 @@ import Layout from "../../layouts/Layout.astro";
                         >
                     </a>
                     <div id="card-retrieval" class="card" style="display:none;">
-                        <div class="card-icon">🔍</div>
+                        <div class="card-icon">🎣</div>
                         <h3>Project Retrieval</h3>
                         <p>
                              Enter the Project Coordinator's spirit animal to retrieve your project
@@ -164,6 +164,18 @@ import Layout from "../../layouts/Layout.astro";
                             >Open Tool →</span
                         >
                     </a>
+                    <div id="card-project-id" class="card" style="display:none;">
+                        <div class="card-icon">🔍</div>
+                        <h3>Project Identification</h3>
+                        <p>
+                            Solve the riddle to identify your next envelope.
+                        </p>
+                        <span
+                            class="btn btn-outline"
+                            style="font-size:0.85rem;padding:0.4rem 0.9rem;"
+                            >Open Tool →</span
+                        >
+                    </div>
                     <div id="card-coming-soon" class="card" style="display:none;">
                         <div class="card-icon">🔮</div>
                         <h3>Coming Soon</h3>
@@ -258,6 +270,25 @@ import Layout from "../../layouts/Layout.astro";
             ) as HTMLAnchorElement;
             if (card) {
                 card.removeAttribute("href");
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                card.querySelector(".btn")!.textContent = "✅ Completed";
+            }
+            const pidCard = document.getElementById("card-project-id") as HTMLElement;
+            if (pidCard) {
+                pidCard.style.display = "block";
+                pidCard.style.cursor = "pointer";
+                pidCard.onclick = () => {
+                    window.location.href = "/platform/identification/";
+                };
+            }
+        }
+        if (localStorage.getItem("identification_done")) {
+            const card = document.getElementById(
+                "card-project-id",
+            ) as HTMLElement;
+            if (card) {
+                card.onclick = null;
                 card.style.cursor = "default";
                 card.style.opacity = "0.5";
                 card.querySelector(".btn")!.textContent = "✅ Completed";
