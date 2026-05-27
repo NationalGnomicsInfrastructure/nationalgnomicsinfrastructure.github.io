@@ -80,12 +80,26 @@ if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
   throw new Error('No valid access code found — redirecting to platform.');
 }
 const TARGET = POSSIBLE_TARGETS[targetIdx];
-const CORRECT_CLADE = TARGET.path.length + 1; // 9
+const CORRECT_CLADE = TARGET.path.length + 1;
 
 // ─── Compute taxonomy dynamically ─────────────────────────────────────────────
 // For each species, find the deepest path node it shares with the target (in order).
-const WARMTH_ICON = ['🥶','🧊','🧊','❄️','❄️','🌤️','🌤️','🌡️','🔥'];
-const WARMTH_WORD = ['Very cold','Cold','Cold','Cool','Cool','Warm','Warm','Hot','Very hot'];
+const WARMTH_ICON = Array.from({ length: CORRECT_CLADE }, (_, i) => {
+  if (i === CORRECT_CLADE - 1) return '🔥';
+  if (i >= CORRECT_CLADE - 2) return '🌡️';
+  if (i >= CORRECT_CLADE - 4) return '🌤️';
+  if (i >= CORRECT_CLADE - 6) return '❄️';
+  if (i >= CORRECT_CLADE - 8) return '🧊';
+  return '🥶';
+});
+const WARMTH_WORD = Array.from({ length: CORRECT_CLADE }, (_, i) => {
+  if (i === CORRECT_CLADE - 1) return 'Very hot';
+  if (i >= CORRECT_CLADE - 2) return 'Hot';
+  if (i >= CORRECT_CLADE - 4) return 'Warm';
+  if (i >= CORRECT_CLADE - 6) return 'Cool';
+  if (i >= CORRECT_CLADE - 8) return 'Cold';
+  return 'Very cold';
+});
 const wiki = (term: string) => `https://en.wikipedia.org/wiki/${encodeURIComponent(term.replace(/ /g, '_'))}`;
 const wikiLink = (label: string) => `<a href="${wiki(label)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 
@@ -112,10 +126,12 @@ for (const entry of SPECIES_DB) {
 }
 
 // ─── Derive node/branch/subtree IDs from the chosen target's path ────────────
-const CLADE_CLASS: Record<number, string> = {
-  0: 'hint-cold', 1: 'hint-cold', 2: 'hint-cold', 3: 'hint-cold',
-  4: 'hint-cold', 5: 'hint-warm', 6: 'hint-warm', 7: 'hint-hot', 8: 'hint-hot',
-};
+const CLADE_CLASS: Record<number, string> = {};
+for (let i = 0; i < CORRECT_CLADE; i++) {
+  if (i >= CORRECT_CLADE - 2) CLADE_CLASS[i] = 'hint-hot';
+  else if (i >= CORRECT_CLADE - 4) CLADE_CLASS[i] = 'hint-warm';
+  else CLADE_CLASS[i] = 'hint-cold';
+}
 
 // ─── Tree state ───────────────────────────────────────────────────────────────
 // missAtClade[c]: list of raw species names guessed that diverge at clade c.
