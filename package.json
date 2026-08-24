@@ -15,7 +15,7 @@
     "d3": "^7.9.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@types/d3": "^7.4.3",
     "typescript": "^6.0.3"
   }
