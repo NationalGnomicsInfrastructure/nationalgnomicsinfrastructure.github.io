@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Platform Access" showTimer={true}>
+<Layout title="Platform Access">
     <div class="page-header">
         <div class="container">
             <h1>Platform Access</h1>
@@ -225,13 +225,8 @@ import Layout from "../../layouts/Layout.astro";
         toggleBtn.textContent = isHidden ? "🔒" : "🔓";
     });
 
-    // Restore session if already started, or auto-restart if credentials are present (after a restart)
-    const existingStart = localStorage.getItem("start");
+    // Restore session if already started
     const existingMode = localStorage.getItem("mode");
-    if (existingMode && !existingStart) {
-        localStorage.setItem("start", String(Date.now()));
-        window.dispatchEvent(new Event("started"));
-    }
     if (existingMode) {
         const displayName =
             localStorage.getItem("team") || "you";
@@ -351,11 +346,9 @@ import Layout from "../../layouts/Layout.astro";
     });
 
     function startSession(displayName: string) {
-        localStorage.setItem("start", String(Date.now()));
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = displayName;
-        window.dispatchEvent(new Event("started"));
         location.reload();
     }
 

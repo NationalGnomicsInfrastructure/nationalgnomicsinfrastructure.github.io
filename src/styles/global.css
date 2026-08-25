@@ -250,28 +250,6 @@ section.alt { background: var(--bg-alt); }
 .breadcrumb a { color: rgba(255,255,255,0.7); }
 .breadcrumb a:hover { color: white; text-decoration: none; }
 
-/* ── Timer widget ─────────────────────────────────────────── */
-#timer-bar {
-  display: none;
-  position: fixed;
-  top: 96px;
-  right: 1.5rem;
-  z-index: 200;
-  background: var(--gnomics-green-d);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow);
-  border: 2px solid var(--gnomics-lime);
-}
-#timer-bar.running { display: block; }
-#timer-bar .timer-label { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
-#timer-bar .timer-time { font-size: 1.2rem; font-weight: 700; color: var(--gnomics-lime); text-align: center; }
-#timer-bar.warning .timer-time { color: #ff9f43; }
-#timer-bar.danger .timer-time { color: #ff6b6b; animation: blink 1s step-end infinite; }
-@keyframes blink { 50% { opacity: 0.4; } }
 
 
 /* ── Keyphrase form (Enigma 5) ────────────────────────────── */
