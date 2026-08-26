@@ -56,4 +56,4 @@ prek.toml        Pre-commit hook configuration
 
 ## Deployment
 
-Deployment is handled automatically by GitHub Actions to GitHub Pages on every push to `main` that modifies source files.
+Deployment is handled by GitHub Actions to GitHub Pages on every push to `main` that modifies source files.
