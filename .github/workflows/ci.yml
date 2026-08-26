@@ -19,18 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
-          node-version: '24'
-          cache: 'npm'
-
+          node-version: "24"
+          cache: "npm"
       - name: Install dependencies
-        # TODO: Remove --legacy-peer-deps when @astrojs/check supports TypeScript 6.
-        run: npm ci --legacy-peer-deps
-
+        run: npm ci
       - name: Run Astro type check
         run: npm run check
 
@@ -38,26 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
-          node-version: '24'
-          cache: 'npm'
-
+          node-version: "24"
+          cache: "npm"
       - name: Install dependencies
-        # TODO: Remove --legacy-peer-deps when @astrojs/check supports TypeScript 6.
-        run: npm ci --legacy-peer-deps
-
-      - name: Install prek
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/v0.3.3/prek-installer.sh | sh
-
-      - name: Add prek to PATH
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Install prek hooks
-        run: prek install-hooks
-
+        run: npm ci
       - name: Run prek hooks
-        run: prek run --all-files
+        uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
