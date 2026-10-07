@@ -1,6 +1,6 @@
 [[repos]]
 repo = "https://github.com/pre-commit/pre-commit-hooks"
-rev = "v4.5.0"
+rev = "v6.0.0"
 
 [[repos.hooks]]
 id = "trailing-whitespace"
@@ -28,8 +28,15 @@ repo = "local"
 
 [[repos.hooks]]
 id = "astro-check"
-name = "Astro Type Check"
+name = "astro-check"
 entry = "npm run check"
 language = "system"
 pass_filenames = false
-files = "\\.(astro|ts|tsx)$"
+
+[[repos]]
+repo = "https://github.com/DavidAnson/markdownlint-cli2"
+rev = "v0.22.1"
+
+[[repos.hooks]]
+id = "markdownlint-cli2"
+args = ["--config", ".markdownlint.json"]
