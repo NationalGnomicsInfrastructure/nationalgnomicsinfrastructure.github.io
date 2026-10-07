@@ -4,12 +4,12 @@ Check for this file at the start of each session and follow its rules.
 
 ## Project overview
 
-Static website for National Gnomics Infrastructure (NGnI), a fictional gnome-scale genomics facility parodying [ngisweden.scilifelab.se](https://ngisweden.scilifelab.se). Astro 6, TypeScript, deployed to GitHub Pages.
+Static website for National Gnomics Infrastructure (NGnI), a fictional gnome-scale genomics facility parodying [ngisweden.scilifelab.se](https://ngisweden.scilifelab.se). Astro 7, TypeScript, deployed to GitHub Pages.
 
 ## Commands
 
 ```bash
-npm install --legacy-peer-deps   # install (flag required until @astrojs/check supports TypeScript 6)
+npm ci                          # install (TypeScript 6 is supported by @astrojs/check)
 npm run dev                      # local dev server
 npm run build                    # production build → dist/
 npm run check                    # Astro/TypeScript type check (the only "test")
@@ -26,7 +26,7 @@ No test suite. `npm run check` is the primary correctness gate, run as a pre-com
 
 ## Key conventions
 
-- Pass `--legacy-peer-deps` for any `npm install` or `npm ci` invocation until the TypeScript 6 compatibility issue in `@astrojs/check` is resolved (tracked in CI TODO comments).
+- `npm ci` / `npm install` without flags. `@astrojs/check` accepts TypeScript 6; do not reintroduce `--legacy-peer-deps` unless peer resolution actually fails.
 - Access-code verification is client-side only: compare a SHA-256 hash of the entered code against hardcoded hashes in `platform/index.astro`. The site is purely static — do not move this logic server-side.
 - GitHub Actions pins actions by full commit SHA, not version tag (e.g. `actions/checkout@de0fac2e...`). Follow the same pattern when adding or updating actions.
 - Deployment triggers on push to `main` when source files change; CI runs on every push and PR to `main`.
