@@ -49,6 +49,9 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
+import { codeIdx, onForm, requireFlag } from '../../lib/platform';
+
+// Envelope answers and clue parts, base64-encoded by index.
 const PAIRS = [
   'Y2FweWJhcmE=',
   'a29tb2RvIGRyYWdvbg==',
@@ -66,49 +69,18 @@ const PARTS = [
   'RlJPTlQgUEFX',
 ];
 
-function b64dec(s: string): string {
-  return atob(s);
-}
-
-const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-const formArea = document.getElementById('form-area') as HTMLDivElement;
-const resultArea = document.getElementById('result-area') as HTMLDivElement;
-const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
-const input = document.getElementById('second-animal') as HTMLInputElement;
+requireFlag('accession');
+const idx = codeIdx(PAIRS.length);
 const clueText = document.getElementById('clue-text') as HTMLParagraphElement;
+const showClue = () => {
+  const part = atob(PARTS[idx]).toLowerCase();
+  clueText.textContent = `Look on the ${part}. Find me in the pipeline.`;
+};
 
-const codeIdx = parseInt(localStorage.getItem('code_idx') ?? '');
-if (isNaN(codeIdx) || codeIdx < 0 || codeIdx >= PAIRS.length) {
-  window.location.href = '/platform/';
-}
-
-if (!localStorage.getItem('accession')) {
-  window.location.href = '/platform/';
-}
-
-if (localStorage.getItem('detangled')) {
-  formArea.style.display = 'none';
-  resultArea.style.display = 'block';
-  const part = b64dec(PARTS[codeIdx]);
-  clueText.textContent = `Look on the ${part.toLowerCase()}. Find me in the pipeline.`;
-}
-
-submitBtn.addEventListener('click', () => {
-  const answer = input.value.trim().toLowerCase();
-  const correct = b64dec(PAIRS[codeIdx]);
-  if (answer !== correct) {
-    errorMsg.style.display = 'block';
-    return;
-  }
-  errorMsg.style.display = 'none';
-  localStorage.setItem('detangled', '1');
-  formArea.style.display = 'none';
-  resultArea.style.display = 'block';
-  const part = b64dec(PARTS[codeIdx]);
-  clueText.textContent = `Look on the ${part.toLowerCase()}. Find me in the pipeline.`;
-});
-
-input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitBtn.click();
+onForm({
+  inputId: 'second-animal',
+  doneKey: 'detangled',
+  check: (value) => value.trim().toLowerCase() === atob(PAIRS[idx]),
+  onSuccess: showClue,
 });
 </script>

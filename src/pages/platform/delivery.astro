@@ -51,6 +51,9 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
+import { codeIdx, onForm, requireFlag } from '../../lib/platform';
+
+// Envelope project names, base64-encoded by index.
 const PROJECTS = [
   'Z3JhcGVz',
   'S2FuZWxidWxsZQ==',
@@ -60,44 +63,11 @@ const PROJECTS = [
   'Y3JvaXNzYW50',
 ];
 
-function b64dec(s: string): string {
-  return atob(s);
-}
-
-const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-const formArea = document.getElementById('form-area') as HTMLDivElement;
-const resultArea = document.getElementById('result-area') as HTMLDivElement;
-const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
-const input = document.getElementById('project-name') as HTMLInputElement;
-
-const codeIdx = parseInt(localStorage.getItem('code_idx') ?? '');
-if (isNaN(codeIdx) || codeIdx < 0 || codeIdx >= PROJECTS.length) {
-  window.location.href = '/platform/';
-}
-
-if (!localStorage.getItem('identification_done')) {
-  window.location.href = '/platform/';
-}
-
-if (localStorage.getItem('delivery_done')) {
-  formArea.style.display = 'none';
-  resultArea.style.display = 'block';
-}
-
-submitBtn.addEventListener('click', () => {
-  const answer = input.value.trim();
-  const correct = b64dec(PROJECTS[codeIdx]);
-  if (answer !== correct) {
-    errorMsg.style.display = 'block';
-    return;
-  }
-  errorMsg.style.display = 'none';
-  localStorage.setItem('delivery_done', String(Date.now()));
-  formArea.style.display = 'none';
-  resultArea.style.display = 'block';
-});
-
-input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitBtn.click();
+requireFlag('identification_done');
+const idx = codeIdx(PROJECTS.length);
+onForm({
+  inputId: 'project-name',
+  doneKey: 'delivery_done',
+  check: (value) => value.trim() === atob(PROJECTS[idx]),
 });
 </script>
