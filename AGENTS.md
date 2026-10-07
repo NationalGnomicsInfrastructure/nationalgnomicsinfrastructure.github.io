@@ -12,10 +12,12 @@ Static website for National Gnomics Infrastructure (NGnI), a fictional gnome-sca
 npm ci                          # install (TypeScript 6 is supported by @astrojs/check)
 npm run dev                      # local dev server
 npm run build                    # production build → dist/
-npm run check                    # Astro/TypeScript type check (the only "test")
+npm run check                    # Astro/TypeScript type check
+npm run prek                     # pre-commit hooks (includes astro check)
+npm run smoke                    # assert dist/ routes and head tags
 ```
 
-No test suite. `npm run check` is the primary correctness gate, run as a pre-commit hook via `prek`.
+No test suite. `npm run check` + `npm run smoke` are the correctness gates; `astro check` also runs as a pre-commit hook via `prek`.
 
 ## Architecture
 
@@ -31,4 +33,4 @@ No test suite. `npm run check` is the primary correctness gate, run as a pre-com
 - GitHub Actions pins actions by full commit SHA, not version tag (e.g. `actions/checkout@de0fac2e...`). Follow the same pattern when adding or updating actions.
 - Deployment triggers on push to `main` when source files change; CI runs on every push and PR to `main`.
 - Git workflow — never push directly to `main`. Always use a feature branch and open a PR. Sync `main` before creating a new branch (`git checkout main && git pull origin main`).
-- Pre-commit hooks are managed by `prek` (config: `prek.toml`). Hooks cover trailing whitespace, end-of-file newlines, YAML/JSON validity, merge conflict markers, line-ending consistency, and `astro check`.
+- Pre-commit hooks are managed by `prek` (config: `prek.toml`). Hooks cover trailing whitespace, end-of-file newlines, YAML/JSON validity, merge conflict markers, line-ending consistency, `astro check`, and markdownlint. CI runs prek plus a build/smoke job; Node is pinned via `.nvmrc`.

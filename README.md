@@ -3,9 +3,7 @@
 [![CI](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/ci.yml)
 [![Deploy to GitHub Pages](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/NationalGnomicsInfrastructure/nationalgnomicsinfrastructure.github.io/actions/workflows/deploy.yml)
 
-<picture>
-  <img alt="NGnI logo" height="120" src="public/ngni-logo.png">
-</picture>
+<img alt="NGnI logo" height="120" src="public/ngni-logo.png">
 
 Website for the **National Gnomics Infrastructure (NGnI)** — a fictional gnome-scale facility, built with [Astro](https://astro.build).
 
