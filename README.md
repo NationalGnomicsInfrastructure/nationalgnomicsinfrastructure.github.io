@@ -45,13 +45,18 @@ npm run check
 ## Project Structure
 
 ```text
-public/          Static assets (favicon, logos)
+public/          Static assets (favicon, logos, nav.js)
 src/layouts/     Shared layout components
 src/pages/       Astro routes
 src/styles/      Global CSS
+scripts/         Build smoke checks
 prek.toml        Pre-commit hook configuration
 ```
 
 ## Deployment
 
 Deployment is handled by GitHub Actions to GitHub Pages on every push to `main` that modifies source files.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, quality checks, and pull request guidelines.

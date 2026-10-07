@@ -6,21 +6,48 @@ interface Props {
   description?: string;
 }
 const { title, description = "National Gnomics Infrastructure — Advancing gnome-scale genomic discovery" } = Astro.props;
+const siteTitle = "National Gnomics Infrastructure";
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
 ---
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} | NGnI</title>
   <meta name="description" content={description} />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧙</text></svg>" />
+  <meta name="theme-color" content="#104827" />
+  <link rel="canonical" href={pageUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:site_name" content={siteTitle} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={pageUrl} />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha384-rWj9FmWWt3OMqd9vBkWRhFavvVUYalYqGPoMdL1brs/qvvqz88gvLShYa4hKNyqb"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <meta name="generator" content={Astro.generator} />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data:; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self'; frame-src 'none'; object-src 'none'"
+  />
+  <title>{title} | NGnI</title>
+  <script is:inline src="/js/nav.js"></script>
 </head>
 <body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div class="redirect-banner">
   🧬 Looking for the <strong>real</strong> National Genomics Infrastructure?
@@ -48,15 +75,9 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
   </div>
 </header>
 
-<script>
-  document.getElementById('burger')?.addEventListener('click', function () {
-    document.getElementById('site-header')?.classList.toggle('nav-open');
-    const expanded = this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true';
-    this.setAttribute('aria-expanded', expanded);
-  });
-</script>
-
+<main id="main-content">
 <slot />
+</main>
 
 <footer class="site-footer">
   <div class="footer-inner">
@@ -106,7 +127,6 @@ const { title, description = "National Gnomics Infrastructure — Advancing gnom
     </div>
   </div>
 </footer>
-
 
 </body>
 </html>
