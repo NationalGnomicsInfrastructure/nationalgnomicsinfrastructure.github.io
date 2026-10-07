@@ -21,7 +21,7 @@ No test suite. `npm run check` + `npm run smoke` are the correctness gates; `ast
 
 ## Architecture
 
-- Single layout — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title` and `description` props.
+- Single layout — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title` and `description` props. Layout emits canonical/OG meta, CSP, skip-link, and loads nav JS from `public/js/nav.js`.
 - File-based routing — pages in `src/pages/` map directly to URL routes (Astro convention). Sub-directories become path segments (e.g. `src/pages/applications/gnome-sequencing/index.astro` → `/applications/gnome-sequencing/`).
 - Global styles — all CSS lives in `src/styles/global.css`; no CSS modules or component-scoped styles. Inline `style=` attributes are used within `.astro` files.
 - Platform section — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). State lives in `localStorage` under the keys: `team`, `leader`, `species_done`, `spirit_animal`, `accession`, `code_idx`, `mode`.
