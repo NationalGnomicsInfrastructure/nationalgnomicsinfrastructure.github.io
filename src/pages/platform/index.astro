@@ -8,7 +8,7 @@ import Layout from "../../layouts/Layout.astro";
             <h1>Platform Access</h1>
             <p>Welcome to the NGnI analysis and project management portal.</p>
         </div>
-                </div>
+    </div>
 
     <section>
         <div class="container">
@@ -198,6 +198,7 @@ import Layout from "../../layouts/Layout.astro";
 </Layout>
 
 <script>
+    // SHA-256 hashes of accepted delivery codes, by index.
     const H = [
         "b2b330e0386fe31701efbf1e9538cc4908c91c184a70bb2f32585f442e9f4869",
         "b9009c67797d87e79c78875dbf16270f6fe0f9f372b6068e492f6befec213b19",
@@ -206,6 +207,15 @@ import Layout from "../../layouts/Layout.astro";
         "9b395e132d77dfd654391e2e4735250e796fcaa5ab3dc64d002a1ee0669c5d91",
         "714ac0a71d346e132d7080b74c871550fe8012d34db6567866224f4fbf0a8627",
     ];
+
+    // Ordered delivery pipeline. Step i is visible once step i-1 is done.
+    const steps = [
+        { id: "card-species-id", doneKey: "species_done", href: "/platform/species-id/" },
+        { id: "card-retrieval", doneKey: "accession", href: "/platform/retrieval/" },
+        { id: "card-next", doneKey: "detangled", href: "/platform/detangling/" },
+        { id: "card-project-id", doneKey: "identification_done", href: "/platform/identification/" },
+        { id: "card-delivery", doneKey: "delivery_done", href: "/platform/delivery/" },
+    ] as const;
 
     const launchBtnMixed = document.getElementById("launch-btn-mixed");
     const verifyBtn = document.getElementById("verify-btn");
@@ -220,101 +230,56 @@ import Layout from "../../layouts/Layout.astro";
         "access-code",
     ) as HTMLInputElement;
 
+    const done = (key: string) => Boolean(localStorage.getItem(key));
+
+    function applyStepState() {
+        steps.forEach((step, i) => {
+            const card = document.getElementById(step.id);
+            if (!card) return;
+            const visible = i === 0 || done(steps[i - 1].doneKey);
+            if (!visible) {
+                card.style.display = "none";
+                return;
+            }
+            card.style.display = "block";
+            if (done(step.doneKey)) {
+                card.style.cursor = "default";
+                card.style.opacity = "0.5";
+                if (card instanceof HTMLAnchorElement) card.removeAttribute("href");
+                card.onclick = null;
+                const btn = card.querySelector(".btn");
+                if (btn) btn.textContent = "✅ Completed";
+                return;
+            }
+            if (i === 0) return;
+            card.style.cursor = "pointer";
+            card.onclick = () => {
+                window.location.href = step.href;
+            };
+        });
+
+        const status = document.getElementById("delivery-status");
+        if (status && (done("species_done") || done("accession"))) {
+            status.textContent = "ongoing";
+        }
+        if (done("delivery_done")) {
+            if (status) status.textContent = "completed";
+            const banner = document.getElementById("delivery-banner");
+            if (banner) banner.style.display = "block";
+        }
+    }
+
     toggleBtn?.addEventListener("click", () => {
         const isHidden = codeInput.type === "password";
         codeInput.type = isHidden ? "text" : "password";
         toggleBtn.textContent = isHidden ? "🔒" : "🔓";
     });
 
-    // Restore session if already started
-    const existingMode = localStorage.getItem("mode");
-    if (existingMode) {
-        const displayName =
-            localStorage.getItem("team") || "you";
+    if (localStorage.getItem("mode")) {
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
-        displayTeam!.textContent = displayName;
-        if (
-            localStorage.getItem("species_done") ||
-            localStorage.getItem("accession")
-        ) {
-            document.getElementById("delivery-status")!.textContent = "ongoing";
-        }
-        if (localStorage.getItem("species_done")) {
-            unlockCards();
-            const card = document.getElementById(
-                "card-species-id",
-            ) as HTMLAnchorElement;
-            if (card) {
-                card.removeAttribute("href");
-                card.style.cursor = "default";
-                card.style.opacity = "0.5";
-                card.querySelector(".btn")!.textContent = "✅ Completed";
-            }
-        }
-        if (localStorage.getItem("accession")) {
-            const card = document.getElementById(
-                "card-retrieval",
-            ) as HTMLElement;
-            if (card) {
-                card.style.cursor = "default";
-                card.style.opacity = "0.5";
-                card.querySelector(".btn")!.textContent = "✅ Completed";
-            }
-            document.getElementById("card-next")!.style.display = "block";
-        }
-        if (localStorage.getItem("detangled")) {
-            const card = document.getElementById(
-                "card-next",
-            ) as HTMLAnchorElement;
-            if (card) {
-                card.removeAttribute("href");
-                card.style.cursor = "default";
-                card.style.opacity = "0.5";
-                card.querySelector(".btn")!.textContent = "✅ Completed";
-            }
-            const pidCard = document.getElementById("card-project-id") as HTMLElement;
-            if (pidCard) {
-                pidCard.style.display = "block";
-                pidCard.style.cursor = "pointer";
-                pidCard.onclick = () => {
-                    window.location.href = "/platform/identification/";
-                };
-            }
-        }
-        if (localStorage.getItem("identification_done")) {
-            const card = document.getElementById(
-                "card-project-id",
-            ) as HTMLElement;
-            if (card) {
-                card.onclick = null;
-                card.style.cursor = "default";
-                card.style.opacity = "0.5";
-                card.querySelector(".btn")!.textContent = "✅ Completed";
-            }
-            const delCard = document.getElementById("card-delivery") as HTMLElement;
-            if (delCard) {
-                delCard.style.display = "block";
-                delCard.style.cursor = "pointer";
-                delCard.onclick = () => {
-                    window.location.href = "/platform/delivery/";
-                };
-            }
-        }
-        if (localStorage.getItem("delivery_done")) {
-            const card = document.getElementById(
-                "card-delivery",
-            ) as HTMLElement;
-            if (card) {
-                card.onclick = null;
-                card.style.cursor = "default";
-                card.style.opacity = "0.5";
-                card.querySelector(".btn")!.textContent = "✅ Completed";
-            }
-            document.getElementById("delivery-status")!.textContent = "completed";
-            const banner = document.getElementById("delivery-banner");
-            if (banner) banner.style.display = "block";
-        }
+        displayTeam!.textContent = localStorage.getItem("team") || "you";
+        applyStepState();
     }
 
     async function sha256(str: string): Promise<string> {
@@ -346,13 +311,6 @@ import Layout from "../../layouts/Layout.astro";
         teamAuth!.style.display = "block";
     });
 
-    function startSession(displayName: string) {
-        preLaunch!.style.display = "none";
-        postLaunch!.style.display = "block";
-        displayTeam!.textContent = displayName;
-        location.reload();
-    }
-
     document.getElementById("team-name")?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") launchBtnMixed?.click();
     });
@@ -373,17 +331,9 @@ import Layout from "../../layouts/Layout.astro";
         }
         localStorage.setItem("team", teamName);
         localStorage.setItem("leader", teamLeader);
-        startSession(teamName);
+        preLaunch!.style.display = "none";
+        postLaunch!.style.display = "block";
+        displayTeam!.textContent = teamName;
+        location.reload();
     });
-
-    function unlockCards() {
-        const card = document.getElementById("card-retrieval") as HTMLElement;
-        if (card) {
-            card.style.display = "block";
-            card.style.cursor = "pointer";
-            card.onclick = () => {
-                window.location.href = "/platform/retrieval/";
-            };
-        }
-    }
 </script>

@@ -24,12 +24,12 @@ No test suite. `npm run check` + `npm run smoke` are the correctness gates; `ast
 - Single layout — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title` and `description` props. Layout emits canonical/OG meta, CSP, skip-link, and loads nav JS from `public/js/nav.js`.
 - File-based routing — pages in `src/pages/` map directly to URL routes (Astro convention). Sub-directories become path segments (e.g. `src/pages/applications/gnome-sequencing/index.astro` → `/applications/gnome-sequencing/`).
 - Global styles — all CSS lives in `src/styles/global.css`; no CSS modules or component-scoped styles. Inline `style=` attributes are used within `.astro` files.
-- Platform section — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). State lives in `localStorage` under the keys: `team`, `leader`, `species_done`, `spirit_animal`, `accession`, `code_idx`, `mode`.
+- Platform section — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). Shared gates/forms live in `src/lib/platform.ts`. State lives in `localStorage` under the keys: `team`, `leader`, `mode`, `code_idx`, `species_done`, `spirit_animal`, `accession`, `detangled`, `identification_done`, `delivery_done`.
 
 ## Key conventions
 
 - `npm ci` / `npm install` without flags. `@astrojs/check` accepts TypeScript 6; do not reintroduce `--legacy-peer-deps` unless peer resolution actually fails.
-- Access-code verification is client-side only: compare a SHA-256 hash of the entered code against hardcoded hashes in `platform/index.astro`. The site is purely static — do not move this logic server-side.
+- Access-code verification is client-side only: compare a SHA-256 hash of the entered code against hardcoded hashes in `platform/index.astro`. Step gates and form wiring use `src/lib/platform.ts`. The site is purely static — do not move this logic server-side.
 - GitHub Actions pins actions by full commit SHA, not version tag (e.g. `actions/checkout@de0fac2e...`). Follow the same pattern when adding or updating actions.
 - Deployment triggers on push to `main` when source files change; CI runs on every push and PR to `main`.
 - Git workflow — never push directly to `main`. Always use a feature branch and open a PR. Sync `main` before creating a new branch (`git checkout main && git pull origin main`).
