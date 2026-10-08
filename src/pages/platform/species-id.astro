@@ -60,6 +60,7 @@ import '../../styles/species-id.css';
 import * as d3 from 'd3';
 import PHYLO_RAW from '../../data/phylo-db.csv?raw';
 import TARGETS_RAW from '../../data/philo-targets.txt?raw';
+import { KEYS } from '../../lib/platform';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
@@ -74,7 +75,7 @@ const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row 
 
 
 // ─── Select target based on access code ───────────────────────────────────────
-const targetIdx = parseInt(localStorage.getItem('code_idx') ?? '');
+const targetIdx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '');
 if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
   window.location.href = '/platform/';
   throw new Error('No valid access code found — redirecting to platform.');
@@ -395,7 +396,7 @@ input.addEventListener('input', () => {
 });
 
 // Restore if already done
-if (localStorage.getItem('species_done')) {
+if (localStorage.getItem(KEYS.speciesDone)) {
   gameControls.style.display = 'none';
   showSuccess();
 }
@@ -440,8 +441,8 @@ function submitGuess() {
   }
 
   if (data.clade === CORRECT_CLADE) {
-    localStorage.setItem('species_done', '1');
-    localStorage.setItem('spirit_animal', TARGET.name);
+    localStorage.setItem(KEYS.speciesDone, '1');
+    localStorage.setItem(KEYS.spiritAnimal, TARGET.name);
     _won = true;
     rebuildTree();
     gameControls.style.display = 'none';

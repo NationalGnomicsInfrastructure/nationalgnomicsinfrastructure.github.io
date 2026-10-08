@@ -55,13 +55,13 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-import { onForm, requireFlag } from '../../lib/platform';
+import { KEYS, onForm, requireFlag } from '../../lib/platform';
 
-requireFlag('spirit_animal');
-const animal = localStorage.getItem('spirit_animal')!;
+requireFlag(KEYS.spiritAnimal);
+const animal = localStorage.getItem(KEYS.spiritAnimal)!;
 onForm({
   inputId: 'spirit-animal',
-  doneKey: 'accession',
+  doneKey: KEYS.accession,
   check: (value) => value.trim().toLowerCase() === animal,
 });
 </script>

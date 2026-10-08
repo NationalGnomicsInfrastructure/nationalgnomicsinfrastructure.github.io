@@ -192,8 +192,7 @@ import Layout from "../../layouts/Layout.astro";
                         >
                     </div>
                 </div>
-                </div>
-                <div id="cancel-delivery" style="display:none;margin:1.5rem auto 0;text-align:center;">
+                <div id="cancel-delivery" style="margin:1.5rem auto 0;text-align:center;">
                     <button
                         id="disconnect-btn"
                         class="btn btn-cancel-delivery"
@@ -201,12 +200,13 @@ import Layout from "../../layouts/Layout.astro";
                         🚫 Cancel Delivery
                     </button>
                 </div>
+            </div>
         </div>
     </section>
 </Layout>
 
 <script>
-    import { disconnect } from "../../lib/platform";
+    import { KEYS, clearSession, disconnect } from "../../lib/platform";
 
     // SHA-256 hashes of accepted delivery codes, by index.
     const H = [
@@ -220,11 +220,11 @@ import Layout from "../../layouts/Layout.astro";
 
     // Ordered delivery pipeline. Step i is visible once step i-1 is done.
     const steps = [
-        { id: "card-species-id", doneKey: "species_done", href: "/platform/species-id/" },
-        { id: "card-retrieval", doneKey: "accession", href: "/platform/retrieval/" },
-        { id: "card-next", doneKey: "detangled", href: "/platform/detangling/" },
-        { id: "card-project-id", doneKey: "identification_done", href: "/platform/identification/" },
-        { id: "card-delivery", doneKey: "delivery_done", href: "/platform/delivery/" },
+        { id: "card-species-id", doneKey: KEYS.speciesDone, href: "/platform/species-id/" },
+        { id: "card-retrieval", doneKey: KEYS.accession, href: "/platform/retrieval/" },
+        { id: "card-next", doneKey: KEYS.detangled, href: "/platform/detangling/" },
+        { id: "card-project-id", doneKey: KEYS.identificationDone, href: "/platform/identification/" },
+        { id: "card-delivery", doneKey: KEYS.deliveryDone, href: "/platform/delivery/" },
     ] as const;
 
     const launchBtnMixed = document.getElementById("launch-btn-mixed");
@@ -239,7 +239,6 @@ import Layout from "../../layouts/Layout.astro";
     const codeInput = document.getElementById(
         "access-code",
     ) as HTMLInputElement;
-    const cancelDelivery = document.getElementById("cancel-delivery");
     const deliveryIntro = document.getElementById("delivery-intro");
 
     const done = (key: string) => Boolean(localStorage.getItem(key));
@@ -271,10 +270,10 @@ import Layout from "../../layouts/Layout.astro";
         });
 
         const status = document.getElementById("delivery-status");
-        if (status && (done("species_done") || done("accession"))) {
+        if (status && (done(KEYS.speciesDone) || done(KEYS.accession))) {
             status.textContent = "ongoing";
         }
-        if (done("delivery_done")) {
+        if (done(KEYS.deliveryDone)) {
             if (status) status.textContent = "completed";
             const banner = document.getElementById("delivery-banner");
             if (banner) banner.style.display = "block";
@@ -287,16 +286,15 @@ import Layout from "../../layouts/Layout.astro";
         toggleBtn.textContent = isHidden ? "🔒" : "🔓";
     });
 
-    const sessionMode = localStorage.getItem("mode");
-    const sessionTeam = localStorage.getItem("team");
+    const sessionMode = localStorage.getItem(KEYS.mode);
+    const sessionTeam = localStorage.getItem(KEYS.team);
     if (sessionMode && sessionTeam) {
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = sessionTeam;
-        if (cancelDelivery) cancelDelivery.style.display = "block";
         applyStepState();
     } else if (sessionMode) {
-        disconnect();
+        clearSession();
     }
 
     async function sha256(str: string): Promise<string> {
@@ -324,8 +322,8 @@ import Layout from "../../layouts/Layout.astro";
         codeCard!.style.display = "none";
         verifyBtn!.style.display = "none";
         if (deliveryIntro) deliveryIntro.style.display = "none";
-        localStorage.setItem("mode", "mixed");
-        localStorage.setItem("code_idx", String(H.indexOf(hash)));
+        localStorage.setItem(KEYS.mode, "mixed");
+        localStorage.setItem(KEYS.codeIdx, String(H.indexOf(hash)));
         teamAuth!.style.display = "block";
     });
 
@@ -358,8 +356,8 @@ import Layout from "../../layouts/Layout.astro";
             alert("Please enter your team name and leader before starting.");
             return;
         }
-        localStorage.setItem("team", teamName);
-        localStorage.setItem("leader", teamLeader);
+        localStorage.setItem(KEYS.team, teamName);
+        localStorage.setItem(KEYS.leader, teamLeader);
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
         displayTeam!.textContent = teamName;
