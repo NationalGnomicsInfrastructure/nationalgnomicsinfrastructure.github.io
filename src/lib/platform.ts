@@ -1,7 +1,5 @@
 export const KEYS = {
-  team: 'team',
-  leader: 'leader',
-  mode: 'mode',
+  agent: 'agent',
   codeIdx: 'code_idx',
   speciesDone: 'species_done',
   spiritAnimal: 'spirit_animal',

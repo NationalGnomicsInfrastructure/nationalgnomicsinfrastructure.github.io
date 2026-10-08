@@ -24,7 +24,7 @@ prek runs whitespace, yaml/json, and markdownlint checks plus `astro check`.
 - Internal links are absolute (`/database/`, not `database/`).
 - Nav burger script lives in `public/js/nav.js` (CSP `script-src 'self'`).
 - Platform state uses `localStorage` keys documented in `AGENTS.md`.
-- Access-code verification is client-side only (SHA-256 hashes in `platform/index.astro`).
+- Platform unlock is client-side only (SHA-256 sequence hashes in `src/lib/platform-content.ts`).
 
 ## Pull requests
 
