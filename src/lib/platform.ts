@@ -9,11 +9,7 @@ export const KEYS = {
   deliveryDone: 'delivery_done',
 } as const;
 
-export const SESSION_KEYS = [
-  ...Object.values(KEYS),
-  'team',
-  'leader',
-] as const;
+export const SESSION_KEYS = Object.values(KEYS);
 
 export function codeIdx(max: number): number {
   const idx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
