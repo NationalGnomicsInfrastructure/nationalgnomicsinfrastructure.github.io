@@ -276,6 +276,23 @@ nav a.active { color: var(--gnomics-lime); }
 .hero h1 { color: white; margin-bottom: 1rem; }
 .hero p { color: rgba(255,255,255,0.85); font-size: 1.15rem; max-width: 640px; margin: 0 auto 2rem; }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+@media (max-width: 560px) {
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero-actions .btn {
+    text-align: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
 /* ── Buttons ──────────────────────────────────────────────── */
 .btn {
   display: inline-block;
@@ -357,6 +374,25 @@ section.alt { background: var(--bg-alt); }
 .footer-col li { margin-bottom: 0.4rem; }
 .footer-col a { color: rgba(255,255,255,0.65); }
 .footer-col a:hover { color: var(--gnomics-lime); text-decoration: none; }
+.footer-apps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem 0.75rem;
+}
+@media (max-width: 768px) {
+  .footer-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-col {
+    width: min(100%, 20rem);
+    max-width: none;
+    flex: none;
+  }
+  .footer-apps {
+    grid-template-columns: 1fr;
+  }
+}
 .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
 
 /* ── Platform / game pages ────────────────────────────────── */

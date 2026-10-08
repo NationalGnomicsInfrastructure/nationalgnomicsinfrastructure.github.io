@@ -44,7 +44,6 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
   />
   <title>{title} | NGnI</title>
   <script is:inline src="/js/theme-init.js"></script>
-  <script is:inline src="/js/nav.js"></script>
 </head>
 <body>
 
@@ -116,9 +115,9 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
         </div>
         <p style="font-size:0.85rem;line-height:1.5;margin-top:0.75rem;">Part of the Gnomics Platform at SciFiLab.</p>
       </div>
-      <div class="footer-col" style="max-width:300px;">
+      <div class="footer-col">
         <h4>Applications</h4>
-        <ul style="display:grid;grid-template-columns:1fr 1fr;gap:0.15rem 0.75rem;">
+        <ul class="footer-apps">
           <li><a href="/applications/gnome-sequencing/">Gnome Sequencing</a></li>
           <li><a href="/applications/spatial-gnomics/">Spatial Gnomics</a></li>
           <li><a href="/applications/ancient-gnomics/">Ancient Gnomics</a></li>
@@ -150,6 +149,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
   </div>
 </footer>
 
+<script is:inline src="/js/nav.js"></script>
 <script is:inline src="/js/theme.js"></script>
 </body>
 </html>
