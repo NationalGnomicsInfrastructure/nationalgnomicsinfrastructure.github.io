@@ -1,8 +1,6 @@
 export const PROJECT_COUNT = 17;
 
 // test with Baconian X
-export const BACONIAN_IDX = 16;
-
 export const UNLOCK_HASHES = [
   '8bec3742f5bbe88cdc4adc784fe0cfead1ac15743bacf2ccf05979933df71973',
   '6af5179789a76a9c820766eced08973f93f6552d000fa0f83351b58956a45f53',
