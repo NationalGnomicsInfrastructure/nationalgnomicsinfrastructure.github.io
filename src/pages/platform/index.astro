@@ -46,40 +46,6 @@ import Layout from "../../layouts/Layout.astro";
                         🔑 Unlock Platform
                     </button>
                 </div>
-
-                <!-- Team mode -->
-                <div id="team-auth" style="display:none;">
-                    <div class="card mt-3" style="text-align:left;">
-                        <h3>Team Authentication</h3>
-                        <p class="text-muted" style="font-size:0.9rem;">
-                            Enter your team name and leader as registered in
-                            your form.
-                        </p>
-                        <div class="form-group">
-                            <label for="team-name">Team Name</label>
-                            <input
-                                type="text"
-                                id="team-name"
-                                placeholder="e.g. The Gnome Rangers"
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="team-leader">Team Leader</label>
-                            <input
-                                type="text"
-                                id="team-leader"
-                                placeholder="First name"
-                            />
-                        </div>
-                    </div>
-                    <button
-                        id="launch-btn-mixed"
-                        class="btn btn-primary mt-3"
-                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
-                    >
-                        🚀 Initialise Platform
-                    </button>
-                </div>
             </div>
 
             <!-- Post-launch state (hidden until button press) -->
@@ -88,8 +54,7 @@ import Layout from "../../layouts/Layout.astro";
                 style="display:none;margin:0 auto;"
             >
                 <div class="alert alert-success" style="max-width:888px;margin-left:auto;margin-right:auto;">
-                    Welcome <span id="display-team"></span>, Project Delivery
-                    <span id="delivery-status">starting</span>.
+                    Welcome. Project Delivery <span id="delivery-status">starting</span>.
                 </div>
                 <div id="delivery-banner" class="alert alert-success" style="display:none;max-width:888px;margin:0.75rem auto 0;text-align:center;font-size:1.1rem;font-weight:600;">
                     ✅ Your project has been delivered. Thank you for participating!
@@ -184,7 +149,7 @@ import Layout from "../../layouts/Layout.astro";
 </Layout>
 
 <script>
-    import { KEYS, clearSession, disconnect, sha256 } from "../../lib/platform";
+    import { KEYS, disconnect, sha256 } from "../../lib/platform";
     import { UNLOCK_HASHES } from "../../lib/platform-content";
 
     // 5 columns × 4 rows: animal | plant | color | space | science.
@@ -205,12 +170,9 @@ import Layout from "../../layouts/Layout.astro";
         { id: "card-delivery", doneKey: KEYS.deliveryDone, href: "/platform/delivery/" },
     ] as const;
 
-    const launchBtnMixed = document.getElementById("launch-btn-mixed");
     const verifyBtn = document.getElementById("verify-btn");
     const preLaunch = document.getElementById("pre-launch");
     const postLaunch = document.getElementById("post-launch");
-    const displayTeam = document.getElementById("display-team");
-    const teamAuth = document.getElementById("team-auth");
     const codeCard = document.getElementById("access-code-card");
     const codeError = document.getElementById("access-code-error");
     const emojiGrid = document.getElementById("emoji-grid");
@@ -257,6 +219,12 @@ import Layout from "../../layouts/Layout.astro";
         }
     }
 
+    function showPlatform() {
+        if (preLaunch) preLaunch.style.display = "none";
+        if (postLaunch) postLaunch.style.display = "block";
+        applyStepState();
+    }
+
     function selectEmoji(colIdx: number, rowIdx: number, btn: HTMLButtonElement) {
         selected[colIdx] = rowIdx;
         const col = btn.parentElement;
@@ -295,15 +263,8 @@ import Layout from "../../layouts/Layout.astro";
 
     buildEmojiGrid();
 
-    const sessionMode = localStorage.getItem(KEYS.mode);
-    const sessionTeam = localStorage.getItem(KEYS.team);
-    if (sessionMode && sessionTeam) {
-        preLaunch!.style.display = "none";
-        postLaunch!.style.display = "block";
-        displayTeam!.textContent = sessionTeam;
-        applyStepState();
-    } else if (sessionMode) {
-        clearSession();
+    if (localStorage.getItem(KEYS.mode)) {
+        showPlatform();
     }
 
     verifyBtn?.addEventListener("click", async () => {
@@ -324,14 +285,7 @@ import Layout from "../../layouts/Layout.astro";
         if (deliveryIntro) deliveryIntro.style.display = "none";
         localStorage.setItem(KEYS.mode, "mixed");
         localStorage.setItem(KEYS.codeIdx, String(idx));
-        if (teamAuth) teamAuth.style.display = "block";
-    });
-
-    document.getElementById("team-name")?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") launchBtnMixed?.click();
-    });
-    document.getElementById("team-leader")?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") launchBtnMixed?.click();
+        showPlatform();
     });
 
     document.getElementById("disconnect-btn")?.addEventListener("click", () => {
@@ -343,24 +297,5 @@ import Layout from "../../layouts/Layout.astro";
             return;
         }
         disconnect();
-    });
-
-    launchBtnMixed?.addEventListener("click", () => {
-        const teamName = (
-            document.getElementById("team-name") as HTMLInputElement
-        )?.value.trim();
-        const teamLeader = (
-            document.getElementById("team-leader") as HTMLInputElement
-        )?.value.trim();
-        if (!teamName || !teamLeader) {
-            alert("Please enter your team name and leader before starting.");
-            return;
-        }
-        localStorage.setItem(KEYS.team, teamName);
-        localStorage.setItem(KEYS.leader, teamLeader);
-        preLaunch!.style.display = "none";
-        postLaunch!.style.display = "block";
-        displayTeam!.textContent = teamName;
-        location.reload();
     });
 </script>

@@ -1,6 +1,4 @@
 export const KEYS = {
-  team: 'team',
-  leader: 'leader',
   mode: 'mode',
   codeIdx: 'code_idx',
   speciesDone: 'species_done',
@@ -11,7 +9,11 @@ export const KEYS = {
   deliveryDone: 'delivery_done',
 } as const;
 
-export const SESSION_KEYS = Object.values(KEYS);
+export const SESSION_KEYS = [
+  ...Object.values(KEYS),
+  'team',
+  'leader',
+] as const;
 
 export function codeIdx(max: number): number {
   const idx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
