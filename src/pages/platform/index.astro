@@ -17,7 +17,7 @@ import Layout from "../../layouts/Layout.astro";
                 id="pre-launch"
                 style="max-width:640px;margin:0 auto;text-align:center;"
             >
-                <div class="alert alert-info">
+                <div id="delivery-intro" class="alert alert-info">
                     <strong>New delivery.</strong> Authenticate with your delivery
                     code and press the button below to begin your delivery.
                 </div>
@@ -193,11 +193,21 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
                 </div>
                 </div>
+                <div id="cancel-delivery" style="display:none;margin:1.5rem auto 0;text-align:center;">
+                    <button
+                        id="disconnect-btn"
+                        class="btn btn-cancel-delivery"
+                    >
+                        🚫 Cancel Delivery
+                    </button>
+                </div>
         </div>
     </section>
 </Layout>
 
 <script>
+    import { disconnect } from "../../lib/platform";
+
     // SHA-256 hashes of accepted delivery codes, by index.
     const H = [
         "b2b330e0386fe31701efbf1e9538cc4908c91c184a70bb2f32585f442e9f4869",
@@ -229,6 +239,8 @@ import Layout from "../../layouts/Layout.astro";
     const codeInput = document.getElementById(
         "access-code",
     ) as HTMLInputElement;
+    const cancelDelivery = document.getElementById("cancel-delivery");
+    const deliveryIntro = document.getElementById("delivery-intro");
 
     const done = (key: string) => Boolean(localStorage.getItem(key));
 
@@ -275,11 +287,16 @@ import Layout from "../../layouts/Layout.astro";
         toggleBtn.textContent = isHidden ? "🔒" : "🔓";
     });
 
-    if (localStorage.getItem("mode")) {
+    const sessionMode = localStorage.getItem("mode");
+    const sessionTeam = localStorage.getItem("team");
+    if (sessionMode && sessionTeam) {
         preLaunch!.style.display = "none";
         postLaunch!.style.display = "block";
-        displayTeam!.textContent = localStorage.getItem("team") || "you";
+        displayTeam!.textContent = sessionTeam;
+        if (cancelDelivery) cancelDelivery.style.display = "block";
         applyStepState();
+    } else if (sessionMode) {
+        disconnect();
     }
 
     async function sha256(str: string): Promise<string> {
@@ -306,6 +323,7 @@ import Layout from "../../layouts/Layout.astro";
         }
         codeCard!.style.display = "none";
         verifyBtn!.style.display = "none";
+        if (deliveryIntro) deliveryIntro.style.display = "none";
         localStorage.setItem("mode", "mixed");
         localStorage.setItem("code_idx", String(H.indexOf(hash)));
         teamAuth!.style.display = "block";
@@ -316,6 +334,17 @@ import Layout from "../../layouts/Layout.astro";
     });
     document.getElementById("team-leader")?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") launchBtnMixed?.click();
+    });
+
+    document.getElementById("disconnect-btn")?.addEventListener("click", () => {
+        if (
+            !confirm(
+                "⚠️ This will cancel your delivery and clear all progress. Are you sure?",
+            )
+        ) {
+            return;
+        }
+        disconnect();
     });
 
     launchBtnMixed?.addEventListener("click", () => {

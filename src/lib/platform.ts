@@ -12,6 +12,26 @@ export function requireFlag(key: string): void {
   }
 }
 
+const SESSION_KEYS = [
+  'team',
+  'leader',
+  'mode',
+  'code_idx',
+  'species_done',
+  'spirit_animal',
+  'accession',
+  'detangled',
+  'identification_done',
+  'delivery_done',
+] as const;
+
+export function disconnect(): void {
+  for (const key of SESSION_KEYS) {
+    localStorage.removeItem(key);
+  }
+  window.location.href = '/platform/';
+}
+
 export function onForm(opts: {
   inputId: string;
   doneKey: string;
