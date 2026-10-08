@@ -41,6 +41,9 @@ import Layout from '../../layouts/Layout.astro';
             <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
               Open envelope 6, find and deliver me.
             </p>
+            <p class="text-muted mt-2" style="font-size:0.9rem;">
+              Delivered by <strong id="delivered-by"></strong>.
+            </p>
             <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
           </div>
         </div>
@@ -61,6 +64,10 @@ onForm({
   doneKey: KEYS.deliveryDone,
   check: async (value) => (await sha256(value.trim())) === PROJECT_HASHES[idx],
   onSuccess: () => {
+    const by = document.getElementById('delivered-by');
+    if (by) {
+      by.textContent = localStorage.getItem(KEYS.agent) || 'unknown agent';
+    }
     if (idx !== PROJECT_HASHES.length - 1) return;
     const result = document.querySelector('#result-area .alert-success');
     if (result) {

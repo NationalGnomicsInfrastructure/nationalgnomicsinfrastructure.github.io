@@ -1,4 +1,5 @@
 export const KEYS = {
+  agent: 'agent',
   codeIdx: 'code_idx',
   speciesDone: 'species_done',
   spiritAnimal: 'spirit_animal',

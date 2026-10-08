@@ -46,6 +46,28 @@ import Layout from "../../layouts/Layout.astro";
                         🔑 Unlock Platform
                     </button>
                 </div>
+
+                <div id="agent-auth" class="card mt-3" style="display:none;text-align:left;">
+                    <h3>Agent Name</h3>
+                    <p class="text-muted" style="font-size:0.9rem;">
+                        This name is recorded on your delivery.
+                    </p>
+                    <div class="form-group">
+                        <label for="agent-name">Name</label>
+                        <input
+                            type="text"
+                            id="agent-name"
+                            placeholder="e.g. Gardenia Gnomestone"
+                        />
+                    </div>
+                    <button
+                        id="agent-btn"
+                        class="btn btn-primary mt-3"
+                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
+                    >
+                        Continue
+                    </button>
+                </div>
             </div>
 
             <!-- Post-launch state (hidden until button press) -->
@@ -54,7 +76,7 @@ import Layout from "../../layouts/Layout.astro";
                 style="display:none;margin:0 auto;"
             >
                 <div class="alert alert-success" style="max-width:888px;margin-left:auto;margin-right:auto;">
-                    Welcome. Project Delivery <span id="delivery-status">starting</span>.
+                    Welcome, <span id="display-agent"></span>. Project Delivery <span id="delivery-status">starting</span>.
                 </div>
                 <div id="delivery-banner" class="alert alert-success" style="display:none;max-width:888px;margin:0.75rem auto 0;text-align:center;font-size:1.1rem;font-weight:600;">
                     ✅ Your project has been delivered. Thank you for participating!
@@ -177,6 +199,12 @@ import Layout from "../../layouts/Layout.astro";
     const codeError = document.getElementById("access-code-error");
     const emojiGrid = document.getElementById("emoji-grid");
     const deliveryIntro = document.getElementById("delivery-intro");
+    const agentAuth = document.getElementById("agent-auth");
+    const agentBtn = document.getElementById("agent-btn");
+    const agentInput = document.getElementById(
+        "agent-name",
+    ) as HTMLInputElement;
+    const displayAgent = document.getElementById("display-agent");
 
     const selected: (number | null)[] = [null, null, null, null, null];
 
@@ -222,7 +250,17 @@ import Layout from "../../layouts/Layout.astro";
     function showPlatform() {
         if (preLaunch) preLaunch.style.display = "none";
         if (postLaunch) postLaunch.style.display = "block";
+        if (displayAgent) {
+            displayAgent.textContent =
+                localStorage.getItem(KEYS.agent) || "you";
+        }
         applyStepState();
+    }
+
+    function showAgentAuth() {
+        if (codeCard) codeCard.style.display = "none";
+        if (deliveryIntro) deliveryIntro.style.display = "none";
+        if (agentAuth) agentAuth.style.display = "block";
     }
 
     function selectEmoji(colIdx: number, rowIdx: number, btn: HTMLButtonElement) {
@@ -263,8 +301,12 @@ import Layout from "../../layouts/Layout.astro";
 
     buildEmojiGrid();
 
-    if (localStorage.getItem(KEYS.codeIdx)) {
+    const hasUnlock = Boolean(localStorage.getItem(KEYS.codeIdx));
+    const hasAgent = Boolean(localStorage.getItem(KEYS.agent));
+    if (hasUnlock && hasAgent) {
         showPlatform();
+    } else if (hasUnlock) {
+        showAgentAuth();
     }
 
     verifyBtn?.addEventListener("click", async () => {
@@ -281,10 +323,23 @@ import Layout from "../../layouts/Layout.astro";
             return;
         }
         if (codeError) codeError.style.display = "none";
-        if (codeCard) codeCard.style.display = "none";
-        if (deliveryIntro) deliveryIntro.style.display = "none";
         localStorage.setItem(KEYS.codeIdx, String(idx));
+        showAgentAuth();
+    });
+
+    function submitAgent() {
+        const name = agentInput?.value.trim();
+        if (!name) {
+            alert("Enter the name to record on your delivery.");
+            return;
+        }
+        localStorage.setItem(KEYS.agent, name);
         showPlatform();
+    }
+
+    agentBtn?.addEventListener("click", submitAgent);
+    agentInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submitAgent();
     });
 
     document.getElementById("disconnect-btn")?.addEventListener("click", () => {
