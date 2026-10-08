@@ -184,7 +184,7 @@ import Layout from "../../layouts/Layout.astro";
 </Layout>
 
 <script>
-    import { KEYS, clearSession, disconnect } from "../../lib/platform";
+    import { KEYS, clearSession, disconnect, sha256 } from "../../lib/platform";
     import { UNLOCK_HASHES } from "../../lib/platform-content";
 
     // 5 columns × 4 rows: animal | plant | color | space | science.
@@ -304,16 +304,6 @@ import Layout from "../../layouts/Layout.astro";
         applyStepState();
     } else if (sessionMode) {
         clearSession();
-    }
-
-    async function sha256(str: string): Promise<string> {
-        const buf = await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(str),
-        );
-        return Array.from(new Uint8Array(buf))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
     }
 
     verifyBtn?.addEventListener("click", async () => {

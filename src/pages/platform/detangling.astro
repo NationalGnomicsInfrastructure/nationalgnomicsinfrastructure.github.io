@@ -49,11 +49,11 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-import { KEYS, codeIdx, onForm, requireFlag } from '../../lib/platform';
-import { CLUE_PARTS, SECOND_ANIMALS } from '../../lib/platform-content';
+import { KEYS, codeIdx, onForm, requireFlag, sha256 } from '../../lib/platform';
+import { CLUE_PARTS, SECOND_ANIMAL_HASHES } from '../../lib/platform-content';
 
 requireFlag(KEYS.accession);
-const idx = codeIdx(SECOND_ANIMALS.length);
+const idx = codeIdx(SECOND_ANIMAL_HASHES.length);
 const clueText = document.getElementById('clue-text') as HTMLParagraphElement;
 const showClue = () => {
   clueText.textContent = `Look on the ${CLUE_PARTS[idx]}. Find me in the pipeline.`;
@@ -62,7 +62,8 @@ const showClue = () => {
 onForm({
   inputId: 'second-animal',
   doneKey: KEYS.detangled,
-  check: (value) => value.trim().toLowerCase() === SECOND_ANIMALS[idx],
+  check: async (value) =>
+    (await sha256(value.trim().toLowerCase())) === SECOND_ANIMAL_HASHES[idx],
   onSuccess: showClue,
 });
 </script>
