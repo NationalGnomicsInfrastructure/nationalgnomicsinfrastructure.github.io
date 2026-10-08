@@ -1,5 +1,4 @@
 export const KEYS = {
-  mode: 'mode',
   codeIdx: 'code_idx',
   speciesDone: 'species_done',
   spiritAnimal: 'spirit_animal',

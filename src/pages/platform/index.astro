@@ -263,7 +263,7 @@ import Layout from "../../layouts/Layout.astro";
 
     buildEmojiGrid();
 
-    if (localStorage.getItem(KEYS.mode)) {
+    if (localStorage.getItem(KEYS.codeIdx)) {
         showPlatform();
     }
 
@@ -283,7 +283,6 @@ import Layout from "../../layouts/Layout.astro";
         if (codeError) codeError.style.display = "none";
         if (codeCard) codeCard.style.display = "none";
         if (deliveryIntro) deliveryIntro.style.display = "none";
-        localStorage.setItem(KEYS.mode, "1");
         localStorage.setItem(KEYS.codeIdx, String(idx));
         showPlatform();
     });
