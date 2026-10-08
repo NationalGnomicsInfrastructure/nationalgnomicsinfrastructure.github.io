@@ -1,4 +1,28 @@
 /* ── Species ID Game ─────────────────────────────────────────── */
+:root {
+  --hint-warm-bg: #fff3cd;
+  --hint-warm-text: #856404;
+  --hint-hot-bg: #d1e7dd;
+  --hint-hot-text: #0a3622;
+  --hint-cold-bg: #cfe2ff;
+  --hint-cold-text: #084298;
+  --fail-bg: #fde8e8;
+  --fail-border: #e74c3c;
+  --fail-text: #c0392b;
+}
+
+html[data-theme='dark'] {
+  --hint-warm-bg: #3a3010;
+  --hint-warm-text: #f0d78c;
+  --hint-hot-bg: #14301f;
+  --hint-hot-text: #8fd6a8;
+  --hint-cold-bg: #152438;
+  --hint-cold-text: #b7d3f7;
+  --fail-bg: #3a1515;
+  --fail-border: #e74c3c;
+  --fail-text: #f0a0a0;
+}
+
 .species-input-row {
   display: flex;
   gap: 0.75rem;
@@ -11,6 +35,8 @@
   border-radius: var(--radius);
   font-size: 1rem;
   font-family: var(--font-sans);
+  background: var(--input-bg);
+  color: var(--text);
 }
 .species-input-row input:focus { outline: none; border-color: var(--gnomics-green); }
 .guess-history { list-style: none; margin-bottom: 1.5rem; }
@@ -32,17 +58,17 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
-.hint-warm { background: #fff3cd; color: #856404; }
-.hint-hot  { background: #d1e7dd; color: #0a3622; }
-.hint-cold { background: #cfe2ff; color: #084298; }
+.hint-warm { background: var(--hint-warm-bg); color: var(--hint-warm-text); }
+.hint-hot  { background: var(--hint-hot-bg); color: var(--hint-hot-text); }
+.hint-cold { background: var(--hint-cold-bg); color: var(--hint-cold-text); }
 .fail-box {
-  background: #fde8e8;
-  border: 2px solid #e74c3c;
+  background: var(--fail-bg);
+  border: 2px solid var(--fail-border);
   border-radius: var(--radius);
   padding: 1.5rem;
   text-align: center;
 }
-.fail-box h3 { color: #c0392b; }
+.fail-box h3 { color: var(--fail-text); }
 .success-box {
   background: var(--gnomics-green-l);
   border: 2px solid var(--gnomics-green);

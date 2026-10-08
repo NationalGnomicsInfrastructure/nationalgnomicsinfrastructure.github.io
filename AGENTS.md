@@ -21,10 +21,10 @@ No test suite. `npm run check` + `npm run smoke` are the correctness gates; `ast
 
 ## Architecture
 
-- Single layout — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title` and `description` props. Layout emits canonical/OG meta, CSP, skip-link, and loads nav JS from `public/js/nav.js`.
+- Single layout — every page wraps its content in `src/layouts/Layout.astro`. Layout accepts `title` and `description` props. Layout emits canonical/OG meta, CSP, skip-link, and loads nav JS from `public/js/nav.js` plus theme scripts from `public/js/theme-init.js` and `public/js/theme.js`.
 - File-based routing — pages in `src/pages/` map directly to URL routes (Astro convention). Sub-directories become path segments (e.g. `src/pages/applications/gnome-sequencing/index.astro` → `/applications/gnome-sequencing/`).
-- Global styles — all CSS lives in `src/styles/global.css`; no CSS modules or component-scoped styles. Inline `style=` attributes are used within `.astro` files.
-- Platform section — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). Shared gates/forms live in `src/lib/platform.ts`. State lives in `localStorage` under the keys: `team`, `leader`, `mode`, `code_idx`, `species_done`, `spirit_animal`, `accession`, `detangled`, `identification_done`, `delivery_done`.
+- Global styles — all CSS lives in `src/styles/global.css`; no CSS modules or component-scoped styles. Inline `style=` attributes are used within `.astro` files. Dark mode overrides tokens under `html[data-theme='dark']`; native controls follow `color-scheme`.
+- Platform section — `src/pages/platform/` contains an interactive multi-step workflow (access-code verification → species identification → project retrieval). Shared gates/forms live in `src/lib/platform.ts`. State lives in `localStorage` under the keys: `team`, `leader`, `mode`, `code_idx`, `species_done`, `spirit_animal`, `accession`, `detangled`, `identification_done`, `delivery_done`, `theme` (`light` \| `dark` \| `auto`).
 
 ## Key conventions
 
