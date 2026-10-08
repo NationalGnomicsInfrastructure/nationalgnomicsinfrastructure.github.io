@@ -52,22 +52,13 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
 import { KEYS, codeIdx, onForm, requireFlag } from '../../lib/platform';
-
-// Envelope project names, base64-encoded by index.
-const PROJECTS = [
-  'Z3JhcGVz',
-  'S2FuZWxidWxsZQ==',
-  'U3RyYXdiZXJyeQ==',
-  'U3VnYXI=',
-  'Y29mZmVl',
-  'Y3JvaXNzYW50',
-];
+import { PROJECTS } from '../../lib/platform-content';
 
 requireFlag(KEYS.identificationDone);
 const idx = codeIdx(PROJECTS.length);
 onForm({
   inputId: 'project-name',
   doneKey: KEYS.deliveryDone,
-  check: (value) => value.trim() === atob(PROJECTS[idx]),
+  check: (value) => value.trim() === PROJECTS[idx],
 });
 </script>

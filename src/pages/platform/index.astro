@@ -18,8 +18,8 @@ import Layout from "../../layouts/Layout.astro";
                 style="max-width:640px;margin:0 auto;text-align:center;"
             >
                 <div id="delivery-intro" class="alert alert-info">
-                    <strong>New delivery.</strong> Authenticate with your delivery
-                    code and press the button below to begin your delivery.
+                    <strong>New delivery.</strong> Select the emoji sequence from
+                    your project coordinator to unlock the platform.
                 </div>
 
                 <div
@@ -27,38 +27,24 @@ import Layout from "../../layouts/Layout.astro";
                     class="card mt-3"
                     style="text-align:left;"
                 >
-                    <h3>Delivery Code</h3>
+                    <h3>Delivery Sequence</h3>
                     <p class="text-muted" style="font-size:0.9rem;">
-                        Enter the access code provided by your project
-                        coordinator.
+                        Pick one emoji in each column.
                     </p>
-                    <div class="form-group">
-                        <label for="access-code">Access Code</label>
-                        <div
-                            style="display:flex;gap:0.5rem;align-items:center;"
-                        >
-                            <input
-                                type="password"
-                                id="access-code"
-                                placeholder="••••••••••••"
-                                autocomplete="off"
-                                style="flex:1;"
-                            />
-                            <button
-                                type="button"
-                                id="toggle-code"
-                                title="Show/hide code"
-                                style="background:transparent;border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:0.35rem 0.6rem;cursor:pointer;font-size:1rem;line-height:1;"
-                                >🔓</button
-                            >
-                        </div>
-                    </div>
+                    <div class="emoji-grid" id="emoji-grid"></div>
                     <div
                         id="access-code-error"
-                        style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;"
+                        style="display:none;color:#c0392b;font-size:0.85rem;margin-top:0.75rem;"
                     >
-                        ❌ Invalid access code. Please try again.
+                        ❌ Invalid sequence. Please try again.
                     </div>
+                    <button
+                        id="verify-btn"
+                        class="btn btn-primary mt-3"
+                        style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
+                    >
+                        🔑 Unlock Platform
+                    </button>
                 </div>
 
                 <!-- Team mode -->
@@ -94,14 +80,6 @@ import Layout from "../../layouts/Layout.astro";
                         🚀 Initialise Platform
                     </button>
                 </div>
-
-                <button
-                    id="verify-btn"
-                    class="btn btn-primary mt-3"
-                    style="font-size:1.1rem;padding:0.9rem 2.5rem;width:100%;"
-                >
-                    🔑 Verify Delivery Code
-                </button>
             </div>
 
             <!-- Post-launch state (hidden until button press) -->
@@ -207,16 +185,16 @@ import Layout from "../../layouts/Layout.astro";
 
 <script>
     import { KEYS, clearSession, disconnect } from "../../lib/platform";
+    import { UNLOCK_HASHES } from "../../lib/platform-content";
 
-    // SHA-256 hashes of accepted delivery codes, by index.
-    const H = [
-        "b2b330e0386fe31701efbf1e9538cc4908c91c184a70bb2f32585f442e9f4869",
-        "b9009c67797d87e79c78875dbf16270f6fe0f9f372b6068e492f6befec213b19",
-        "469d6bce0f02660b066ab925af9636f76a29d04ade3020edddcbd79f5cfbd00e",
-        "fc6b45835d52afa67df948550ec275ef285fb5b2c6dad04e818f0cd75df796c9",
-        "9b395e132d77dfd654391e2e4735250e796fcaa5ab3dc64d002a1ee0669c5d91",
-        "714ac0a71d346e132d7080b74c871550fe8012d34db6567866224f4fbf0a8627",
-    ];
+    // 5 columns × 4 rows: animal | plant | color | space | science.
+    const EMOJI_COLUMNS = [
+        ["🦭", "🐍", "🦎", "🦉"],
+        ["🍄", "🌵", "🌲", "🌸"],
+        ["🔴", "🟠", "🟢", "🔵"],
+        ["🌍", "🌙", "⭐", "🪐"],
+        ["🧬", "🔬", "🧪", "⚗️"],
+    ] as const;
 
     // Ordered delivery pipeline. Step i is visible once step i-1 is done.
     const steps = [
@@ -235,11 +213,10 @@ import Layout from "../../layouts/Layout.astro";
     const teamAuth = document.getElementById("team-auth");
     const codeCard = document.getElementById("access-code-card");
     const codeError = document.getElementById("access-code-error");
-    const toggleBtn = document.getElementById("toggle-code");
-    const codeInput = document.getElementById(
-        "access-code",
-    ) as HTMLInputElement;
+    const emojiGrid = document.getElementById("emoji-grid");
     const deliveryIntro = document.getElementById("delivery-intro");
+
+    const selected: (number | null)[] = [null, null, null, null, null];
 
     const done = (key: string) => Boolean(localStorage.getItem(key));
 
@@ -280,11 +257,43 @@ import Layout from "../../layouts/Layout.astro";
         }
     }
 
-    toggleBtn?.addEventListener("click", () => {
-        const isHidden = codeInput.type === "password";
-        codeInput.type = isHidden ? "text" : "password";
-        toggleBtn.textContent = isHidden ? "🔒" : "🔓";
-    });
+    function selectEmoji(colIdx: number, rowIdx: number, btn: HTMLButtonElement) {
+        selected[colIdx] = rowIdx;
+        const col = btn.parentElement;
+        if (!col) return;
+        col.querySelectorAll(".emoji-option").forEach((el) => {
+            el.classList.remove("selected");
+            el.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("selected");
+        btn.setAttribute("aria-pressed", "true");
+    }
+
+    function buildEmojiGrid() {
+        if (!emojiGrid) return;
+        EMOJI_COLUMNS.forEach((emojis, colIdx) => {
+            const colEl = document.createElement("div");
+            colEl.className = "emoji-col";
+
+            emojis.forEach((emoji, rowIdx) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "emoji-option";
+                btn.textContent = emoji;
+                btn.setAttribute(
+                    "aria-label",
+                    "Column " + (colIdx + 1) + ", row " + (rowIdx + 1),
+                );
+                btn.setAttribute("aria-pressed", "false");
+                btn.addEventListener("click", () => selectEmoji(colIdx, rowIdx, btn));
+                colEl.appendChild(btn);
+            });
+
+            emojiGrid.appendChild(colEl);
+        });
+    }
+
+    buildEmojiGrid();
 
     const sessionMode = localStorage.getItem(KEYS.mode);
     const sessionTeam = localStorage.getItem(KEYS.team);
@@ -307,24 +316,25 @@ import Layout from "../../layouts/Layout.astro";
             .join("");
     }
 
-    codeInput?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") verifyBtn?.click();
-    });
-
     verifyBtn?.addEventListener("click", async () => {
-        const code = codeInput?.value.trim();
-        if (!code) return;
-        const hash = await sha256(code);
-        if (!H.includes(hash)) {
-            codeError!.style.display = "block";
+        if (selected.some((v) => v === null)) {
+            if (codeError) codeError.style.display = "block";
             return;
         }
-        codeCard!.style.display = "none";
-        verifyBtn!.style.display = "none";
+        const hash = await sha256(selected.join(","));
+        const idx = UNLOCK_HASHES.indexOf(
+            hash as (typeof UNLOCK_HASHES)[number],
+        );
+        if (idx === -1) {
+            if (codeError) codeError.style.display = "block";
+            return;
+        }
+        if (codeError) codeError.style.display = "none";
+        if (codeCard) codeCard.style.display = "none";
         if (deliveryIntro) deliveryIntro.style.display = "none";
         localStorage.setItem(KEYS.mode, "mixed");
-        localStorage.setItem(KEYS.codeIdx, String(H.indexOf(hash)));
-        teamAuth!.style.display = "block";
+        localStorage.setItem(KEYS.codeIdx, String(idx));
+        if (teamAuth) teamAuth.style.display = "block";
     });
 
     document.getElementById("team-name")?.addEventListener("keydown", (e) => {
