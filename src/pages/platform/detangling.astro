@@ -49,38 +49,21 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-import { KEYS, codeIdx, onForm, requireFlag } from '../../lib/platform';
-
-// Envelope answers and clue parts, base64-encoded by index.
-const PAIRS = [
-  'Y2FweWJhcmE=',
-  'a29tb2RvIGRyYWdvbg==',
-  'YXhvbG90bA==',
-  'Y2ljYWRh',
-  'a29hbGE=',
-  'c3RhcmZpc2g=',
-];
-const PARTS = [
-  'SEVBRA==',
-  'TU9VVEg=',
-  'VE9OR1VF',
-  'TEVH',
-  'QVJNIEJPVFRPTSBSSUdIVCBDT1JORVI=',
-  'RlJPTlQgUEFX',
-];
+import { KEYS, codeIdx, onForm, requireFlag, sha256 } from '../../lib/platform';
+import { CLUE_PARTS, SECOND_ANIMAL_HASHES } from '../../lib/platform-content';
 
 requireFlag(KEYS.accession);
-const idx = codeIdx(PAIRS.length);
+const idx = codeIdx(SECOND_ANIMAL_HASHES.length);
 const clueText = document.getElementById('clue-text') as HTMLParagraphElement;
 const showClue = () => {
-  const part = atob(PARTS[idx]).toLowerCase();
-  clueText.textContent = `Look on the ${part}. Find me in the pipeline.`;
+  clueText.textContent = `Look on the ${CLUE_PARTS[idx]}. Find me in the pipeline.`;
 };
 
 onForm({
   inputId: 'second-animal',
   doneKey: KEYS.detangled,
-  check: (value) => value.trim().toLowerCase() === atob(PAIRS[idx]),
+  check: async (value) =>
+    (await sha256(value.trim().toLowerCase())) === SECOND_ANIMAL_HASHES[idx],
   onSuccess: showClue,
 });
 </script>

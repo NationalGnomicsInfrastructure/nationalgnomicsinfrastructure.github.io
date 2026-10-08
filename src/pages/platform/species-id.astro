@@ -59,14 +59,13 @@ import '../../styles/species-id.css';
 <script>
 import * as d3 from 'd3';
 import PHYLO_RAW from '../../data/phylo-db.csv?raw';
-import TARGETS_RAW from '../../data/philo-targets.txt?raw';
 import { KEYS } from '../../lib/platform';
+import { SPIRIT_ANIMALS } from '../../lib/platform-content';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
 type TargetConfig = { name: string; scientific: string; path: string[] };
-const POSSIBLE_TARGETS: TargetConfig[] = TARGETS_RAW.trim().split('\n').map(row => {
-  const name = atob(row.trim());
+const POSSIBLE_TARGETS: TargetConfig[] = SPIRIT_ANIMALS.map((name) => {
   const entry = SPECIES_DB.find(e => e[e.length - 2] === name)!;
   const scientific = entry[entry.length - 1];
   const path = entry.slice(0, -2);
