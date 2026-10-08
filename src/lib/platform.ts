@@ -1,5 +1,20 @@
+export const KEYS = {
+  team: 'team',
+  leader: 'leader',
+  mode: 'mode',
+  codeIdx: 'code_idx',
+  speciesDone: 'species_done',
+  spiritAnimal: 'spirit_animal',
+  accession: 'accession',
+  detangled: 'detangled',
+  identificationDone: 'identification_done',
+  deliveryDone: 'delivery_done',
+} as const;
+
+export const SESSION_KEYS = Object.values(KEYS);
+
 export function codeIdx(max: number): number {
-  const idx = parseInt(localStorage.getItem('code_idx') ?? '', 10);
+  const idx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
   if (Number.isNaN(idx) || idx < 0 || idx >= max) {
     window.location.href = '/platform/';
   }
@@ -10,6 +25,17 @@ export function requireFlag(key: string): void {
   if (!localStorage.getItem(key)) {
     window.location.href = '/platform/';
   }
+}
+
+export function clearSession(): void {
+  for (const key of SESSION_KEYS) {
+    localStorage.removeItem(key);
+  }
+}
+
+export function disconnect(): void {
+  clearSession();
+  window.location.href = '/platform/';
 }
 
 export function onForm(opts: {

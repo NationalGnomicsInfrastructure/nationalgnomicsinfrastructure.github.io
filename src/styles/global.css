@@ -41,6 +41,9 @@
   --alert-warning-bg: #fff3cd;
   --alert-warning-border: #ffc107;
   --alert-warning-text: #664d03;
+  --alert-danger-bg: #f8d7da;
+  --alert-danger-border: #dc3545;
+  --alert-danger-text: #842029;
   --btn-primary-hover: #8ecc47;
   --input-bg: #ffffff;
   --card-hover-shadow: 0 6px 20px rgba(0,0,0,0.12);
@@ -75,6 +78,9 @@ html[data-theme='dark'] {
   --alert-warning-bg: #3a3010;
   --alert-warning-border: #a8890a;
   --alert-warning-text: #f0d78c;
+  --alert-danger-bg: #3a1518;
+  --alert-danger-border: #b02a37;
+  --alert-danger-text: #f5c2c7;
   --btn-primary-hover: #8ecc47;
   --input-bg: #1a2420;
   --card-hover-shadow: 0 6px 20px rgba(0,0,0,0.55);
@@ -321,6 +327,20 @@ nav a.active { color: var(--gnomics-lime); }
   border: 2px solid var(--card-outline);
 }
 .btn-outline:hover { background: var(--gnomics-green-l); text-decoration: none; }
+.btn-cancel-delivery {
+  width: 280px;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--alert-warning-bg);
+  color: var(--alert-warning-text);
+  border: 2px solid var(--alert-warning-border);
+}
+.btn-cancel-delivery:hover {
+  background: var(--alert-danger-bg);
+  border-color: var(--alert-danger-border);
+  color: var(--alert-danger-text);
+  text-decoration: none;
+}
 .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.82rem; }
 .btn-filter { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); }
 .btn-filter:hover { border-color: var(--gnomics-green); background: var(--gnomics-green-l); }
@@ -459,6 +479,7 @@ section.alt { background: var(--bg-alt); }
 .alert-info { background: var(--alert-info-bg); border-left: 4px solid var(--alert-info-border); color: var(--alert-info-text); }
 .alert-success { background: var(--alert-success-bg); border-left: 4px solid var(--alert-success-border); color: var(--alert-success-text); }
 .alert-warning { background: var(--alert-warning-bg); border-left: 4px solid var(--alert-warning-border); color: var(--alert-warning-text); }
+.alert-danger { background: var(--alert-danger-bg); border-left: 4px solid var(--alert-danger-border); color: var(--alert-danger-text); }
 
 /* ── Utilities ────────────────────────────────────────────── */
 .text-center { text-align: center; }
