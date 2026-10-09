@@ -7,6 +7,7 @@ export const KEYS = {
   detangled: 'detangled',
   identificationDone: 'identification_done',
   deliveryDone: 'delivery_done',
+  missOrder: 'miss_order',
 } as const;
 
 export const SESSION_KEYS = Object.values(KEYS);

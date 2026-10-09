@@ -133,9 +133,27 @@ for (let i = 0; i < CORRECT_CLADE; i++) {
   else CLADE_CLASS[i] = 'hint-cold';
 }
 
+// ─── Tree rules (do not break) ───────────────────────────────────
+// 1. Spine: Metazoa → LCAs that grow only deeper (never disappear) → ???.
+// 2. LCA of a single miss is shown; shallower later misses hang off Metazoa.
+// 3. Divergent clades wrap misses; 1 member = no label; 2+ = label.
+// 4. Side alternates with first-guess order (persisted); never flips.
+// 5. All nodes/leaves descend: child.y > parent.y.
+// 6. No label overlap; no link through an unconnected node.
+// 7. Width fixed to panel; height may grow.
+// 8. Siblings under one clade share a row; other discoveries get their own row.
+
 // ─── Tree state ───────────────────────────────────────────────────────────────
 // missAtClade[c]: list of raw species names guessed that diverge at clade c.
 const missAtClade = new Map<number, string[]>();
+const missOrder: string[] = (() => {
+  try {
+    const raw = localStorage.getItem(KEYS.missOrder);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+})();
 
 // ─── D3 tree data types ──────────────────────────────────────────
 interface D3Node {
@@ -149,19 +167,27 @@ let _idCounter = 0;
 function uid(prefix = 'n'): string { return `pn${prefix}${++_idCounter}`; }
 
 // ─── Build D3 tree data from misses ──────────────────────────────
+// Tree rules:
+// - Metazoa is the root; ??? / target ends the spine.
+// - Spine: grows with guess order. First miss sets the first LCA node.
+//   A deeper LCA appends; a shallower LCA does not add or remove spine
+//   nodes (that miss hangs off Metazoa). Spine nodes never disappear.
+// - Misses at a spine LCA hang off that node; shallower misses hang off
+//   Metazoa (no intermediate path name).
+// - Named divergent clades wrap misses; single-member clades are not drawn
+//   until a second member appears.
+// - Miss discovery order drives left/right alternation; A→Z within a clade.
+// - No link may pass under/through a node it does not connect to.
+// - Each discovery row gets a distinct lateral offset so vertical drops
+//   never share an x (no line through a sibling label).
+// - Leaves never leave the panel horizontally. Siblings may share a row;
+//   different groups may sit on different rows. Height may grow; width may not.
 function buildTreeData(): D3Node {
   const cladeLevels = [...missAtClade.keys()].sort((a, b) => a - b);
   const root: D3Node = { id: 'node-root', name: 'Metazoa', url: wiki('Metazoa'), type: 'hit', children: [] };
 
-  if (cladeLevels.length === 0) {
-    const targetName = _won ? cap(TARGET.name) : '???';
-    const targetUrl = _won ? wiki(TARGET.scientific) : undefined;
-    root.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
-    return root;
-  }
-
   function addMisses(parent: D3Node, level: number) {
-    const names = missAtClade.get(level)!;
+    const names = missAtClade.get(level) ?? [];
     const divMap = new Map<string, string[]>();
     for (const n of names) {
       const t = TAXONOMY[n];
@@ -170,39 +196,256 @@ function buildTreeData(): D3Node {
       divMap.get(d)!.push(n);
     }
     for (const [d, members] of divMap) {
-      if (d && members.length >= 2) {
+      const sorted = [...members].sort((a, b) => a.localeCompare(b));
+      if (d) {
         const mc: D3Node = { id: uid(), name: d, url: wiki(d), type: 'miss-clade', children: [] };
-        for (const n of members) mc.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
+        for (const n of sorted) mc.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
         parent.children!.push(mc);
       } else {
-        for (const n of members) parent.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
+        for (const n of sorted) parent.children!.push({ id: uid(), name: cap(n), url: wiki(cap(n)), type: 'miss' });
       }
     }
   }
 
-  let cur = root;
+  if (cladeLevels.length === 0) {
+    const targetName = _won ? cap(TARGET.name) : '???';
+    const targetUrl = _won ? wiki(TARGET.scientific) : undefined;
+    root.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
+    return root;
+  }
+
+  // Spine grows in guess order (Map key insertion order): deeper LCAs append only.
+  const spineClades: number[] = [];
+  for (const clade of missAtClade.keys()) {
+    if (clade < 1) continue;
+    if (spineClades.length === 0 || clade > spineClades[spineClades.length - 1]) {
+      spineClades.push(clade);
+    }
+  }
+
+  const spineNodeByClade = new Map<number, D3Node>();
+  let spineParent = root;
+  for (const clade of spineClades) {
+    const lcaName = cap(TARGET.path[clade - 1]);
+    const shared: D3Node = {
+      id: uid(),
+      name: lcaName,
+      url: wiki(lcaName),
+      type: 'shared',
+      children: [],
+    };
+    spineParent.children!.push(shared);
+    spineNodeByClade.set(clade, shared);
+    spineParent = shared;
+  }
+
+  // Attach each miss under the deepest spine LCA at or above its own LCA
+  // (never dump deep misses on Metazoa just because that clade isn’t on the spine).
+  const parentForClade = (clade: number): D3Node => {
+    let best = root;
+    for (const sc of spineClades) {
+      if (sc <= clade && spineNodeByClade.has(sc)) {
+        best = spineNodeByClade.get(sc)!;
+      }
+    }
+    return best;
+  };
+
   for (const clade of cladeLevels) {
-    const name = clade > 0 ? cap(TARGET.path[clade - 1]) : '';
-    const shared: D3Node = { id: uid(), name, url: name ? wiki(name) : undefined, type: 'shared', children: [] };
-    addMisses(shared, clade);
-    cur.children!.push(shared);
-    cur = shared;
+    if (clade >= 1 && spineNodeByClade.has(clade)) {
+      addMisses(spineNodeByClade.get(clade)!, clade);
+    } else if (clade >= 1) {
+      addMisses(parentForClade(clade), clade);
+    } else {
+      addMisses(root, clade);
+    }
   }
 
   const targetName = _won ? cap(TARGET.name) : '???';
   const targetUrl = _won ? wiki(TARGET.scientific) : undefined;
-  cur.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
+  spineParent.children!.push({ id: 'node-target', name: targetName, url: targetUrl, type: _won ? 'correct' : 'target' });
   return root;
 }
 
 let _won = false;
 function rebuildTree() {
   const container = document.getElementById('phylo-db')!;
-  const data = buildTreeData();
+  if (!document.getElementById('T')) {
+    container.innerHTML = `<div class="phylo-tree" id="T"><svg class="phylo-svg" id="S"></svg></div>`;
+  }
+  // Persistent SVG: join by node id — only new guesses enter; others update.
+  requestAnimationFrame(() => requestAnimationFrame(() => drawD3Tree(buildTreeData())));
+}
 
-  container.innerHTML = `<div class="phylo-tree" id="T"><svg class="phylo-svg" id="S"></svg></div>`;
+function labelWidth(name: string): number {
+  return name.length * 8.2 + 18;
+}
 
-  requestAnimationFrame(() => requestAnimationFrame(() => drawD3Tree(data)));
+function isCollapsedClade(n: any): boolean {
+  return (
+    n.data.type === 'miss-clade' &&
+    (!n.children || n.children.length < 2)
+  );
+}
+
+function visualChildren(n: any): any[] {
+  if (!n.children?.length) return [];
+  return n.children.map((c: any) => (isCollapsedClade(c) ? c.children![0] : c));
+}
+
+function layoutHeight(n: any): number {
+  if (isCollapsedClade(n) || !n.children?.length) return 0;
+  let m = 0;
+  for (const c of n.children) m = Math.max(m, layoutHeight(c));
+  return m + 1;
+}
+
+function enforceLeafSeparation(leaves: any[], minGap: number): void {
+  const byY = new Map<number, any[]>();
+  for (const leaf of leaves) {
+    const key = Math.round(leaf.y);
+    if (!byY.has(key)) byY.set(key, []);
+    byY.get(key)!.push(leaf);
+  }
+  for (const level of byY.values()) {
+    level.sort((a, b) => a.x - b.x);
+    for (let i = 1; i < level.length; i++) {
+      const prev = level[i - 1];
+      const curr = level[i];
+      const need =
+        labelWidth(prev.data.name) / 2 +
+        labelWidth(curr.data.name) / 2 +
+        minGap;
+      if (curr.x - prev.x < need) {
+        curr.x = prev.x + need;
+      }
+    }
+  }
+}
+
+function assignAlternateSides(rootNode: any): void {
+  // Side = first-guess order of any member (persisted in miss_order).
+  const sideForNames = (names: string[]): -1 | 1 => {
+    let best = Number.POSITIVE_INFINITY;
+    for (const name of names) {
+      const idx = missOrder.indexOf(name.toLowerCase());
+      if (idx >= 0 && idx < best) best = idx;
+    }
+    return best === Number.POSITIVE_INFINITY || best % 2 === 0 ? -1 : 1;
+  };
+  const walk = (n: any) => {
+    if (!n.children?.length) return;
+    for (const c of n.children) {
+      if (c.data.id === 'node-target') continue;
+      if (c.data.type === 'miss-clade' && c.children?.length) {
+        (c as any).side = sideForNames(
+          c.children.map((ch: any) => ch.data.name),
+        );
+      } else if (c.data.type === 'miss') {
+        (c as any).side = sideForNames([c.data.name]);
+      } else {
+        walk(c);
+      }
+    }
+  };
+  walk(rootNode);
+}
+
+function packAlternatingGroups(
+  pointRoot: any,
+  targetNode: any,
+  centerX: number,
+  spineClear: number,
+  panelWidth: number,
+): number {
+  const discoveries: any[] = [];
+  const walk = (n: any) => {
+    if (!n.children?.length) return;
+    for (const c of n.children) {
+      if (c === targetNode || c.data.id === 'node-target') continue;
+      if (c.data.type === 'miss-clade' || c.data.type === 'miss') {
+        discoveries.push(c);
+      } else {
+        walk(c);
+      }
+    }
+  };
+  walk(pointRoot);
+
+  assignAlternateSides(pointRoot);
+
+  const siblingGap = 16;
+  const pad = 12;
+  let maxLeafY = 0;
+  const siblingSlot = new Map<any, number>();
+
+  discoveries.forEach((disc, index) => {
+    const side = (disc as any).side ?? -1;
+    const leaves =
+      disc.data.type === 'miss-clade' ? disc.children! : [disc];
+    const sortedLeaves =
+      leaves.length > 1
+        ? [...leaves].sort((a, b) => a.data.name.localeCompare(b.data.name))
+        : leaves;
+    const widths = sortedLeaves.map((l: any) => labelWidth(l.data.name));
+    const parent = disc.parent ?? pointRoot;
+    const slot = siblingSlot.get(parent) ?? 0;
+    siblingSlot.set(parent, slot + 1);
+    // Each sibling discovery under the same parent gets its own row.
+    const parentY = parent.y ?? 28;
+    const y = parentY + 72 + slot * 48;
+    const lateral = spineClear + (index % 5) * 36;
+
+    if (side < 0) {
+      let x = centerX - lateral;
+      for (let i = sortedLeaves.length - 1; i >= 0; i--) {
+        x -= widths[i] / 2;
+        sortedLeaves[i].x = x;
+        sortedLeaves[i].y = y;
+        x -= widths[i] / 2 + siblingGap;
+      }
+    } else {
+      let x = centerX + lateral;
+      for (let i = 0; i < sortedLeaves.length; i++) {
+        x += widths[i] / 2;
+        sortedLeaves[i].x = x;
+        sortedLeaves[i].y = y;
+        x += widths[i] / 2 + siblingGap;
+      }
+    }
+
+    for (const l of sortedLeaves) {
+      const hw = labelWidth(l.data.name) / 2;
+      l.x = Math.min(Math.max(l.x, pad + hw), panelWidth - pad - hw);
+      maxLeafY = Math.max(maxLeafY, l.y);
+    }
+  });
+
+  return maxLeafY + 40;
+}
+
+function enforceNoLabelOverlap(nodes: any[]): void {
+  // Several passes so one push can create a new collision that gets fixed.
+  for (let pass = 0; pass < 3; pass++) {
+    const sorted = [...nodes].sort((a, b) => a.y - b.y || a.x - b.x);
+    for (let i = 0; i < sorted.length; i++) {
+      for (let j = 0; j < sorted.length; j++) {
+        if (i === j) continue;
+        const a = sorted[i];
+        const b = sorted[j];
+        if (a.data.id === b.data.id) continue;
+        const ha = labelWidth(a.data.name) / 2;
+        const hb = labelWidth(b.data.name) / 2;
+        const xOverlap = Math.abs(a.x - b.x) < ha + hb + 16;
+        const yTooClose = Math.abs(b.y - a.y) < 32;
+        if (xOverlap && yTooClose) {
+          // Push the lower label down; if equal y, push the right one down.
+          if (a.y <= b.y) a.y = Math.max(a.y, b.y - 32);
+          else a.y = Math.max(a.y, b.y + 32);
+        }
+      }
+    }
+  }
 }
 
 function drawD3Tree(root: D3Node) {
@@ -210,134 +453,223 @@ function drawD3Tree(root: D3Node) {
   const T = document.getElementById('T') as HTMLDivElement;
   if (!svgEl || !T) return;
 
+  const panel =
+    T.closest('.phylo-panel') ?? document.querySelector('.phylo-panel');
+  const contentBox = T.parentElement;
+  let panelWidth =
+    contentBox instanceof HTMLElement && contentBox.clientWidth > 0
+      ? contentBox.clientWidth
+      : panel instanceof HTMLElement && panel.clientWidth > 0
+        ? panel.clientWidth - 40
+        : 640;
+  panelWidth = Math.max(320, panelWidth);
+  const centerX = panelWidth / 2;
+  const pad = 16;
+
+  // d3.tree for topology-aware spacing (keep this).
   const hierarchy = d3.hierarchy(root);
-  const pointRoot = d3.tree<D3Node>().nodeSize([140, 60])(hierarchy);
+  const pointRoot = d3
+    .tree<D3Node>()
+    .nodeSize([200, 90])
+    .separation((a, b) => (a.parent === b.parent ? 1.1 : 1.5))(hierarchy) as any;
+  const targetNode = pointRoot.find((d: any) => d.data.id === 'node-target');
+  if (!targetNode) return;
 
-  // Push target node to the bottom of the tree
-  let maxNonTargetY = 0;
-  pointRoot.each(d => { if (d.data.id !== 'node-target' && d.y > maxNonTargetY) maxNonTargetY = d.y; });
-  pointRoot.each(d => { if (d.data.id === 'node-target') d.y = maxNonTargetY + 60; });
-
-  // Recompute bounds after moving target
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  pointRoot.each(d => {
-    if (d.x < minX) minX = d.x;
-    if (d.x > maxX) maxX = d.x;
+  // Uniform downward y from d3 depth (already downward); normalize to start at 36.
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  pointRoot.each((d: any) => {
     if (d.y < minY) minY = d.y;
     if (d.y > maxY) maxY = d.y;
-  });
-
-  // Position target at bottom of panel with minimal gap
-  const panel = T.closest('.phylo-panel');
-  const panelH = panel ? panel.clientHeight : 400;
-  const topPad = 15;
-  const botPad = 15;
-  const gap = 25;
-  const minH = 300;
-  const cH = Math.max(panelH, minH, maxY + botPad + gap);
-
-  // Scale non-target y positions to fit between topPad and (targetY - gap)
-  const targetNode = pointRoot.find(d => d.data.id === 'node-target');
-  const targetY = cH - botPad;
-  if (targetNode) targetNode.y = targetY;
-  const d3Span = maxNonTargetY - minY || 1;
-  const availY = targetY - topPad - gap;
-  pointRoot.each(d => {
-    if (d.data.id !== 'node-target') {
-      d.y = topPad + ((d.y - minY) / d3Span) * availY;
-    }
-  });
-
-  // Final bounds
-  minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
-  pointRoot.each(d => {
     if (d.x < minX) minX = d.x;
     if (d.x > maxX) maxX = d.x;
-    if (d.y < minY) minY = d.y;
-    if (d.y > maxY) maxY = d.y;
+  });
+  const spanX = maxX - minX || 1;
+  const spanY = maxY - minY || 1;
+  const scaleX = Math.min(1, (panelWidth - pad * 2) / spanX);
+  const scaleY = Math.min(1.15, 900 / spanY);
+  pointRoot.each((d: any) => {
+    d.x = (d.x - minX) * scaleX + pad + (panelWidth - pad * 2 - spanX * scaleX) / 2;
+    d.y = (d.y - minY) * scaleY + 36;
   });
 
-  const panelWidth = T.parentElement?.clientWidth ?? 280;
-  const pad = 20;
-  const cw = Math.max(panelWidth, maxX - minX + pad * 2);
-  const xOff = cw / 2 - (minX + maxX) / 2;
-
-  pointRoot.each(d => { d.x += xOff; });
-
-  // Align spine nodes (last-child chain) to panel center
-  const spineIds = new Set<string>();
-  for (let s: (typeof pointRoot) | null = pointRoot; s; s = s.children?.length ? s.children[s.children.length - 1] : null) {
-    spineIds.add(s.data.id);
+  // Metazoa stays centered; path to ??? pulled gently toward center; target bottom-center.
+  pointRoot.x = centerX;
+  for (
+    let s: any = pointRoot.children?.length
+      ? pointRoot.children[pointRoot.children.length - 1]
+      : null;
+    s;
+    s = s.children?.length ? s.children[s.children.length - 1] : null
+  ) {
+    s.x = s.x * 0.5 + centerX * 0.5;
   }
-  const centerX = cw / 2;
-  pointRoot.each(d => { if (spineIds.has(d.data.id)) d.x = centerX; });
+  const maxOtherY = Math.max(
+    ...pointRoot.descendants().filter((d: any) => d !== targetNode).map((d: any) => d.y),
+  );
+  targetNode.x = centerX;
+  targetNode.y = maxOtherY + 70;
 
-  // Distribute side-branch children around the spine with no overlap
-  pointRoot.each(d => {
-    if (!spineIds.has(d.data.id) || !d.children || d.children.length < 2) return;
-    const lastI = d.children.length - 1;
-    const base = 80;
-    const step = 70;
-    for (let i = 0; i < lastI; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const off = base + Math.floor(i / 2) * step;
-      const newX = d.x + side * off;
-      const dx = newX - d.children[i].x;
-      d.children[i].each((desc: any) => { desc.x += dx; });
-    }
-  });
+  // Collapse single-member miss-clades for drawing/links.
+  const isCollapsed = (n: any) =>
+    n.data.type === 'miss-clade' && (!n.children || n.children.length < 2);
+  const drawable: any[] = pointRoot
+    .descendants()
+    .filter((d: any) => !isCollapsed(d)) as any[];
 
-  // Ensure children of non-spine nodes stay on the same side (away from spine)
-  pointRoot.each(d => {
-    if (spineIds.has(d.data.id) || !d.children) return;
-    const isLeft = d.x < centerX;
-    const base = 80;
-    const step = 70;
-    for (let i = 0; i < d.children.length; i++) {
-      const off = base + i * step;
-      d.children[i].x = d.x + (isLeft ? -off : off);
+  // No overlap (3 passes), then clamp into panel.
+  for (let pass = 0; pass < 3; pass++) {
+    for (const a of drawable) {
+      for (const b of drawable) {
+        if (a === b) continue;
+        const ha = labelWidth(a.data.name) / 2;
+        const hb = labelWidth(b.data.name) / 2;
+        if (
+          Math.abs(a.x - b.x) < ha + hb + 12 &&
+          Math.abs((a.y as number) - (b.y as number)) < 30
+        ) {
+          if (a.y <= b.y) a.y = (b.y as number) - 30;
+          else a.y = (b.y as number) + 30;
+        }
+      }
     }
-  });
+  }
+  for (const d of drawable) {
+    const hw = labelWidth(d.data.name) / 2;
+    d.x = Math.min(Math.max(d.x, pad + hw), panelWidth - pad - hw);
+  }
+
+  let contentMinY = Infinity;
+  let contentMaxY = -Infinity;
+  for (const d of drawable) {
+    if (d.y < contentMinY) contentMinY = d.y;
+    if (d.y > contentMaxY) contentMaxY = d.y;
+  }
+  const cH = contentMaxY - contentMinY + 48;
+  const dy = 24 - contentMinY;
+  if (dy !== 0) {
+    for (const d of drawable) d.y += dy;
+  }
+  const finalW = panelWidth;
+
+  const spineLinkIds = new Set<string>();
+  for (let n: any = targetNode; n.parent; n = n.parent) {
+    spineLinkIds.add(`${n.parent.data.id}->${n.data.id}`);
+  }
 
   const svg = d3.select(svgEl);
-  svg.attr('viewBox', `0 0 ${cw} ${cH}`)
-     .attr('width', cw)
-     .attr('height', cH);
-
-  T.style.width = `${cw}px`;
+  svg
+    .attr('viewBox', `0 0 ${finalW} ${cH}`)
+    .attr('width', finalW)
+    .attr('height', cH);
+  T.style.width = `${finalW}px`;
   T.style.height = `${cH}px`;
 
-  // Draw links (from bottom of parent rect to top of child rect)
-  svg.selectAll('.phylo-link')
-    .data(pointRoot.links())
-    .join('path')
-    .attr('class', 'phylo-link')
-    .attr('d', (d: any) => {
-      const s = d.source, t = d.target;
-      const sy = s.y + 11, ty = t.y - 11;
-      const my = Math.max(sy, ty - 15);
-      return `M${s.x},${sy}C${s.x},${my} ${t.x},${my} ${t.x},${ty}`;
-    })
+  const linkPairs: { s: any; t: any; spine: boolean; key: string }[] = [];
+  for (const { source, target } of pointRoot.links() as any[]) {
+    let s: any = source;
+    let t: any = target;
+    while (s && isCollapsed(s)) s = s.parent;
+    while (t && isCollapsed(t)) t = t.children![0];
+    if (!s || !t || s === t) continue;
+    const key = `${s.data.id}->${t.data.id}`;
+    linkPairs.push({
+      s,
+      t,
+      spine:
+        spineLinkIds.has(key) ||
+        spineLinkIds.has(`${source.data.id}->${target.data.id}`),
+      key,
+    });
+  }
+
+  const depthDelay = (d: any) => (d.depth ?? 0) * 120;
+  const linkSel = svg
+    .selectAll<SVGPathElement, any>('.phylo-link')
+    .data(linkPairs, (d: any) => d.key);
+  linkSel.exit().transition().duration(250).style('opacity', 0).remove();
+  linkSel
+    .enter()
+    .append('path')
+    .attr('class', (d: any) =>
+      d.spine ? 'phylo-link phylo-link-spine' : 'phylo-link',
+    )
     .attr('fill', 'none')
-    .attr('stroke', '#999')
-    .attr('stroke-width', 2);
+    .attr('stroke', (d: any) => (d.spine ? '#6a9a4a' : '#999'))
+    .attr('stroke-width', (d: any) => (d.spine ? 3 : 2))
+    .attr('d', (d: any) => curveLink(d.s, d.t))
+    .style('opacity', 0)
+    .merge(linkSel)
+    .transition()
+    .delay((d: any) => depthDelay(d.t))
+    .duration(400)
+    .ease(d3.easeCubicInOut)
+    .style('opacity', 1)
+    .attr('d', (d: any) => curveLink(d.s, d.t))
+    .attr('class', (d: any) =>
+      d.spine ? 'phylo-link phylo-link-spine' : 'phylo-link',
+    )
+    .attr('stroke', (d: any) => (d.spine ? '#6a9a4a' : '#999'))
+    .attr('stroke-width', (d: any) => (d.spine ? 3 : 2));
 
-  // Draw nodes
-  const nodeGroups = svg.selectAll('.phylo-svg-node')
-    .data(pointRoot.descendants())
-    .join('g')
-    .attr('class', d => `phylo-svg-node phylo-svg-node-${d.data.type}`)
-    .attr('transform', d => `translate(${d.x},${d.y})`);
-
-  nodeGroups.each(function(d) {
+  const nodeSel = svg
+    .selectAll<SVGGElement, any>('.phylo-svg-node')
+    .data(drawable, (d: any) => d.data.id);
+  nodeSel.exit().remove();
+  const nodeEnter = nodeSel
+    .enter()
+    .append('g')
+    .attr('class', (d: any) =>
+      `phylo-svg-node phylo-svg-node-${d.data.type} phylo-svg-node-enter`,
+    )
+    .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+    .style('opacity', 0);
+  nodeEnter.each(function (d: any) {
     const group = d3.select(this);
     const el = d.data.url
-      ? group.append('a').attr('href', d.data.url).attr('target', '_blank').attr('rel', 'noopener noreferrer')
+      ? group
+          .append('a')
+          .attr('href', d.data.url)
+          .attr('target', '_blank')
+          .attr('rel', 'noopener noreferrer')
       : group;
-    const bw = d.data.name.length * 7.5 + 14;
-    el.append('rect').attr('x', -bw / 2).attr('y', -11).attr('width', bw).attr('height', 22).attr('rx', 4);
+    const bw = labelWidth(d.data.name);
+    el.append('rect')
+      .attr('x', -bw / 2)
+      .attr('y', -12)
+      .attr('width', bw)
+      .attr('height', 24)
+      .attr('rx', 4);
     el.append('text').text(d.data.name);
   });
+  nodeEnter
+    .transition()
+    .delay((d: any) => depthDelay(d))
+    .duration(400)
+    .ease(d3.easeCubicOut)
+    .style('opacity', 1)
+    .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+    .on('end', function () {
+      d3.select(this).classed('phylo-svg-node-enter', false);
+    });
+  nodeSel
+    .transition()
+    .delay((d: any) => depthDelay(d))
+    .duration(400)
+    .ease(d3.easeCubicInOut)
+    .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+}
+
+function curveLink(s: any, t: any): string {
+  const sx = s.x;
+  const sy = s.y + 12;
+  const tx = t.x;
+  const ty = t.y - 12;
+  // Vertical leave-in, then curve out — reduces sibling curve crossings.
+  const dy = Math.max(28, (ty - sy) * 0.45);
+  return `M${sx},${sy}C${sx},${sy + dy} ${tx},${ty - dy} ${tx},${ty}`;
 }
 
 rebuildTree();
@@ -345,7 +677,11 @@ rebuildTree();
 function highlightNode(clade: number, raw: string) {
   if (!missAtClade.has(clade)) missAtClade.set(clade, []);
   const existing = missAtClade.get(clade)!;
-  if (!existing.includes(raw)) existing.push(raw);
+  if (!existing.includes(raw)) {
+    existing.push(raw);
+    missOrder.push(raw);
+    localStorage.setItem(KEYS.missOrder, JSON.stringify(missOrder));
+  }
   rebuildTree();
 }
 
