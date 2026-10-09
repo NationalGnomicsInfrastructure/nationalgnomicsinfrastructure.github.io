@@ -107,7 +107,9 @@ html[data-theme='dark'] {
 }
 .phylo-svg-node {
   cursor: pointer;
-  animation: phyloPop 0.25s ease-out;
+}
+.phylo-svg-node-enter {
+  animation: phyloPop 0.3s ease-out;
 }
 .phylo-svg-node rect {
   fill: var(--bg);
@@ -136,11 +138,14 @@ html[data-theme='dark'] {
 /* Tree container */
 .phylo-tree {
   position: relative;
+  min-width: 100%;
 }
 .phylo-svg {
   position: absolute;
   top: 0;
   left: 0;
   overflow: visible;
+  max-width: none;
 }
 .phylo-svg .phylo-link { pointer-events: none; }
+.phylo-svg .phylo-link-spine { pointer-events: none; }
