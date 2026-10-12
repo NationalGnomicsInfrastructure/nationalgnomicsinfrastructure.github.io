@@ -1,0 +1,11 @@
+<div id="cancel-delivery" style="margin:1.5rem auto 0;text-align:center;">
+  <button id="disconnect-btn" class="btn btn-cancel-delivery">🚫 Cancel Delivery</button>
+</div>
+
+<script>
+  import { disconnect } from '../lib/platform';
+  document.getElementById('disconnect-btn')?.addEventListener('click', () => {
+    if (!confirm('⚠️ This will cancel your delivery and clear all progress. Are you sure?')) return;
+    disconnect();
+  });
+</script>

@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import CancelDelivery from "../../components/CancelDelivery.astro";
 ---
 
 <Layout title="Platform Access">
@@ -157,21 +158,14 @@ import Layout from "../../layouts/Layout.astro";
                         >
                     </div>
                 </div>
-                <div id="cancel-delivery" style="margin:1.5rem auto 0;text-align:center;">
-                    <button
-                        id="disconnect-btn"
-                        class="btn btn-cancel-delivery"
-                    >
-                        🚫 Cancel Delivery
-                    </button>
-                </div>
+                <CancelDelivery />
             </div>
         </div>
     </section>
 </Layout>
 
 <script>
-    import { KEYS, disconnect, sha256 } from "../../lib/platform";
+    import { KEYS, sha256 } from "../../lib/platform";
     import { UNLOCK_HASHES } from "../../lib/platform-content";
 
     // 5 columns × 4 rows: animal | plant | color | space | science.
@@ -340,16 +334,5 @@ import Layout from "../../layouts/Layout.astro";
     agentBtn?.addEventListener("click", submitAgent);
     agentInput?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") submitAgent();
-    });
-
-    document.getElementById("disconnect-btn")?.addEventListener("click", () => {
-        if (
-            !confirm(
-                "⚠️ This will cancel your delivery and clear all progress. Are you sure?",
-            )
-        ) {
-            return;
-        }
-        disconnect();
     });
 </script>
