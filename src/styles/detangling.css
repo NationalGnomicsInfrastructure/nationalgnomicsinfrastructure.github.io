@@ -1,0 +1,47 @@
+/* ── Untangle knot (Project Detangling) ─────────────────────── */
+.knot-scroll {
+  overflow-x: auto;
+}
+.knot-svg {
+  width: 100%;
+  min-width: 520px;
+  height: auto;
+  display: block;
+  touch-action: none;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 1rem 0 0.5rem;
+}
+.knot-edge {
+  stroke: var(--text-muted);
+  stroke-width: 2;
+  opacity: 0.7;
+}
+.knot-edge-crossing {
+  stroke: var(--alert-danger-border);
+  opacity: 1;
+}
+.knot-node {
+  fill: var(--gnomics-green-d);
+  cursor: grab;
+}
+.knot-node:active {
+  cursor: grabbing;
+}
+.knot-label {
+  fill: #fff;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  user-select: none;
+}
+.knot-count {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0.5rem 0 1rem;
+}
+.knot-count.knot-solved {
+  color: var(--gnomics-green-d);
+  font-weight: 600;
+}
