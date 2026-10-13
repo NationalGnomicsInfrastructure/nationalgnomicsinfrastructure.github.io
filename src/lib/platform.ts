@@ -7,6 +7,7 @@ export const KEYS = {
   detangled: 'detangled',
   identificationDone: 'identification_done',
   deliveryDone: 'delivery_done',
+  deliveredName: 'delivered_name',
   missOrder: 'miss_order',
   retrievalGuesses: 'retrieval_guesses',
 } as const;
@@ -81,4 +82,17 @@ export function onForm(opts: {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submitBtn.click();
   });
+}
+
+// Letters of (animal + pipeline) → DNA via (charCode − 65) % 4 → A/T/G/C;
+// the access code is the first 7 bases. Same formula generated the
+// `sequence` column in gnomics-db.csv.
+export function accessCode(animal: string, pipeline: string): string {
+  return (animal + pipeline)
+    .replace(/[^a-z]/gi, '')
+    .toUpperCase()
+    .split('')
+    .map((ch) => 'ATGC'[(ch.charCodeAt(0) - 65) % 4])
+    .slice(0, 7)
+    .join('');
 }

@@ -23,6 +23,7 @@ import Layout from '../../layouts/Layout.astro';
             <tr><td><i class="fa-solid fa-map-location-dot"></i> Collection site</td><td id="rec-site">—</td></tr>
             <tr><td><i class="fa-solid fa-folder"></i> Category</td><td id="rec-category">—</td></tr>
             <tr><td><i class="fa-solid fa-tags"></i> Keywords</td><td id="rec-keywords">—</td></tr>
+            <tr id="rec-seq-row" style="display:none;"><td><i class="fa-solid fa-dna"></i> Sequence</td><td id="rec-sequence" style="font-family:var(--font-mono);letter-spacing:0.1em;">—</td></tr>
           </table>
           <p id="rec-desc" style="margin-top:1rem;font-size:0.92rem;color:var(--text-muted);"></p>
         </div>
@@ -85,7 +86,7 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-const DB: Record<string, { title: string; site: string; keywords: string[]; description: string; category: string; }> = {};
+const DB: Record<string, { title: string; site: string; keywords: string[]; description: string; category: string; sequence: string; }> = {};
 
 for (const line of DB_RAW.trim().split('\n').slice(1)) {
   const v = parseCSVLine(line);
@@ -93,6 +94,7 @@ for (const line of DB_RAW.trim().split('\n').slice(1)) {
     title: v[1], site: v[2], category: v[3],
     keywords: v[4].split('|').filter(Boolean),
     description: v[5],
+    sequence: v[6] ?? '',
   };
 }
 
@@ -117,6 +119,13 @@ function search() {
     (document.getElementById('rec-category') as HTMLElement).textContent = exact.category;
     (document.getElementById('rec-keywords') as HTMLElement).textContent = exact.keywords.join(', ');
     (document.getElementById('rec-desc') as HTMLElement).textContent = exact.description;
+    const seqRow = document.getElementById('rec-seq-row') as HTMLElement;
+    if (exact.sequence) {
+      (document.getElementById('rec-sequence') as HTMLElement).textContent = exact.sequence;
+      seqRow.style.display = '';
+    } else {
+      seqRow.style.display = 'none';
+    }
     record.style.display = 'block';
     return;
   }
@@ -124,14 +133,15 @@ function search() {
   // No query → clear results
   if (!q) { resultsEl.innerHTML = ''; return; }
 
-  // Full-text search across title, category, site, description, keywords
+  // Full-text search across title, category, site, description, keywords, sequence
   const matches = Object.keys(DB).filter(id => {
     const e = DB[id];
     return e.title.toLowerCase().includes(q) ||
            e.category.toLowerCase().includes(q) ||
            e.site.toLowerCase().includes(q) ||
            e.description.toLowerCase().includes(q) ||
-           e.keywords.some(k => k.toLowerCase().includes(q));
+           e.keywords.some(k => k.toLowerCase().includes(q)) ||
+           (e.sequence && e.sequence.toLowerCase().includes(q));
   });
   if (matches.length === 0) { notFound.style.display = 'block'; return; }
 const list = matches.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');

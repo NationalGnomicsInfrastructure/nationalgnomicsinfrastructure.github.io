@@ -1,0 +1,50 @@
+/* ── Transform tiles (Project Identification) ───────────────── */
+.tf-block {
+  margin-bottom: 0.75rem;
+}
+.tf-btn {
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.9rem;
+}
+.tf-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.tf-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin-bottom: 0.35rem;
+}
+.tf-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.tf-tile {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.tf-tile-base {
+  background: var(--gnomics-green-l);
+  border-color: var(--gnomics-green);
+  color: var(--gnomics-green-d);
+}
+.tf-tiles-code .tf-tile-code {
+  background: var(--gnomics-green-d);
+  border-color: var(--gnomics-green-d);
+  color: #fff;
+}

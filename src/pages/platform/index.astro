@@ -82,6 +82,9 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
                 <div id="delivery-banner" class="alert alert-success" style="display:none;max-width:888px;margin:0.75rem auto 0;text-align:center;font-size:1.1rem;font-weight:600;">
                     ✅ Your project has been delivered. Thank you for participating!
                 </div>
+                <div id="access-code-banner" class="alert alert-info" style="display:none;max-width:888px;margin:0.75rem auto 0;text-align:center;">
+                    🧬 Your access code: <strong id="access-code" style="font-family:var(--font-mono);letter-spacing:0.15em;"></strong> — search it in the Gnomics Database to find your project.
+                </div>
 
                 <div class="cards mt-3">
                     <a
@@ -136,7 +139,8 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
                         <div class="card-icon">🔍</div>
                         <h3>Project Identification</h3>
                         <p>
-                            Solve the riddle to identify your next envelope.
+                            Transform your animal and pipeline into DNA and
+                            identify the other strand.
                         </p>
                         <span
                             class="btn btn-outline"
@@ -164,8 +168,8 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
 </Layout>
 
 <script>
-    import { KEYS, sha256 } from "../../lib/platform";
-    import { UNLOCK_HASHES } from "../../lib/platform-content";
+    import { KEYS, accessCode, codeIdx, sha256 } from "../../lib/platform";
+    import { UNLOCK_HASHES, PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from "../../lib/platform-content";
 
     // 5 columns × 4 rows: animal | plant | color | space | science.
     const EMOJI_COLUMNS = [
@@ -236,6 +240,14 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
         if (done(KEYS.deliveryDone)) {
             if (status) status.textContent = "completed";
             const banner = document.getElementById("delivery-banner");
+            if (banner) banner.style.display = "block";
+        }
+        if (done(KEYS.identificationDone)) {
+            const animal = localStorage.getItem(KEYS.spiritAnimal) ?? "";
+            const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[codeIdx(PROJECT_COUNT)];
+            const codeEl = document.getElementById("access-code");
+            if (codeEl) codeEl.textContent = accessCode(animal, pipeline);
+            const banner = document.getElementById("access-code-banner");
             if (banner) banner.style.display = "block";
         }
     }

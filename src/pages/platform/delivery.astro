@@ -34,19 +34,10 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
           That's not the right project. Look again in the database.
         </div>
 
-        <div id="result-area" style="display:none;">
-          <div class="alert alert-success">
-            Project delivered. Your delivery is complete.
-          </div>
-          <div class="card mt-3" style="padding:1.25rem;">
-            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
-              Open envelope 6, find and deliver me.
-            </p>
-            <p class="text-muted mt-2" style="font-size:0.9rem;">
-              Delivered by <strong id="delivered-by"></strong>.
-            </p>
-            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
-          </div>
+        <div id="result-area" style="display:none;" class="success-box">
+          <h3>Project delivered.</h3>
+          <p id="delivered-name"></p>
+          <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
         </div>
 
       </div>
@@ -66,16 +57,15 @@ onForm({
   doneKey: KEYS.deliveryDone,
   check: async (value) => (await sha256(value.trim())) === PROJECT_HASHES[idx],
   onSuccess: () => {
-    const by = document.getElementById('delivered-by');
-    if (by) {
-      by.textContent = localStorage.getItem(KEYS.agent) || 'unknown agent';
-    }
-    if (idx !== PROJECT_HASHES.length - 1) return;
-    const result = document.querySelector('#result-area .alert-success');
-    if (result) {
-      result.textContent =
-        'Project delivered via alternate strand. The bacon remembers.';
-    }
+    const name = (document.getElementById('project-name') as HTMLInputElement).value.trim();
+    if (!name) return; // restore path: input is empty, keep the stored name
+    localStorage.setItem(KEYS.deliveredName, name);
+    const nameEl = document.getElementById('delivered-name');
+    if (nameEl) nameEl.textContent = name;
   },
 });
+if (localStorage.getItem(KEYS.deliveryDone)) {
+  const nameEl = document.getElementById('delivered-name');
+  if (nameEl) nameEl.textContent = localStorage.getItem(KEYS.deliveredName) ?? '';
+}
 </script>

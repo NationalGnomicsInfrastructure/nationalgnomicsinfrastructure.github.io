@@ -3,9 +3,15 @@
 </div>
 
 <script>
-  import { disconnect } from '../lib/platform';
-  document.getElementById('disconnect-btn')?.addEventListener('click', () => {
-    if (!confirm('⚠️ This will cancel your delivery and clear all progress. Are you sure?')) return;
-    disconnect();
-  });
+    import { KEYS, disconnect } from "../lib/platform";
+    const btn = document.getElementById("disconnect-btn") as HTMLButtonElement;
+    const delivered = Boolean(localStorage.getItem(KEYS.deliveryDone));
+    if (delivered) btn.textContent = "🔌 Disconnect";
+    btn.addEventListener("click", () => {
+        const msg = delivered
+            ? "Clear this session and start over?"
+            : "⚠️ This will cancel your delivery and clear all progress. Are you sure?";
+        if (!confirm(msg)) return;
+        disconnect();
+    });
 </script>
