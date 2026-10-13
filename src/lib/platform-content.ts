@@ -41,31 +41,6 @@ export const PROJECT_HASHES = [
   '4da30b15a5f56141eb0ec065752ebf680666ad2608960de7f122a90412ebc6da',
 ] as const;
 
-export const SECOND_ANIMAL_HASHES = [
-  '083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c',
-  '8c1077ac117c1d641ad4e321bebe157941af55bf46d330d5f051fc486b4048a6',
-  '05cf089eb5a3159a11edbc1e4a7d99318872f1e70814ad444cc2fc850915fab2',
-  '86c46f099cb2c6639f3fbd88b9766422fef246184275d1b2badc0c1a09d231f5',
-  'c88cf9468f1701ff059abe2c172a0da5edd6af83ae80ca1a7579e291c38df6d9',
-  '3755b417b0f937026ac1b867a397d6dec80dfd463c232c2daaf1de974b93da82',
-  '7c180e3e3bee93dde4c28a4999b4cc3604ee53524c3b245485d41ac36d478c82',
-  'fbcc4e1a830c7686e09d4d89ba37367705c118f4f31d8abdb0b5c471df0792d3',
-  '359f7793cbd65f175164737b137ecef5b1a3d2d2e9a57d34559f88cadacb9ea1',
-  '6bb7e067447139b18f6094d2d15bcc264affde89a8b9f5227fe5b38abd8b19d7',
-  '0ae2f6c706cff60bff7c0125b99cae8c53e1a1702f02316848bc99e597d084db',
-  'b2e605c9aaa8c5e85ae8e97825bb8e623f52b26e44323745599642852a8bcd9d',
-  'ef58ef3c1e321df6d41ed2fd179df253ccd966a3212cb97eedf9b369334786af',
-  '532f011ec89ff0e2e1be76953593b588d47e8a454d18f554e4f2ea6d89615a10',
-  '064a43832b4f4f1dc9cefded25aaeb634a2fdfa9cfe9e26d4ad3297d9b2e4150',
-  '4a3484b3bf2fcb0ff5f717f18904abd29d228bc13098114df68b2ed9a4626503',
-  '79a5478768d2447431a90f7f4549df735f50ad541371464c248abc7522dc3a01',
-] as const;
-
-// Base64 JSON array of envelope clue parts, one per access code (decoded at
-// runtime; plaintext key lives in the local gitignored ROADMAP.md).
-export const CLUE_PARTS_ENC =
-  'WyJoZWFkIiwibW91dGgiLCJ0b25ndWUiLCJsZWciLCJhcm0gYm90dG9tIHJpZ2h0IGNvcm5lciIsImZyb250IHBhdyIsInRhaWwiLCJsZWZ0IGVhciIsImJhY2siLCJiZWxseSIsIndpbmciLCJmaW4iLCJob3JuIiwic2hlbGwiLCJyaWdodCBrbmVlIiwibGVmdCB3aGlza2VyIiwic2VjcmV0IGJhY29uIHN0cmlwIl0=';
-
 // Base64 JSON array of spirit animal names, one per access code (decoded at
 // runtime; plaintext key lives in the local gitignored ROADMAP.md).
 export const SPIRIT_ANIMALS_ENC =

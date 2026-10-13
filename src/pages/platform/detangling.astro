@@ -1,13 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CancelDelivery from '../../components/CancelDelivery.astro';
+import '../../styles/detangling.css';
 ---
 <Layout title="Project Detangling">
 
   <div class="page-header">
     <div class="container">
       <h1>Project Detangling</h1>
-      <p>Uncover the next clue using the second animal from your envelope.</p>
+      <p>Untangle the knot to continue your delivery.</p>
     </div>
   </div>
 
@@ -15,33 +16,22 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
     <div class="container">
       <div class="submit-form">
 
-        <div class="alert alert-info mb-2">
-          <strong>Second animal.</strong><br/>
-          Enter the second animal from your envelope to reveal the next clue.
+        <div id="game-area">
+          <div class="alert alert-info mb-2">
+            <strong>The knot.</strong><br/>
+            Drag the nodes until no lines cross.
+          </div>
+          <div class="knot-scroll">
+            <svg id="knot" class="knot-svg" viewBox="0 0 640 420" aria-label="Tangled knot puzzle"></svg>
+          </div>
+          <p id="knot-count" class="knot-count"></p>
         </div>
 
-        <div id="form-area">
-          <div class="form-group">
-            <label for="second-animal">Second Animal</label>
-            <input type="text" id="second-animal" placeholder="Enter the second animal" autocomplete="off" style="font-size:1.1rem;" />
-          </div>
-          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
-            Uncover Clue
-          </button>
-        </div>
-
-        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
-          That's not the right animal. Check your envelope and try again.
-        </div>
-
-        <div id="result-area" style="display:none;">
-          <div class="alert alert-success">
-            Clue uncovered. Your delivery continues.
-          </div>
-          <div class="card mt-3" style="padding:1.25rem;">
-            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;" id="clue-text"></p>
-            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
-          </div>
+        <div id="result-area" style="display:none;" class="success-box">
+          <div style="font-size:3rem;">🎉</div>
+          <h3>Knot Untangled!</h3>
+          <p>Your delivery continues.</p>
+          <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
         </div>
 
       </div>
@@ -51,21 +41,176 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 </Layout>
 
 <script>
-import { KEYS, codeIdx, onForm, requireFlag, sha256 } from '../../lib/platform';
-import { CLUE_PARTS_ENC, SECOND_ANIMAL_HASHES, decodeAnswerList } from '../../lib/platform-content';
+import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+import { KEYS, codeIdx, requireFlag } from '../../lib/platform';
 
 requireFlag(KEYS.accession);
-const idx = codeIdx(SECOND_ANIMAL_HASHES.length);
-const clueText = document.getElementById('clue-text') as HTMLParagraphElement;
-const showClue = () => {
-  clueText.textContent = `Look on the ${decodeAnswerList(CLUE_PARTS_ENC)[idx]}. Find me in the pipeline.`;
-};
+const idx = codeIdx(PROJECT_COUNT);
 
-onForm({
-  inputId: 'second-animal',
-  doneKey: KEYS.detangled,
-  check: async (value) =>
-    (await sha256(value.trim().toLowerCase())) === SECOND_ANIMAL_HASHES[idx],
-  onSuccess: showClue,
+// Knot nodes spell out the pipeline guessed at retrieval + the spirit animal
+// from species ID — both already known to the player at this point.
+const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idx];
+const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
+const LETTERS = (pipeline + animal).replace(/[^a-z]/gi, '').toUpperCase().split('');
+
+const W = 640;
+const H = 420;
+const R = LETTERS.length > 16 ? 13 : 16;
+const PAD = 34;
+const NODE_COUNT = LETTERS.length;
+const EDGE_COUNT = NODE_COUNT + 4; // cycle + 4 chords; almost always planar — pre-test all 17 seeds (see ROADMAP)
+
+function mulberry32(seed: number): () => number {
+  let a = seed | 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rng = mulberry32((idx + 1) * 0x9e3779b9);
+const nodes = Array.from({ length: NODE_COUNT }, () => ({
+  x: PAD + rng() * (W - 2 * PAD),
+  y: PAD + rng() * (H - 2 * PAD),
+}));
+const edges: [number, number][] = [];
+for (let i = 0; i < NODE_COUNT; i++) edges.push([i, (i + 1) % NODE_COUNT]);
+while (edges.length < EDGE_COUNT) {
+  const a = Math.floor(rng() * NODE_COUNT);
+  const b = Math.floor(rng() * NODE_COUNT);
+  if (a !== b && !edges.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) {
+    edges.push([a, b]);
+  }
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.querySelector<SVGSVGElement>('#knot')!;
+const gameArea = document.getElementById('game-area') as HTMLDivElement;
+const countEl = document.getElementById('knot-count') as HTMLParagraphElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+
+let dragging: number | null = null;
+let hasDragged = false;
+
+const lines = edges.map(() => {
+  const l = document.createElementNS(NS, 'line');
+  l.setAttribute('class', 'knot-edge');
+  svg.appendChild(l);
+  return l;
 });
+
+const circles = nodes.map((_, i) => {
+  const c = document.createElementNS(NS, 'circle');
+  c.setAttribute('class', 'knot-node');
+  c.setAttribute('r', String(R));
+  c.addEventListener('pointerdown', (e) => {
+    dragging = i;
+    hasDragged = true;
+    c.setPointerCapture(e.pointerId);
+  });
+  c.addEventListener('pointermove', (e) => {
+    if (dragging !== i) return;
+    const r = svg.getBoundingClientRect();
+    nodes[i].x = Math.min(W - R, Math.max(R, ((e.clientX - r.left) * W) / r.width));
+    nodes[i].y = Math.min(H - R, Math.max(R, ((e.clientY - r.top) * H) / r.height));
+    draw();
+  });
+  const release = () => {
+    if (dragging === i) {
+      dragging = null;
+      if (crossingInfo().count === 0) win();
+    }
+  };
+  c.addEventListener('pointerup', release);
+  c.addEventListener('pointercancel', release);
+  svg.appendChild(c);
+  return c;
+});
+
+const labels = nodes.map((_, i) => {
+  const t = document.createElementNS(NS, 'text');
+  t.setAttribute('class', 'knot-label');
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('dominant-baseline', 'central');
+  t.style.pointerEvents = 'none';
+  t.textContent = LETTERS[i];
+  svg.appendChild(t);
+  return t;
+});
+
+function orient(ax: number, ay: number, bx: number, by: number, cx: number, cy: number): number {
+  return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+}
+
+function properlyCross(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  c: { x: number; y: number },
+  d: { x: number; y: number },
+): boolean {
+  return (
+    orient(a.x, a.y, b.x, b.y, c.x, c.y) * orient(a.x, a.y, b.x, b.y, d.x, d.y) < 0 &&
+    orient(c.x, c.y, d.x, d.y, a.x, a.y) * orient(c.x, c.y, d.x, d.y, b.x, b.y) < 0
+  );
+}
+
+function crossingInfo(): { count: number; edges: Set<number> } {
+  let count = 0;
+  const crossed = new Set<number>();
+  for (let i = 0; i < edges.length; i++) {
+    for (let j = i + 1; j < edges.length; j++) {
+      const [a, b] = edges[i];
+      const [c, d] = edges[j];
+      if (a === c || a === d || b === c || b === d) continue;
+      if (properlyCross(nodes[a], nodes[b], nodes[c], nodes[d])) {
+        count++;
+        crossed.add(i);
+        crossed.add(j);
+      }
+    }
+  }
+  return { count, edges: crossed };
+}
+
+function draw(): void {
+  edges.forEach(([a, b], i) => {
+    lines[i].setAttribute('x1', String(nodes[a].x));
+    lines[i].setAttribute('y1', String(nodes[a].y));
+    lines[i].setAttribute('x2', String(nodes[b].x));
+    lines[i].setAttribute('y2', String(nodes[b].y));
+  });
+  circles.forEach((c, i) => {
+    c.setAttribute('cx', String(nodes[i].x));
+    c.setAttribute('cy', String(nodes[i].y));
+    labels[i].setAttribute('x', String(nodes[i].x));
+    labels[i].setAttribute('y', String(nodes[i].y));
+  });
+  const info = crossingInfo();
+  lines.forEach((l, i) => l.classList.toggle('knot-edge-crossing', info.edges.has(i)));
+  if (info.count > 0) {
+    countEl.textContent = `${info.count} crossing${info.count === 1 ? '' : 's'}`;
+    countEl.classList.remove('knot-solved');
+  } else if (hasDragged) {
+    countEl.textContent = '✓ No crossings — untangled!';
+    countEl.classList.add('knot-solved');
+  } else {
+    countEl.textContent = `${EDGE_COUNT} lines, ${NODE_COUNT} nodes. Untangle them all.`;
+    countEl.classList.remove('knot-solved');
+  }
+}
+
+function win(): void {
+  localStorage.setItem(KEYS.detangled, '1');
+  showResult();
+}
+
+function showResult(): void {
+  gameArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+draw();
+if (localStorage.getItem(KEYS.detangled)) showResult();
 </script>
