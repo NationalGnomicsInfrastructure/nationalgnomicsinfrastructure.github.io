@@ -61,45 +61,19 @@ export const SECOND_ANIMAL_HASHES = [
   '79a5478768d2447431a90f7f4549df735f50ad541371464c248abc7522dc3a01',
 ] as const;
 
-export const CLUE_PARTS = [
-  'head',
-  'mouth',
-  'tongue',
-  'leg',
-  'arm bottom right corner',
-  'front paw',
-  'tail',
-  'left ear',
-  'back',
-  'belly',
-  'wing',
-  'fin',
-  'horn',
-  'shell',
-  'right knee',
-  'left whisker',
-  'secret bacon strip',
-] as const;
+// Base64 JSON array of envelope clue parts, one per access code (decoded at
+// runtime; plaintext key lives in the local gitignored ROADMAP.md).
+export const CLUE_PARTS_ENC =
+  'WyJoZWFkIiwibW91dGgiLCJ0b25ndWUiLCJsZWciLCJhcm0gYm90dG9tIHJpZ2h0IGNvcm5lciIsImZyb250IHBhdyIsInRhaWwiLCJsZWZ0IGVhciIsImJhY2siLCJiZWxseSIsIndpbmciLCJmaW4iLCJob3JuIiwic2hlbGwiLCJyaWdodCBrbmVlIiwibGVmdCB3aGlza2VyIiwic2VjcmV0IGJhY29uIHN0cmlwIl0=';
 
-export const SPIRIT_ANIMALS = [
-  'bullfrog',
-  'axolotl',
-  'komodo dragon',
-  'greater flamingo',
-  'starfish',
-  'koala',
-  'capybara',
-  'cicada',
-  'chameleon',
-  'bottlenose dolphin',
-  'hedgehog',
-  'eastern grey kangaroo',
-  'lynx',
-  'marmot',
-  'leopard',
-  'giraffe',
-  'human',
-] as const;
+// Base64 JSON array of spirit animal names, one per access code (decoded at
+// runtime; plaintext key lives in the local gitignored ROADMAP.md).
+export const SPIRIT_ANIMALS_ENC =
+  'WyJidWxsZnJvZyIsImF4b2xvdGwiLCJrb21vZG8gZHJhZ29uIiwiZ3JlYXRlciBmbGFtaW5nbyIsInN0YXJmaXNoIiwia29hbGEiLCJjYXB5YmFyYSIsImNpY2FkYSIsImNoYW1lbGVvbiIsImJvdHRsZW5vc2UgZG9scGhpbiIsImhlZGdlaG9nIiwiZWFzdGVybiBncmV5IGthbmdhcm9vIiwibHlueCIsIm1hcm1vdCIsImxlb3BhcmQiLCJnaXJhZmZlIiwiaHVtYW4iXQ==';
+
+export function decodeAnswerList(enc: string): string[] {
+  return JSON.parse(atob(enc)) as string[];
+}
 
 // sha256 of each answer, indexed by access code (plaintext key lives in the
 // local gitignored ROADMAP.md).

@@ -52,13 +52,13 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 
 <script>
 import { KEYS, codeIdx, onForm, requireFlag, sha256 } from '../../lib/platform';
-import { CLUE_PARTS, SECOND_ANIMAL_HASHES } from '../../lib/platform-content';
+import { CLUE_PARTS_ENC, SECOND_ANIMAL_HASHES, decodeAnswerList } from '../../lib/platform-content';
 
 requireFlag(KEYS.accession);
 const idx = codeIdx(SECOND_ANIMAL_HASHES.length);
 const clueText = document.getElementById('clue-text') as HTMLParagraphElement;
 const showClue = () => {
-  clueText.textContent = `Look on the ${CLUE_PARTS[idx]}. Find me in the pipeline.`;
+  clueText.textContent = `Look on the ${decodeAnswerList(CLUE_PARTS_ENC)[idx]}. Find me in the pipeline.`;
 };
 
 onForm({
