@@ -30,6 +30,7 @@ html[data-theme='dark'] {
 }
 .species-input-row input {
   flex: 1;
+  min-width: 0;
   padding: 0.6rem 1rem;
   border: 2px solid var(--border);
   border-radius: var(--radius);
