@@ -100,3 +100,29 @@ export const SPIRIT_ANIMALS = [
   'giraffe',
   'human',
 ] as const;
+
+// sha256 of each answer, indexed by access code (plaintext key lives in the
+// local gitignored ROADMAP.md).
+export const RETRIEVAL_ANSWER_HASHES = [
+  '0ca0c5ea4a249dfcba50d891aa6f89408342e6a3f3c6b27c5ab4e9f1da37eaf6',
+  'cef50556c90c430e51b0df9dfe2f6dc943b3c5a4b1b57da985ba701b6c939fe9',
+  'fc518fbac8601f8f47db22f99f44b7a32013de13072c295e6e5690c6227992bc',
+  'b6e3db64bb6f42025299c2c35deddac9b6c356dc6fa6d7fbc0861066a8c0a997',
+  '16c6bfa6e6f2c99d005cbc7ea8af838300c868f5dec3ab682a597b213b4358db',
+  '3ae497f851273d4f14ceab016090b961db1842e765221aa668c2928feca29d72',
+  'ada22c4ba6a93d0a2c9ae57c8416f95e82006512ac55714587b6f6637cdc6ca8',
+  'd5f83294df47c4ed29c2002ae263c8415e7afe67303c01c9369a28dde5287ce3',
+  'af06efc1792ce4b49957c5ae9f24b1fc2b27919f2763bb8a383f56a4a3856a8c',
+  '2edf500a8ec9258ac595edf85487c02742bcf84245b8adbd67e05a3e3af20e5b',
+  '01a684f7ac6f3d511dad046b6cb955cfd28734dbfe923f78d7294bee8d017d75',
+  'ff927f91a0bc70b52e7fe08c55f552d520008132c10bdb53fda45f15f2c5e3b4',
+  '7d606244bf536080a307e4947164a00309ed5d9413a3ed846850a6d82516af02',
+  '56e5c6d971ca54b0b4fe658d4fb56271640c5ed4bca95c94696715d96df54c71',
+  '2b8911df3f1fe38631f3bf27011a2751116982b579fa193181f2d39f3c50f991',
+  '5ad1bcb9829897636461ef5bf0cdbdacb3250d8c00194c0065daf42e491b3d16',
+  '978270f47534c97a33d1619d05b8a56b627833ec622501c96705d71473091af2',
+] as const;
+
+// Base64 JSON array of the 17 answer pipeline names, one per access code.
+export const RETRIEVAL_ANSWERS_ENC =
+  'WyJlYWdlciIsImhhZGdlIiwic2FyZWsiLCJybmFzZXEiLCJpc29zZXEiLCJtYWdtYXAiLCJmZXRjaG5ncyIsInJpYm9zZXEiLCJhaXJyZmxvdyIsImFtcGxpc2VxIiwicm5hZnVzaW9uIiwic2NybmFzZXEiLCJ2aXJhbHJlY29uIiwicGl4ZWxhdG9yIiwidGF4cHJvZmlsZXIiLCJyYXJlZGlzZWFzZSIsImRlbXVsdGlwbGV4Il0=';

@@ -70,14 +70,6 @@ html[data-theme='dark'] {
   text-align: center;
 }
 .fail-box h3 { color: var(--fail-text); }
-.success-box {
-  background: var(--gnomics-green-l);
-  border: 2px solid var(--gnomics-green);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  text-align: center;
-}
-.success-box h3 { color: var(--gnomics-green-d); }
 
 /* ── Layout ──────────────────────────────────────────────────── */
 .game-bottom {
