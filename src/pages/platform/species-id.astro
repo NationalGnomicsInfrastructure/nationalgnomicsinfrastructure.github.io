@@ -463,7 +463,7 @@ function drawD3Tree(root: D3Node) {
       : panel instanceof HTMLElement && panel.clientWidth > 0
         ? panel.clientWidth - 40
         : 640;
-  panelWidth = Math.max(320, panelWidth);
+  panelWidth = Math.max(200, panelWidth);
   const centerX = panelWidth / 2;
   const pad = 16;
 
@@ -780,7 +780,19 @@ function submitGuess() {
     localStorage.setItem(KEYS.speciesDone, '1');
     localStorage.setItem(KEYS.spiritAnimal, TARGET.name);
     _won = true;
-    rebuildTree();
+rebuildTree();
+
+// Re-lay out the tree when the panel's width changes (rotation, resize).
+{
+  const panelEl = document.querySelector('.phylo-panel');
+  if (panelEl) {
+    let lastW = panelEl.clientWidth;
+    new ResizeObserver(() => {
+      const w = panelEl.clientWidth;
+      if (w !== lastW) { lastW = w; rebuildTree(); }
+    }).observe(panelEl);
+  }
+}
     gameControls.style.display = 'none';
     showSuccess();
     return;
