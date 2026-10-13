@@ -1,13 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CancelDelivery from '../../components/CancelDelivery.astro';
+import '../../styles/identification.css';
 ---
 <Layout title="Project Identification">
 
   <div class="page-header">
     <div class="container">
       <h1>Project Identification</h1>
-      <p>Confirm your project with the spirit animal from Species Identification.</p>
+      <p>Transform your spirit animal and pipeline into DNA, then identify the other strand.</p>
     </div>
   </div>
 
@@ -15,39 +16,48 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
     <div class="container">
       <div class="submit-form">
 
-        <div class="alert alert-info mb-2">
-          <strong>Project identification.</strong><br/>
-          Enter the spirit animal from Species Identification.
+        <div id="game-area">
+          <div class="alert alert-info mb-2">
+            <strong>The transformation.</strong><br/>
+            Each letter becomes a DNA base. Then type the reverse complement of the access code.
+          </div>
+
+          <div class="tf-block">
+            <div class="tf-label">Spirit animal</div>
+            <div class="tf-tiles" id="tf-animal"></div>
+            <button class="btn btn-outline tf-btn" id="tf-animal-btn">Transform</button>
+          </div>
+          <div class="tf-block">
+            <div class="tf-label">Pipeline</div>
+            <div class="tf-tiles" id="tf-pipeline"></div>
+            <button class="btn btn-outline tf-btn" id="tf-pipeline-btn">Transform</button>
+          </div>
+
+          <div class="tf-code" id="tf-code" style="display:none;">
+            <div class="tf-label">Access code</div>
+            <div class="tf-tiles tf-tiles-code" id="tf-code-tiles"></div>
+          </div>
+
+          <div id="revcomp-area" style="display:none;">
+            <div class="form-group mt-3">
+              <label for="revcomp-input">Reverse complement</label>
+              <input type="text" id="revcomp-input" placeholder="e.g. CAAGGTA" autocomplete="off" spellcheck="false" maxlength="7" style="font-family:var(--font-mono);font-size:1.1rem;letter-spacing:0.15em;text-transform:uppercase;" />
+            </div>
+            <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
+              Identify Project
+            </button>
+          </div>
+
+          <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
+            That's not the reverse complement. Check A↔T and C↔G, reversed.
+          </div>
         </div>
 
-        <div id="form-area">
-          <div class="form-group">
-            <label for="spirit-animal">Spirit Animal</label>
-            <input type="text" id="spirit-animal" placeholder="Enter the spirit animal" autocomplete="off" style="font-size:1.1rem;" />
-          </div>
-          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
-            Identify Project
-          </button>
-        </div>
-
-        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
-          That's not the Project Coordinator's spirit animal. Try again.
-        </div>
-
-        <div id="result-area" style="display:none;">
-          <div class="alert alert-success">
-            Project identified. Your delivery continues.
-          </div>
-          <div class="card mt-3" style="padding:1.25rem;">
-            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
-              "Ancients stellar objects, we are used to count days.<br/>
-              How many are we?"
-            </p>
-            <p class="text-muted mt-2" style="font-size:0.9rem;">
-              Find the envelope with that number and open it to continue your delivery.
-            </p>
-            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
-          </div>
+        <div id="result-area" style="display:none;" class="success-box">
+          <div style="font-size:3rem;">🎉</div>
+          <h3>Project Identified!</h3>
+          <p>Your delivery continues.</p>
+          <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
         </div>
 
       </div>
@@ -57,13 +67,113 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 </Layout>
 
 <script>
-import { KEYS, onForm, requireFlag } from '../../lib/platform';
+import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+import { KEYS, accessCode, codeIdx, requireFlag } from '../../lib/platform';
 
-requireFlag(KEYS.spiritAnimal);
-const animal = localStorage.getItem(KEYS.spiritAnimal)!;
-onForm({
-  inputId: 'spirit-animal',
-  doneKey: KEYS.identificationDone,
-  check: (value) => value.trim().toLowerCase() === animal,
+requireFlag(KEYS.detangled);
+const idx = codeIdx(PROJECT_COUNT);
+
+const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
+const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idx];
+
+const animalLetters = animal.replace(/[^a-z]/gi, '').toUpperCase().split('');
+const pipelineLetters = pipeline.replace(/[^a-z]/gi, '').toUpperCase().split('');
+const code = accessCode(animal, pipeline);
+
+const COMP: Record<string, string> = { A: 'T', T: 'A', G: 'C', C: 'G' };
+const revcomp = (s: string): string => s.split('').reverse().map((c) => COMP[c]).join('');
+
+const animalEl = document.getElementById('tf-animal') as HTMLDivElement;
+const pipelineEl = document.getElementById('tf-pipeline') as HTMLDivElement;
+const codeEl = document.getElementById('tf-code') as HTMLDivElement;
+const codeTilesEl = document.getElementById('tf-code-tiles') as HTMLDivElement;
+const revcompArea = document.getElementById('revcomp-area') as HTMLDivElement;
+const input = document.getElementById('revcomp-input') as HTMLInputElement;
+const btn = document.getElementById('submit-btn') as HTMLButtonElement;
+const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
+const gameArea = document.getElementById('game-area') as HTMLDivElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+
+function makeTiles(container: HTMLElement, letters: string[]): void {
+  letters.forEach((letter) => {
+    const t = document.createElement('div');
+    t.className = 'tf-tile';
+    const s = document.createElement('span');
+    s.textContent = letter;
+    t.appendChild(s);
+    container.appendChild(t);
+  });
+}
+
+function flipTiles(container: HTMLElement, bases: string[]): void {
+  const spans = container.querySelectorAll('span');
+  spans.forEach((s, i) => {
+    setTimeout(() => {
+      s.textContent = bases[i];
+      s.parentElement!.classList.add('tf-tile-base');
+    }, i * 120);
+  });
+}
+
+let animalDone = false;
+let pipelineDone = false;
+let revealed = false;
+function maybeRevealCode(): void {
+  if (revealed || !animalDone || !pipelineDone) return;
+  revealed = true;
+  codeEl.style.display = 'block';
+  code.split('').forEach((b) => {
+    const t = document.createElement('div');
+    t.className = 'tf-tile tf-tile-code';
+    t.textContent = b;
+    codeTilesEl.appendChild(t);
+  });
+  revcompArea.style.display = 'block';
+}
+
+function flipToBases(letters: string[]): string[] {
+  return letters.map((ch) => 'ATGC'[(ch.charCodeAt(0) - 65) % 4]);
+}
+
+const animalBtn = document.getElementById('tf-animal-btn') as HTMLButtonElement;
+const pipelineBtn = document.getElementById('tf-pipeline-btn') as HTMLButtonElement;
+animalBtn.addEventListener('click', () => {
+  if (animalDone) return;
+  animalDone = true;
+  animalBtn.disabled = true;
+  flipTiles(animalEl, flipToBases(animalLetters));
+  setTimeout(maybeRevealCode, animalLetters.length * 120);
 });
+pipelineBtn.addEventListener('click', () => {
+  if (pipelineDone) return;
+  pipelineDone = true;
+  pipelineBtn.disabled = true;
+  flipTiles(pipelineEl, flipToBases(pipelineLetters));
+  setTimeout(maybeRevealCode, pipelineLetters.length * 120);
+});
+
+function showResult(): void {
+  gameArea.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+function submit(): void {
+  const val = input.value.trim().toUpperCase();
+  if (val === revcomp(code)) {
+    localStorage.setItem(KEYS.identificationDone, '1');
+    showResult();
+    return;
+  }
+  errorMsg.style.display = 'block';
+}
+
+btn.addEventListener('click', submit);
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+
+if (localStorage.getItem(KEYS.identificationDone)) {
+  showResult();
+} else {
+  makeTiles(animalEl, animalLetters);
+  makeTiles(pipelineEl, pipelineLetters);
+}
 </script>
