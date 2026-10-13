@@ -1,13 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CancelDelivery from '../../components/CancelDelivery.astro';
+import '../../styles/retrieval.css';
 ---
 <Layout title="Project Retrieval">
 
   <div class="page-header">
     <div class="container">
       <h1>Project Retrieval</h1>
-      <p>Recover your project with the spirit animal from Species Identification.</p>
+      <p>Recover your project by cracking the Project Coordinator's pipeline access code.</p>
     </div>
   </div>
 
@@ -16,38 +17,25 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
       <div class="submit-form">
 
         <div class="alert alert-info mb-2">
-          <strong>Project retrieval.</strong><br/>
-          Enter the spirit animal from Species Identification to recover your project.
+          <strong>Pipeline access code.</strong><br/>
+          Guess the nf-core pipeline that unlocks your project.
+          Green = right letter, right spot. Yellow = right letter, wrong spot.
         </div>
 
         <div id="form-area">
-          <div class="form-group">
-            <label for="spirit-animal">Spirit Animal</label>
-            <input type="text" id="spirit-animal" placeholder="Enter the spirit animal" autocomplete="off" style="font-size:1.1rem;" />
+          <div id="guess-grid" class="wr-grid"></div>
+          <div class="wr-input-row">
+            <input type="text" id="pipeline-input" placeholder="Enter a pipeline name…" autocomplete="off" maxlength="11" />
+            <button class="btn btn-primary" id="guess-btn">Guess</button>
           </div>
-          <button class="btn btn-primary" id="submit-btn" style="width:100%;padding:0.75rem;">
-            Recover Project
-          </button>
+          <div id="error-msg" style="display:none;" class="alert alert-warning mt-2"></div>
         </div>
 
-        <div id="error-msg" style="display:none;" class="alert alert-warning mt-2">
-          That's not the Project Coordinator's spirit animal. Try again.
-        </div>
-
-        <div id="result-area" style="display:none;">
-          <div class="alert alert-success">
-            Project retrieved. Your delivery continues.
-          </div>
-          <div class="card mt-3" style="padding:1.25rem;">
-            <p style="font-style:italic;font-size:1.1rem;line-height:1.6;">
-              "The language of life has many words but a small alphabet,
-              my count is the envelope you need."
-            </p>
-            <p class="text-muted mt-2" style="font-size:0.9rem;">
-              Find the envelope with that number and open it to continue your delivery.
-            </p>
-            <a href="/platform/" class="btn btn-primary mt-2">Back to Platform</a>
-          </div>
+        <div id="result-area" style="display:none;" class="success-box">
+          <div style="font-size:3rem;">🎉</div>
+          <h3>Project Retrieved!</h3>
+          <p>Your delivery continues.</p>
+          <a href="/platform/" class="btn btn-primary mt-2">Proceed to Next Task →</a>
         </div>
 
       </div>
@@ -57,13 +45,129 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 </Layout>
 
 <script>
-import { KEYS, onForm, requireFlag } from '../../lib/platform';
+import { KEYS, codeIdx, requireFlag, sha256 } from '../../lib/platform';
+import {
+  RETRIEVAL_ANSWERS_ENC,
+  RETRIEVAL_ANSWER_HASHES,
+} from '../../lib/platform-content';
 
 requireFlag(KEYS.spiritAnimal);
-const animal = localStorage.getItem(KEYS.spiritAnimal)!;
-onForm({
-  inputId: 'spirit-animal',
-  doneKey: KEYS.accession,
-  check: (value) => value.trim().toLowerCase() === animal,
+
+const answers = JSON.parse(atob(RETRIEVAL_ANSWERS_ENC)) as string[];
+const idx = codeIdx(RETRIEVAL_ANSWER_HASHES.length);
+const answer = answers[idx];
+const answerHash = RETRIEVAL_ANSWER_HASHES[idx];
+
+const input = document.getElementById('pipeline-input') as HTMLInputElement;
+const btn = document.getElementById('guess-btn') as HTMLButtonElement;
+const grid = document.getElementById('guess-grid') as HTMLDivElement;
+const errorMsg = document.getElementById('error-msg') as HTMLDivElement;
+const resultArea = document.getElementById('result-area') as HTMLDivElement;
+
+let guesses: string[] = (() => {
+  try {
+    const raw = localStorage.getItem(KEYS.retrievalGuesses);
+    const arr = raw ? (JSON.parse(raw) as string[]) : [];
+    return arr.filter((g) => typeof g === 'string' && g.length > 0);
+  } catch {
+    return [];
+  }
+})();
+
+function scoreGuess(guess: string): string[] {
+  const res: string[] = Array(guess.length).fill('absent');
+  const remaining: Record<string, number> = {};
+  for (let i = 0; i < answer.length; i++) {
+    if (guess[i] === answer[i]) res[i] = 'correct';
+    else remaining[answer[i]] = (remaining[answer[i]] ?? 0) + 1;
+  }
+  for (let i = 0; i < guess.length; i++) {
+    if (res[i] === 'correct') continue;
+    if (remaining[guess[i]] > 0) {
+      res[i] = 'present';
+      remaining[guess[i]]--;
+    }
+  }
+  return res;
+}
+
+function renderRow(guess: string, width: number): HTMLDivElement {
+  const row = document.createElement('div');
+  row.className = 'wr-row';
+  row.style.setProperty('--cols', String(width));
+  const states = scoreGuess(guess);
+  guess.split('').forEach((ch, i) => {
+    const tile = document.createElement('div');
+    tile.className = `wr-tile wr-tile-${states[i]}`;
+    tile.textContent = ch;
+    row.appendChild(tile);
+  });
+  for (let i = guess.length; i < width; i++) {
+    const tile = document.createElement('div');
+    tile.className = 'wr-tile wr-tile-absent';
+    tile.textContent = '?';
+    row.appendChild(tile);
+  }
+  return row;
+}
+
+function renderGrid(): void {
+  grid.innerHTML = '';
+  if (guesses.length === 0) {
+    const row = document.createElement('div');
+    row.className = 'wr-row';
+    row.style.setProperty('--cols', '5');
+    for (let i = 0; i < 5; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'wr-tile wr-tile-absent';
+      tile.textContent = '?';
+      row.appendChild(tile);
+    }
+    grid.appendChild(row);
+    return;
+  }
+  const width = Math.max(...guesses.map((g) => g.length));
+  for (const g of guesses) grid.appendChild(renderRow(g, width));
+}
+
+function showResult(): void {
+  (document.querySelector('.wr-input-row') as HTMLElement).style.display = 'none';
+  errorMsg.style.display = 'none';
+  resultArea.style.display = 'block';
+}
+
+function showError(msg: string): void {
+  errorMsg.textContent = msg;
+  errorMsg.style.display = 'block';
+}
+
+async function submitGuess(): Promise<void> {
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+  if (guesses.includes(val)) {
+    showError('You already tried that one.');
+    return;
+  }
+  errorMsg.style.display = 'none';
+  guesses.push(val);
+  localStorage.setItem(KEYS.retrievalGuesses, JSON.stringify(guesses));
+  input.value = '';
+  renderGrid();
+  if ((await sha256(val)) === answerHash) {
+    localStorage.setItem(KEYS.accession, '1');
+    showResult();
+  }
+}
+
+btn.addEventListener('click', () => void submitGuess());
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') void submitGuess();
 });
+
+if (localStorage.getItem(KEYS.accession)) {
+  renderGrid();
+  showResult();
+} else {
+  renderGrid();
+}
 </script>

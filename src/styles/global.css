@@ -523,6 +523,14 @@ section.alt { background: var(--bg-alt); }
 .alert-success { background: var(--alert-success-bg); border-left: 4px solid var(--alert-success-border); color: var(--alert-success-text); }
 .alert-warning { background: var(--alert-warning-bg); border-left: 4px solid var(--alert-warning-border); color: var(--alert-warning-text); }
 .alert-danger { background: var(--alert-danger-bg); border-left: 4px solid var(--alert-danger-border); color: var(--alert-danger-text); }
+.success-box {
+  background: var(--gnomics-green-l);
+  border: 2px solid var(--gnomics-green);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+.success-box h3 { color: var(--gnomics-green-d); }
 
 /* ── Utilities ────────────────────────────────────────────── */
 .text-center { text-align: center; }

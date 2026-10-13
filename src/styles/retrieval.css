@@ -1,0 +1,61 @@
+/* ── Pipeline Wordle (Project Retrieval) ─────────────────────── */
+.wr-input-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.wr-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  background: var(--input-bg);
+  color: var(--text);
+}
+.wr-input-row input:focus { outline: none; border-color: var(--gnomics-green); }
+
+.wr-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0;
+}
+.wr-row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 0.3rem;
+  max-width: calc(var(--cols) * 2.6rem);
+}
+.wr-tile {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(0.65rem, 2.2vw, 1.05rem);
+  background: var(--bg);
+  color: var(--text);
+  text-transform: lowercase;
+}
+.wr-tile-correct {
+  background: var(--gnomics-green-d);
+  border-color: var(--gnomics-green-d);
+  color: #fff;
+}
+.wr-tile-present {
+  background: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+  color: var(--alert-warning-text);
+}
+.wr-tile-absent {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--text-muted);
+  opacity: 0.55;
+}

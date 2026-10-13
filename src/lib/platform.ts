@@ -8,6 +8,7 @@ export const KEYS = {
   identificationDone: 'identification_done',
   deliveryDone: 'delivery_done',
   missOrder: 'miss_order',
+  retrievalGuesses: 'retrieval_guesses',
 } as const;
 
 export const SESSION_KEYS = Object.values(KEYS);
