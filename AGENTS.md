@@ -11,6 +11,7 @@ Static website for National Gnomics Infrastructure (NGnI), a fictional gnome-sca
 ```bash
 npm ci                          # install (TypeScript 6 is supported by @astrojs/check)
 npm run dev                      # local dev server
+npm run dev:clean                # restart dev with clean Vite/Astro caches (fixes stale-module pages)
 npm run build                    # production build → dist/
 npm run check                    # Astro/TypeScript type check
 npm run prek                     # pre-commit hooks (includes astro check)
