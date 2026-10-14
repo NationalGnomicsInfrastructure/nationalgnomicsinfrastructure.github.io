@@ -23,25 +23,7 @@ const { id, style = '' } = Astro.props;
 </button>
 
 <script>
-import { SOCK_TOTAL, foundSocks, markSockFound } from '../lib/socks';
-
-function toast(message: string): void {
-  let el = document.getElementById('sock-toast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'sock-toast';
-    el.className = 'alert alert-success';
-    el.setAttribute('role', 'status');
-    el.style.cssText =
-      'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:1000;display:none;max-width:90vw;';
-    document.body.appendChild(el);
-  }
-  el.textContent = message;
-  el.style.display = 'block';
-  window.setTimeout(() => {
-    el.style.display = 'none';
-  }, 3000);
-}
+import { SOCK_TOTAL, foundSocks, markSockFound, sockToast } from '../lib/socks';
 
 function refresh(): void {
   const found = foundSocks();
@@ -60,7 +42,7 @@ document.querySelectorAll<HTMLButtonElement>('button.sock').forEach((btn) => {
   btn.addEventListener('click', () => {
     const count = markSockFound(Number(btn.dataset.sock));
     refresh();
-    toast(
+    sockToast(
       count >= SOCK_TOTAL
         ? '🎉 All 7 socks found!'
         : `You have found sock ${count}!`,

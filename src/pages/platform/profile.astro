@@ -26,7 +26,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
           <tr><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
           <tr><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
           <tr><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
-          <tr><td>🧦 Socks</td><td id="p-socks">—</td></tr>
+          <tr><td><button type="button" id="p-sock-icon" aria-label="Decorative sock — not part of the hunt" style="background:none;border:none;padding:0;cursor:pointer;line-height:0;"><img src="/sock.png" alt="" width="15" height="15" style="vertical-align:-0.15em;" /></button> Socks</td><td><div id="p-socks">—</div><button type="button" id="p-socks-reset" class="btn btn-outline" style="margin-top:0.35rem;font-size:0.75rem;padding:0.25rem 0.6rem;">🥐 Clean croissants</button></td></tr>
           <tr id="p-project-row" style="display:none;"><td><i class="fa-solid fa-box"></i> Project</td><td id="p-project">—</td></tr>
         </table>
         <h4 style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
@@ -45,7 +45,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 <script>
 import { KEYS, accessCode } from '../../lib/platform';
 import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
-import { SOCK_TOTAL, foundSocks } from '../../lib/socks';
+import { SOCKS_KEY, SOCK_TOTAL, foundSocks, sockToast } from '../../lib/socks';
 
 const done = (key: string) => Boolean(localStorage.getItem(key));
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -89,6 +89,17 @@ set(
     ? `${SOCK_TOTAL} / ${SOCK_TOTAL} — all found!`
     : `${socks.length} / ${SOCK_TOTAL}`,
 );
+
+document.getElementById('p-sock-icon')?.addEventListener('click', () => {
+  sockToast('Not part of the sock hunt.');
+});
+
+document.getElementById('p-socks-reset')?.addEventListener('click', () => {
+  if (!confirm('Reset the sock hunt? All found socks will be forgotten.')) return;
+  localStorage.removeItem(SOCKS_KEY);
+  set('p-socks', `0 / ${SOCK_TOTAL}`);
+  sockToast('Sock hunt reset. The croissants are clean.');
+});
 
 const steps = [
   { label: 'Species identification', key: KEYS.speciesDone },

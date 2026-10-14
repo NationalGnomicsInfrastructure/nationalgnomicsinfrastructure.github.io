@@ -25,3 +25,21 @@ export function markSockFound(id: number): number {
   }
   return found.length;
 }
+
+export function sockToast(message: string): void {
+  let el = document.getElementById('sock-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sock-toast';
+    el.className = 'alert alert-success';
+    el.setAttribute('role', 'status');
+    el.style.cssText =
+      'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:1000;display:none;max-width:90vw;';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.style.display = 'block';
+  window.setTimeout(() => {
+    el.style.display = 'none';
+  }, 3000);
+}
