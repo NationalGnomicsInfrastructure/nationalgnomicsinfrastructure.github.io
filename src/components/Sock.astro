@@ -23,7 +23,11 @@ const { id, style = '' } = Astro.props;
 </button>
 
 <script>
+import { KEYS } from '../lib/platform';
 import { SOCK_TOTAL, foundSocks, markSockFound, sockToast } from '../lib/socks';
+
+// The sock hunt is only open to platform agents (unlock + agent name).
+const loggedIn = Boolean(localStorage.getItem(KEYS.codeIdx)) && Boolean(localStorage.getItem(KEYS.agent));
 
 function refresh(): void {
   const found = foundSocks();
@@ -38,17 +42,23 @@ function refresh(): void {
   });
 }
 
-document.querySelectorAll<HTMLButtonElement>('button.sock').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const count = markSockFound(Number(btn.dataset.sock));
-    refresh();
-    sockToast(
-      count >= SOCK_TOTAL
-        ? '🎉 All 7 socks found!'
-        : `You have found sock ${count}!`,
-    );
+const socks = document.querySelectorAll<HTMLButtonElement>('button.sock');
+if (!loggedIn) {
+  socks.forEach((btn) => {
+    btn.style.display = 'none';
   });
-});
-
-refresh();
+} else {
+  socks.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const count = markSockFound(Number(btn.dataset.sock));
+      refresh();
+      sockToast(
+        count >= SOCK_TOTAL
+          ? '🎉 All 7 socks found!'
+          : `You have found sock ${count}!`,
+      );
+    });
+  });
+  refresh();
+}
 </script>

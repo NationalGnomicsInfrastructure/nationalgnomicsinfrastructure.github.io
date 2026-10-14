@@ -26,7 +26,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
           <tr><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
           <tr><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
           <tr><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
-          <tr><td><button type="button" id="p-sock-icon" aria-label="Decorative sock — not part of the hunt" style="background:none;border:none;padding:0;cursor:pointer;line-height:0;"><img src="/sock.png" alt="" width="15" height="15" style="vertical-align:-0.15em;" /></button> Socks</td><td><div id="p-socks">—</div><button type="button" id="p-socks-reset" class="btn btn-outline" style="margin-top:0.35rem;font-size:0.75rem;padding:0.25rem 0.6rem;">🥐 Clean croissants</button></td></tr>
+          <tr id="p-socks-row"><td><button type="button" id="p-sock-icon" aria-label="Decorative sock — not part of the hunt" style="background:none;border:none;padding:0;cursor:pointer;line-height:0;"><img src="/sock.png" alt="" width="15" height="15" style="vertical-align:-0.15em;" /></button> Socks</td><td><div id="p-socks">—</div><button type="button" id="p-socks-reset" class="btn btn-outline" style="margin-top:0.35rem;font-size:0.75rem;padding:0.25rem 0.6rem;">🥐 Clean croissants</button></td></tr>
           <tr id="p-project-row" style="display:none;"><td><i class="fa-solid fa-box"></i> Project</td><td id="p-project">—</td></tr>
         </table>
         <h4 style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
@@ -83,12 +83,17 @@ if (done(KEYS.deliveryDone) && project) {
 }
 
 const socks = foundSocks();
-set(
-  'p-socks',
-  socks.length >= SOCK_TOTAL
-    ? `${SOCK_TOTAL} / ${SOCK_TOTAL} — all found!`
-    : `${socks.length} / ${SOCK_TOTAL}`,
-);
+const socksRow = document.getElementById('p-socks-row');
+if (socks.length === 0) {
+  if (socksRow) socksRow.style.display = 'none';
+} else {
+  set(
+    'p-socks',
+    socks.length >= SOCK_TOTAL
+      ? `${SOCK_TOTAL} / ${SOCK_TOTAL} — all found!`
+      : `${socks.length} / ${SOCK_TOTAL}`,
+  );
+}
 
 document.getElementById('p-sock-icon')?.addEventListener('click', () => {
   sockToast('Not part of the sock hunt.');
@@ -97,7 +102,7 @@ document.getElementById('p-sock-icon')?.addEventListener('click', () => {
 document.getElementById('p-socks-reset')?.addEventListener('click', () => {
   if (!confirm('Reset the sock hunt? All found socks will be forgotten.')) return;
   localStorage.removeItem(SOCKS_KEY);
-  set('p-socks', `0 / ${SOCK_TOTAL}`);
+  if (socksRow) socksRow.style.display = 'none';
   sockToast('Sock hunt reset. The croissants are clean.');
 });
 
