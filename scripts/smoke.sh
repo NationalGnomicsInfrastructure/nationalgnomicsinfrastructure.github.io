@@ -25,6 +25,7 @@ test -f dist/platform/profile/index.html
 test -f dist/technologies/index.html
 test -f dist/favicon.svg
 test -f dist/ngni-logo.png
+test -f dist/sock.png
 test -f dist/js/nav.js
 test -f dist/js/theme-init.js
 test -f dist/js/theme.js

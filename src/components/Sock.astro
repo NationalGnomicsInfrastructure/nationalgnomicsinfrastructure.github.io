@@ -1,0 +1,64 @@
+---
+interface Props {
+  id: number;
+  style?: string;
+}
+const { id, style = '' } = Astro.props;
+---
+<button
+  type="button"
+  class="sock"
+  data-sock={id}
+  aria-label={`Hidden sock ${id} of 7`}
+  style={`position:absolute;${style}background:none;border:none;padding:0;cursor:pointer;line-height:0;z-index:2;`}
+>
+  <img
+    src="/sock.png"
+    alt=""
+    width="24"
+    height="24"
+    draggable="false"
+    style="filter:drop-shadow(0 1px 2px rgb(0 0 0 / 0.4));"
+  />
+</button>
+
+<script>
+import { KEYS } from '../lib/platform';
+import { SOCK_TOTAL, foundSocks, markSockFound, sockToast } from '../lib/socks';
+
+// The sock hunt is only open to platform agents (unlock + agent name).
+const loggedIn = Boolean(localStorage.getItem(KEYS.codeIdx)) && Boolean(localStorage.getItem(KEYS.agent));
+
+function refresh(): void {
+  const found = foundSocks();
+  document.querySelectorAll<HTMLButtonElement>('button.sock').forEach((btn) => {
+    const id = Number(btn.dataset.sock);
+    if (found.includes(id)) {
+      btn.disabled = true;
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'default';
+      btn.setAttribute('aria-label', `Sock ${id} — already found`);
+    }
+  });
+}
+
+const socks = document.querySelectorAll<HTMLButtonElement>('button.sock');
+if (!loggedIn) {
+  socks.forEach((btn) => {
+    btn.style.display = 'none';
+  });
+} else {
+  socks.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const count = markSockFound(Number(btn.dataset.sock));
+      refresh();
+      sockToast(
+        count >= SOCK_TOTAL
+          ? '🎉 All 7 socks found!'
+          : `You have found sock ${count}!`,
+      );
+    });
+  });
+  refresh();
+}
+</script>

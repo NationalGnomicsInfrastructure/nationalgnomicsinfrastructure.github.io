@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Sock from '../components/Sock.astro';
 ---
 <Layout title="About">
   <div class="page-header">
@@ -10,7 +11,8 @@ import Layout from '../layouts/Layout.astro';
   </div>
   <section>
     <div class="container">
-      <div>
+      <div style="position:relative;">
+        <Sock id={4} style="top:0.25rem;right:0;" />
         <h2>Our Mission</h2>
         <p>
           The National Gnomics Infrastructure (NGnI) provides gnomics technologies and bioinformatics expertise to
