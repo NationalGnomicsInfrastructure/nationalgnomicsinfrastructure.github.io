@@ -242,7 +242,9 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
             const banner = document.getElementById("delivery-banner");
             if (banner) banner.style.display = "block";
         }
-        if (done(KEYS.identificationDone)) {
+        // The access code banner shows once identification is done, and goes
+        // away again once the project is delivered (the code has been used).
+        if (done(KEYS.identificationDone) && !done(KEYS.deliveryDone)) {
             const animal = localStorage.getItem(KEYS.spiritAnimal) ?? "";
             const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[experience().pipelineIdx];
             const codeEl = document.getElementById("access-code");
