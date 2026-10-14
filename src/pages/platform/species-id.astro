@@ -185,7 +185,7 @@ function uid(prefix = 'n'): string { return `pn${prefix}${++_idCounter}`; }
 //   never share an x (no line through a sibling label).
 // - Leaves never leave the panel horizontally. Siblings may share a row;
 //   different groups may sit on different rows. Height may grow; width may not.
-let _won = false;
+let _won = Boolean(localStorage.getItem(KEYS.speciesDone));
 let _hintLevel = (() => {
   const n = parseInt(localStorage.getItem(KEYS.hintLevel) ?? '', 10);
   return Number.isNaN(n) || n < 0 ? 0 : n;
@@ -300,7 +300,14 @@ function rebuildTree() {
   requestAnimationFrame(() => requestAnimationFrame(() => drawD3Tree(buildTreeData())));
 }
 
+const measureCtx = document.createElement('canvas').getContext('2d');
 function labelWidth(name: string): number {
+  // Measure the real rendered width (font-mono at 0.82rem = 13.12px at the
+  // root size); the old char-count guess let text crowd the box edges.
+  if (measureCtx) {
+    measureCtx.font = '13.12px monospace';
+    return Math.ceil(measureCtx.measureText(name).width) + 20;
+  }
   return name.length * 8.2 + 18;
 }
 
@@ -423,6 +430,30 @@ function drawD3Tree(root: D3Node) {
     const hw = labelWidth(d.data.name) / 2;
     d.x = Math.min(Math.max(d.x, pad + hw), panelWidth - pad - hw);
   }
+  // Nothing may sit on top of anything else (misses vs spine/hint nodes too):
+  // keep the spine in place and push the offending miss down until clean.
+  const allNodes = drawable.filter((d: any) => d !== targetNode).sort((a, b) => a.y - b.y || a.x - b.x);
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    for (let i = 0; i < allNodes.length; i++) {
+      for (let j = 0; j < allNodes.length; j++) {
+        if (i === j) continue;
+        const a = allNodes[i];
+        const b = allNodes[j];
+        const ha = labelWidth(a.data.name) / 2 + 4;
+        const hb = labelWidth(b.data.name) / 2 + 4;
+        if (Math.abs(a.x - b.x) < ha + hb && Math.abs(a.y - b.y) < 28) {
+          let lower = a.y >= b.y ? a : b;
+          const higher = lower === a ? b : a;
+          if (a.data.type === 'miss' && b.data.type !== 'miss') lower = a;
+          else if (b.data.type === 'miss' && a.data.type !== 'miss') lower = b;
+          lower.y = higher.y + 28;
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
   // The target stays at the bottom after wrapping grows the miss rows.
   targetNode.y =
     Math.max(...drawable.filter((d: any) => d !== targetNode).map((d: any) => d.y)) + 70;
@@ -540,6 +571,24 @@ function drawD3Tree(root: D3Node) {
     .on('end', function () {
       d3.select(this).classed('phylo-svg-node-enter', false);
     });
+  // A rebuild can change an existing node's identity (??? → the found
+  // animal on win): sync class, text, and rect on nodes that stick around.
+  nodeSel.merge(nodeEnter).each(function (d: any) {
+    const g = d3.select(this);
+    // Preserve -enter if its transition is still running (interrupted
+    // transitions never fire 'end', so the flag can outlive the animation).
+    const wasEnter = g.classed('phylo-svg-node-enter');
+    g.attr(
+      'class',
+      `phylo-svg-node phylo-svg-node-${d.data.type}${wasEnter ? ' phylo-svg-node-enter' : ''}`,
+    );
+    const text = g.select('text');
+    if (text.text() !== d.data.name) {
+      text.text(d.data.name);
+      const bw = labelWidth(d.data.name);
+      g.select('rect').attr('x', -bw / 2).attr('width', bw);
+    }
+  });
   nodeSel
     .transition()
     .delay((d: any) => depthDelay(d))
