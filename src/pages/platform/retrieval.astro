@@ -49,11 +49,12 @@ import { KEYS, codeIdx, requireFlag, sha256 } from '../../lib/platform';
 import {
   RETRIEVAL_ANSWERS_ENC,
   RETRIEVAL_ANSWER_HASHES,
+  decodeAnswerList,
 } from '../../lib/platform-content';
 
 requireFlag(KEYS.spiritAnimal);
 
-const answers = JSON.parse(atob(RETRIEVAL_ANSWERS_ENC)) as string[];
+const answers = decodeAnswerList(RETRIEVAL_ANSWERS_ENC);
 const idx = codeIdx(RETRIEVAL_ANSWER_HASHES.length);
 const answer = answers[idx];
 const answerHash = RETRIEVAL_ANSWER_HASHES[idx];
