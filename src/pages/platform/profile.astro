@@ -26,6 +26,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
           <tr><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
           <tr><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
           <tr><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
+          <tr><td>🧦 Socks</td><td id="p-socks">—</td></tr>
           <tr id="p-project-row" style="display:none;"><td><i class="fa-solid fa-box"></i> Project</td><td id="p-project">—</td></tr>
         </table>
         <h4 style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
@@ -44,6 +45,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 <script>
 import { KEYS, accessCode } from '../../lib/platform';
 import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+import { SOCK_TOTAL, foundSocks } from '../../lib/socks';
 
 const done = (key: string) => Boolean(localStorage.getItem(key));
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -79,6 +81,14 @@ if (done(KEYS.deliveryDone) && project) {
   const row = document.getElementById('p-project-row');
   if (row) row.style.display = '';
 }
+
+const socks = foundSocks();
+set(
+  'p-socks',
+  socks.length >= SOCK_TOTAL
+    ? `${SOCK_TOTAL} / ${SOCK_TOTAL} — all found!`
+    : `${socks.length} / ${SOCK_TOTAL}`,
+);
 
 const steps = [
   { label: 'Species identification', key: KEYS.speciesDone },

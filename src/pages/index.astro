@@ -1,11 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Sock from "../components/Sock.astro";
 ---
 
 <Layout title="Home">
     <!-- Hero -->
     <section class="hero">
-        <div class="container">
+        <div class="container" style="position:relative;">
+            <Sock id={1} style="top:0.5rem;right:0.5rem;" />
             <div
                 style="display:flex;align-items:center;gap:2rem;justify-content:center;flex-wrap:wrap;"
             >

@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import Sock from "../../../components/Sock.astro";
 ---
 
 <Layout title="Gnome Sequencing">
@@ -17,7 +18,8 @@ import Layout from "../../../layouts/Layout.astro";
         </div>
     </div>
     <section>
-        <div class="container" style="max-width:760px;">
+        <div class="container" style="max-width:760px;position:relative;">
+            <Sock id={7} style="bottom:0.5rem;right:0.5rem;" />
             <div class="cards mb-2">
                 <div class="card">
                     <div class="card-icon">⚡</div><h3>Short-read WGS</h3><p>

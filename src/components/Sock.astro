@@ -1,0 +1,72 @@
+---
+interface Props {
+  id: number;
+  style?: string;
+}
+const { id, style = '' } = Astro.props;
+---
+<button
+  type="button"
+  class="sock"
+  data-sock={id}
+  aria-label={`Hidden sock ${id} of 7`}
+  style={`position:absolute;${style}background:none;border:none;padding:0;cursor:pointer;line-height:0;z-index:2;`}
+>
+  <img
+    src="/sock.png"
+    alt=""
+    width="24"
+    height="24"
+    draggable="false"
+    style="filter:drop-shadow(0 1px 2px rgb(0 0 0 / 0.4));"
+  />
+</button>
+
+<script>
+import { SOCK_TOTAL, foundSocks, markSockFound } from '../lib/socks';
+
+function toast(message: string): void {
+  let el = document.getElementById('sock-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sock-toast';
+    el.className = 'alert alert-success';
+    el.setAttribute('role', 'status');
+    el.style.cssText =
+      'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:1000;display:none;max-width:90vw;';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.style.display = 'block';
+  window.setTimeout(() => {
+    el.style.display = 'none';
+  }, 3000);
+}
+
+function refresh(): void {
+  const found = foundSocks();
+  document.querySelectorAll<HTMLButtonElement>('button.sock').forEach((btn) => {
+    const id = Number(btn.dataset.sock);
+    if (found.includes(id)) {
+      btn.disabled = true;
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'default';
+      btn.setAttribute('aria-label', `Sock ${id} — already found`);
+    }
+  });
+}
+
+document.querySelectorAll<HTMLButtonElement>('button.sock').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const count = markSockFound(Number(btn.dataset.sock));
+    refresh();
+    toast(
+      count >= SOCK_TOTAL
+        ? '🎉 All 7 socks found!'
+        : `You have found sock ${count}!`,
+    );
+  });
+});
+
+refresh();
+</script>
