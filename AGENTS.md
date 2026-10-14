@@ -15,9 +15,10 @@ npm run build                    # production build → dist/
 npm run check                    # Astro/TypeScript type check
 npm run prek                     # pre-commit hooks (includes astro check)
 npm run smoke                    # assert dist/ routes and head tags
+npm run test:knots               # assert every knot seed stays planar (winnable)
 ```
 
-No test suite. `npm run check` + `npm run smoke` are the correctness gates; `astro check` also runs as a pre-commit hook via `prek`.
+No unit-test framework. `npm run check` + `npm run smoke` + `npm run test:knots` are the correctness gates; `astro check` also runs as a pre-commit hook via `prek`.
 
 ## Architecture
 
