@@ -13,6 +13,7 @@ export const KEYS = {
   deliveredName: 'delivered_name',
   missOrder: 'miss_order',
   retrievalGuesses: 'retrieval_guesses',
+  hintLevel: 'hint_level',
 } as const;
 
 // The random-mode combo survives Cancel Delivery on purpose: re-entering the
