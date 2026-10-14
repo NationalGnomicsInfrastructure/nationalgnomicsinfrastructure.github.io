@@ -325,13 +325,10 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
         if (codeError) codeError.style.display = "none";
         if (hash === UNIVERSAL_UNLOCK_HASH) {
             localStorage.setItem(KEYS.mode, "random");
-            // Restore semantics: keep an existing combo so the same experience
-            // returns after Cancel Delivery; only roll once per browser.
-            if (!localStorage.getItem(COMBO_KEY)) {
-                const a = Math.floor(Math.random() * PROJECT_COUNT);
-                const p = Math.floor(Math.random() * PROJECT_COUNT);
-                localStorage.setItem(COMBO_KEY, `${a}:${p}`);
-            }
+            // Fresh combo on every unlock: cancel and replay = new experience.
+            const a = Math.floor(Math.random() * PROJECT_COUNT);
+            const p = Math.floor(Math.random() * PROJECT_COUNT);
+            localStorage.setItem(COMBO_KEY, `${a}:${p}`);
             showAgentAuth();
             return;
         }
