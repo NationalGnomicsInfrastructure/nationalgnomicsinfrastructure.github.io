@@ -1,0 +1,97 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CancelDelivery from '../../components/CancelDelivery.astro';
+---
+<Layout title="Delivery Card">
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Delivery Card</h1>
+      <p>Your NGnI coordinator status card.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container" style="max-width:640px;margin:0 auto;">
+
+      <div class="accession-card" style="margin-bottom:1.5rem;">
+        <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;">
+          <div style="font-size:3rem;">🧬</div>
+          <div>
+            <h3 id="p-agent" style="margin:0;">—</h3>
+            <p class="text-muted" style="margin:0;font-size:0.9rem;">Project Delivery Agent</p>
+          </div>
+        </div>
+        <table>
+          <tr><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
+          <tr><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
+          <tr><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
+          <tr id="p-project-row" style="display:none;"><td><i class="fa-solid fa-box"></i> Project</td><td id="p-project">—</td></tr>
+        </table>
+        <h4 style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
+        <ul id="p-progress" style="list-style:none;padding:0;margin:0.5rem 0 0;"></ul>
+      </div>
+
+      <div style="text-align:center;">
+        <a href="/platform/" class="btn btn-outline">← Back to Platform</a>
+      </div>
+      <CancelDelivery />
+
+    </div>
+  </section>
+</Layout>
+
+<script>
+import { KEYS, accessCode } from '../../lib/platform';
+import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+
+const done = (key: string) => Boolean(localStorage.getItem(key));
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const set = (id: string, text: string) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+};
+
+// Locked fields stay hidden until their step reveals them in-game —
+// the page never redirects, it just shows what the player knows so far.
+set('p-agent', localStorage.getItem(KEYS.agent) ?? '—');
+
+if (done(KEYS.speciesDone)) {
+  const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
+  if (animal) set('p-animal', cap(animal));
+}
+
+const idxRaw = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
+const hasIdx = !Number.isNaN(idxRaw) && idxRaw >= 0 && idxRaw < PROJECT_COUNT;
+if (done(KEYS.accession) && hasIdx) {
+  set('p-pipeline', decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idxRaw]);
+}
+
+if (done(KEYS.identificationDone) && hasIdx) {
+  const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
+  const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idxRaw];
+  set('p-code', accessCode(animal, pipeline));
+}
+
+const project = localStorage.getItem(KEYS.deliveredName);
+if (done(KEYS.deliveryDone) && project) {
+  set('p-project', project);
+  const row = document.getElementById('p-project-row');
+  if (row) row.style.display = '';
+}
+
+const steps = [
+  { label: 'Species identification', key: KEYS.speciesDone },
+  { label: 'Project retrieval', key: KEYS.accession },
+  { label: 'Project detangling', key: KEYS.detangled },
+  { label: 'Project identification', key: KEYS.identificationDone },
+  { label: 'Project delivery', key: KEYS.deliveryDone },
+];
+const list = document.getElementById('p-progress');
+for (const s of steps) {
+  const li = document.createElement('li');
+  li.style.padding = '0.35rem 0';
+  li.textContent = `${done(s.key) ? '✅' : '⏳'} ${s.label}`;
+  list?.appendChild(li);
+}
+</script>
