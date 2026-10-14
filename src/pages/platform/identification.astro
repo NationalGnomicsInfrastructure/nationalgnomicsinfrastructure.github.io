@@ -68,7 +68,7 @@ import '../../styles/identification.css';
 
 <script>
 import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
-import { KEYS, accessCode, codeIdx, requireFlag } from '../../lib/platform';
+import { KEYS, accessCode, codeIdx, requireFlag, toBases } from '../../lib/platform';
 
 requireFlag(KEYS.detangled);
 const idx = codeIdx(PROJECT_COUNT);
@@ -131,24 +131,20 @@ function maybeRevealCode(): void {
   revcompArea.style.display = 'block';
 }
 
-function flipToBases(letters: string[]): string[] {
-  return letters.map((ch) => 'ATGC'[(ch.charCodeAt(0) - 65) % 4]);
-}
-
 const animalBtn = document.getElementById('tf-animal-btn') as HTMLButtonElement;
 const pipelineBtn = document.getElementById('tf-pipeline-btn') as HTMLButtonElement;
 animalBtn.addEventListener('click', () => {
   if (animalDone) return;
   animalDone = true;
   animalBtn.disabled = true;
-  flipTiles(animalEl, flipToBases(animalLetters));
+  flipTiles(animalEl, toBases(animalLetters));
   setTimeout(maybeRevealCode, animalLetters.length * 120);
 });
 pipelineBtn.addEventListener('click', () => {
   if (pipelineDone) return;
   pipelineDone = true;
   pipelineBtn.disabled = true;
-  flipTiles(pipelineEl, flipToBases(pipelineLetters));
+  flipTiles(pipelineEl, toBases(pipelineLetters));
   setTimeout(maybeRevealCode, pipelineLetters.length * 120);
 });
 

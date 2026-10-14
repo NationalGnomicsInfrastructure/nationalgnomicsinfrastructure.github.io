@@ -60,27 +60,21 @@ import '../../styles/species-id.css';
 <script>
 import * as d3 from 'd3';
 import PHYLO_RAW from '../../data/phylo-db.csv?raw';
-import { KEYS } from '../../lib/platform';
+import { KEYS, codeIdx } from '../../lib/platform';
 import { SPIRIT_ANIMALS_ENC, decodeAnswerList } from '../../lib/platform-content';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
 
 type TargetConfig = { name: string; scientific: string; path: string[] };
 const POSSIBLE_TARGETS: TargetConfig[] = decodeAnswerList(SPIRIT_ANIMALS_ENC).map((name) => {
-  const entry = SPECIES_DB.find(e => e[e.length - 2] === name)!;
+  const entry = SPECIES_DB.find(e => e[e.length - 2] === name);
+  if (!entry) throw new Error(`Spirit animal "${name}" missing from phylo-db.csv`);
   const scientific = entry[entry.length - 1];
   const path = entry.slice(0, -2);
   return { name, scientific, path };
 });
 
-
-// ─── Select target based on access code ───────────────────────────────────────
-const targetIdx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '');
-if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= POSSIBLE_TARGETS.length) {
-  window.location.href = '/platform/';
-  throw new Error('No valid access code found — redirecting to platform.');
-}
-const TARGET = POSSIBLE_TARGETS[targetIdx];
+const TARGET = POSSIBLE_TARGETS[codeIdx(POSSIBLE_TARGETS.length)];
 const CORRECT_CLADE = TARGET.path.length + 1;
 
 // ─── Compute taxonomy dynamically ─────────────────────────────────────────────
@@ -183,6 +177,7 @@ function uid(prefix = 'n'): string { return `pn${prefix}${++_idCounter}`; }
 //   never share an x (no line through a sibling label).
 // - Leaves never leave the panel horizontally. Siblings may share a row;
 //   different groups may sit on different rows. Height may grow; width may not.
+let _won = false;
 function buildTreeData(): D3Node {
   const cladeLevels = [...missAtClade.keys()].sort((a, b) => a - b);
   const root: D3Node = { id: 'node-root', name: 'Metazoa', url: wiki('Metazoa'), type: 'hit', children: [] };
@@ -268,7 +263,6 @@ function buildTreeData(): D3Node {
   return root;
 }
 
-let _won = false;
 function rebuildTree() {
   const container = document.getElementById('phylo-db')!;
   if (!document.getElementById('T')) {
@@ -280,173 +274,6 @@ function rebuildTree() {
 
 function labelWidth(name: string): number {
   return name.length * 8.2 + 18;
-}
-
-function isCollapsedClade(n: any): boolean {
-  return (
-    n.data.type === 'miss-clade' &&
-    (!n.children || n.children.length < 2)
-  );
-}
-
-function visualChildren(n: any): any[] {
-  if (!n.children?.length) return [];
-  return n.children.map((c: any) => (isCollapsedClade(c) ? c.children![0] : c));
-}
-
-function layoutHeight(n: any): number {
-  if (isCollapsedClade(n) || !n.children?.length) return 0;
-  let m = 0;
-  for (const c of n.children) m = Math.max(m, layoutHeight(c));
-  return m + 1;
-}
-
-function enforceLeafSeparation(leaves: any[], minGap: number): void {
-  const byY = new Map<number, any[]>();
-  for (const leaf of leaves) {
-    const key = Math.round(leaf.y);
-    if (!byY.has(key)) byY.set(key, []);
-    byY.get(key)!.push(leaf);
-  }
-  for (const level of byY.values()) {
-    level.sort((a, b) => a.x - b.x);
-    for (let i = 1; i < level.length; i++) {
-      const prev = level[i - 1];
-      const curr = level[i];
-      const need =
-        labelWidth(prev.data.name) / 2 +
-        labelWidth(curr.data.name) / 2 +
-        minGap;
-      if (curr.x - prev.x < need) {
-        curr.x = prev.x + need;
-      }
-    }
-  }
-}
-
-function assignAlternateSides(rootNode: any): void {
-  // Side = first-guess order of any member (persisted in miss_order).
-  const sideForNames = (names: string[]): -1 | 1 => {
-    let best = Number.POSITIVE_INFINITY;
-    for (const name of names) {
-      const idx = missOrder.indexOf(name.toLowerCase());
-      if (idx >= 0 && idx < best) best = idx;
-    }
-    return best === Number.POSITIVE_INFINITY || best % 2 === 0 ? -1 : 1;
-  };
-  const walk = (n: any) => {
-    if (!n.children?.length) return;
-    for (const c of n.children) {
-      if (c.data.id === 'node-target') continue;
-      if (c.data.type === 'miss-clade' && c.children?.length) {
-        (c as any).side = sideForNames(
-          c.children.map((ch: any) => ch.data.name),
-        );
-      } else if (c.data.type === 'miss') {
-        (c as any).side = sideForNames([c.data.name]);
-      } else {
-        walk(c);
-      }
-    }
-  };
-  walk(rootNode);
-}
-
-function packAlternatingGroups(
-  pointRoot: any,
-  targetNode: any,
-  centerX: number,
-  spineClear: number,
-  panelWidth: number,
-): number {
-  const discoveries: any[] = [];
-  const walk = (n: any) => {
-    if (!n.children?.length) return;
-    for (const c of n.children) {
-      if (c === targetNode || c.data.id === 'node-target') continue;
-      if (c.data.type === 'miss-clade' || c.data.type === 'miss') {
-        discoveries.push(c);
-      } else {
-        walk(c);
-      }
-    }
-  };
-  walk(pointRoot);
-
-  assignAlternateSides(pointRoot);
-
-  const siblingGap = 16;
-  const pad = 12;
-  let maxLeafY = 0;
-  const siblingSlot = new Map<any, number>();
-
-  discoveries.forEach((disc, index) => {
-    const side = (disc as any).side ?? -1;
-    const leaves =
-      disc.data.type === 'miss-clade' ? disc.children! : [disc];
-    const sortedLeaves =
-      leaves.length > 1
-        ? [...leaves].sort((a, b) => a.data.name.localeCompare(b.data.name))
-        : leaves;
-    const widths = sortedLeaves.map((l: any) => labelWidth(l.data.name));
-    const parent = disc.parent ?? pointRoot;
-    const slot = siblingSlot.get(parent) ?? 0;
-    siblingSlot.set(parent, slot + 1);
-    // Each sibling discovery under the same parent gets its own row.
-    const parentY = parent.y ?? 28;
-    const y = parentY + 72 + slot * 48;
-    const lateral = spineClear + (index % 5) * 36;
-
-    if (side < 0) {
-      let x = centerX - lateral;
-      for (let i = sortedLeaves.length - 1; i >= 0; i--) {
-        x -= widths[i] / 2;
-        sortedLeaves[i].x = x;
-        sortedLeaves[i].y = y;
-        x -= widths[i] / 2 + siblingGap;
-      }
-    } else {
-      let x = centerX + lateral;
-      for (let i = 0; i < sortedLeaves.length; i++) {
-        x += widths[i] / 2;
-        sortedLeaves[i].x = x;
-        sortedLeaves[i].y = y;
-        x += widths[i] / 2 + siblingGap;
-      }
-    }
-
-    for (const l of sortedLeaves) {
-      const hw = labelWidth(l.data.name) / 2;
-      l.x = Math.min(Math.max(l.x, pad + hw), panelWidth - pad - hw);
-      maxLeafY = Math.max(maxLeafY, l.y);
-    }
-  });
-
-  return maxLeafY + 40;
-}
-
-function enforceNoLabelOverlap(nodes: any[]): void {
-  // Several passes so one push can create a new collision that gets fixed.
-  for (let pass = 0; pass < 3; pass++) {
-    const sorted = [...nodes].sort((a, b) => a.y - b.y || a.x - b.x);
-    for (let i = 0; i < sorted.length; i++) {
-      for (let j = 0; j < sorted.length; j++) {
-        if (i === j) continue;
-        const a = sorted[i];
-        const b = sorted[j];
-        if (a.data.id === b.data.id) continue;
-        const ha = labelWidth(a.data.name) / 2;
-        const hb = labelWidth(b.data.name) / 2;
-        const xOverlap = Math.abs(a.x - b.x) < ha + hb + 16;
-        const yTooClose = Math.abs(b.y - a.y) < 32;
-        if (xOverlap && yTooClose) {
-          // Push the lower label down; if equal y, push the right one down.
-          if (a.y <= b.y) a.y = Math.max(a.y, b.y - 32);
-          else a.y = Math.max(a.y, b.y + 32);
-        }
-      }
-    }
-  }
 }
 
 function drawD3Tree(root: D3Node) {
@@ -675,6 +502,18 @@ function curveLink(s: any, t: any): string {
 
 rebuildTree();
 
+// Re-lay out the tree when the panel's width changes (rotation, resize).
+{
+  const panelEl = document.querySelector('.phylo-panel');
+  if (panelEl) {
+    let lastW = panelEl.clientWidth;
+    new ResizeObserver(() => {
+      const w = panelEl.clientWidth;
+      if (w !== lastW) { lastW = w; rebuildTree(); }
+    }).observe(panelEl);
+  }
+}
+
 function highlightNode(clade: number, raw: string) {
   if (!missAtClade.has(clade)) missAtClade.set(clade, []);
   const existing = missAtClade.get(clade)!;
@@ -771,7 +610,13 @@ function submitGuess() {
   if (!data) {
     const li = document.createElement('li');
     li.className = 'guess-row';
-    li.innerHTML = `<span class="guess-name">${raw}</span><span class="hint-pill hint-cold">Unknown species</span>`;
+    const nameEl = document.createElement('span');
+    nameEl.className = 'guess-name';
+    nameEl.textContent = raw;
+    const pill = document.createElement('span');
+    pill.className = 'hint-pill hint-cold';
+    pill.textContent = 'Unknown species';
+    li.append(nameEl, pill);
     list.prepend(li);
     return;
   }
@@ -780,19 +625,7 @@ function submitGuess() {
     localStorage.setItem(KEYS.speciesDone, '1');
     localStorage.setItem(KEYS.spiritAnimal, TARGET.name);
     _won = true;
-rebuildTree();
-
-// Re-lay out the tree when the panel's width changes (rotation, resize).
-{
-  const panelEl = document.querySelector('.phylo-panel');
-  if (panelEl) {
-    let lastW = panelEl.clientWidth;
-    new ResizeObserver(() => {
-      const w = panelEl.clientWidth;
-      if (w !== lastW) { lastW = w; rebuildTree(); }
-    }).observe(panelEl);
-  }
-}
+    rebuildTree();
     gameControls.style.display = 'none';
     showSuccess();
     return;

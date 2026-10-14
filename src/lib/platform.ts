@@ -18,6 +18,7 @@ export function codeIdx(max: number): number {
   const idx = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
   if (Number.isNaN(idx) || idx < 0 || idx >= max) {
     window.location.href = '/platform/';
+    throw new Error('No valid access code found — redirecting to platform.');
   }
   return idx;
 }
@@ -84,15 +85,17 @@ export function onForm(opts: {
   });
 }
 
-// Letters of (animal + pipeline) → DNA via (charCode − 65) % 4 → A/T/G/C;
-// the access code is the first 7 bases. Same formula generated the
-// `sequence` column in gnomics-db.csv.
+// Letters → DNA via (charCode − 65) % 4 → A/T/G/C. Same formula generated
+// the `sequence` column in gnomics-db.csv.
+export function toBases(letters: string[]): string[] {
+  return letters.map((ch) => 'ATGC'[(ch.charCodeAt(0) - 65) % 4]);
+}
+
+// The access code is the first 7 bases of (animal + pipeline).
 export function accessCode(animal: string, pipeline: string): string {
-  return (animal + pipeline)
-    .replace(/[^a-z]/gi, '')
-    .toUpperCase()
-    .split('')
-    .map((ch) => 'ATGC'[(ch.charCodeAt(0) - 65) % 4])
+  return toBases(
+    (animal + pipeline).replace(/[^a-z]/gi, '').toUpperCase().split(''),
+  )
     .slice(0, 7)
     .join('');
 }

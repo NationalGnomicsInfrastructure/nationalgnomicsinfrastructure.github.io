@@ -144,8 +144,7 @@ function search() {
            (e.sequence && e.sequence.toLowerCase().includes(q));
   });
   if (matches.length === 0) { notFound.style.display = 'block'; return; }
-const list = matches.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');
-  resultsEl.innerHTML = `<strong>${matches.length}</strong> result${matches.length === 1 ? '' : 's'} — ${list}`;
+  renderIdList(matches);
 }
 
 searchBtn.addEventListener('click', search);
@@ -165,14 +164,18 @@ if (location.hash) searchHash();
 const filterCats = document.querySelectorAll('.btn-filter') as NodeListOf<HTMLButtonElement>;
 let activeCat = 'all';
 
+function renderIdList(ids: string[]) {
+  const list = ids.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');
+  resultsEl.innerHTML = `<strong>${ids.length}</strong> result${ids.length === 1 ? '' : 's'} — ${list}`;
+}
+
 function showResults() {
   const ids = Object.keys(DB).filter(id => activeCat === 'all' || DB[id].category === activeCat);
   if (ids.length === 0) {
     resultsEl.textContent = 'No entries in this category.';
     return;
   }
-  const list = ids.map(id => `<a href="#${id}" data-id="${id}" style="color:var(--accent);text-decoration:none;font-size:0.85rem;cursor:pointer;"><code style="font-size:0.85rem;">${id}</code></a>`).join(' ');
-  resultsEl.innerHTML = `<strong>${ids.length}</strong> result${ids.length === 1 ? '' : 's'} — ${list}`;
+  renderIdList(ids);
 }
 
 filterCats.forEach(btn => {
