@@ -47,15 +47,15 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 </Layout>
 
 <script>
-import { KEYS, codeIdx, onForm, requireFlag, sha256 } from '../../lib/platform';
+import { KEYS, experience, onForm, requireFlag, sha256 } from '../../lib/platform';
 import { PROJECT_HASHES } from '../../lib/platform-content';
 
 requireFlag(KEYS.identificationDone);
-const idx = codeIdx(PROJECT_HASHES.length);
+const exp = experience();
 onForm({
   inputId: 'project-name',
   doneKey: KEYS.deliveryDone,
-  check: async (value) => (await sha256(value.trim())) === PROJECT_HASHES[idx],
+  check: async (value) => (await sha256(value.trim())) === PROJECT_HASHES[exp.animalIdx],
   onSuccess: () => {
     const name = (document.getElementById('project-name') as HTMLInputElement).value.trim();
     if (!name) return; // restore path: input is empty, keep the stored name

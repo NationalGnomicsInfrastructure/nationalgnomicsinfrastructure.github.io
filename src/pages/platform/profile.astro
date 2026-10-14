@@ -43,7 +43,7 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
 </Layout>
 
 <script>
-import { KEYS, accessCode } from '../../lib/platform';
+import { KEYS, accessCode, randomPick } from '../../lib/platform';
 import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
 import { SOCKS_KEY, SOCK_TOTAL, foundSocks, sockToast } from '../../lib/socks';
 
@@ -63,15 +63,17 @@ if (done(KEYS.speciesDone)) {
   if (animal) set('p-animal', cap(animal));
 }
 
+const pick = randomPick();
 const idxRaw = parseInt(localStorage.getItem(KEYS.codeIdx) ?? '', 10);
 const hasIdx = !Number.isNaN(idxRaw) && idxRaw >= 0 && idxRaw < PROJECT_COUNT;
-if (done(KEYS.accession) && hasIdx) {
-  set('p-pipeline', decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idxRaw]);
+const pipelineIdx = pick ? pick.pipelineIdx : hasIdx ? idxRaw : null;
+if (done(KEYS.accession) && pipelineIdx !== null) {
+  set('p-pipeline', decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[pipelineIdx]);
 }
 
-if (done(KEYS.identificationDone) && hasIdx) {
+if (done(KEYS.identificationDone) && pipelineIdx !== null) {
   const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
-  const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idxRaw];
+  const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[pipelineIdx];
   set('p-code', accessCode(animal, pipeline));
 }
 

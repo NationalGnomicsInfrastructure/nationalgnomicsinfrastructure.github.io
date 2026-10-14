@@ -45,7 +45,7 @@ import '../../styles/retrieval.css';
 </Layout>
 
 <script>
-import { KEYS, codeIdx, requireFlag, sha256 } from '../../lib/platform';
+import { KEYS, experience, requireFlag, sha256 } from '../../lib/platform';
 import {
   RETRIEVAL_ANSWERS_ENC,
   RETRIEVAL_ANSWER_HASHES,
@@ -55,9 +55,9 @@ import {
 requireFlag(KEYS.spiritAnimal);
 
 const answers = decodeAnswerList(RETRIEVAL_ANSWERS_ENC);
-const idx = codeIdx(RETRIEVAL_ANSWER_HASHES.length);
-const answer = answers[idx];
-const answerHash = RETRIEVAL_ANSWER_HASHES[idx];
+const exp = experience();
+const answer = answers[exp.pipelineIdx];
+const answerHash = RETRIEVAL_ANSWER_HASHES[exp.pipelineIdx];
 
 const input = document.getElementById('pipeline-input') as HTMLInputElement;
 const btn = document.getElementById('guess-btn') as HTMLButtonElement;

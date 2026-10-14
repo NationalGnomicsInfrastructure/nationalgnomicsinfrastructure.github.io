@@ -66,6 +66,8 @@ import Sock from '../../components/Sock.astro';
 
 <script>
 import DB_RAW from '../../data/gnomics-db.csv?raw';
+import { KEYS, accessCode, randomPick } from '../../lib/platform';
+import { RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -98,6 +100,17 @@ for (const line of DB_RAW.trim().split('\n').slice(1)) {
     description: v[5],
     sequence: v[6] ?? '',
   };
+}
+
+// Random-mode players get their record derived at runtime: the row for their
+// animal keeps its title (delivery verifies against it) but carries the
+// access code derived from their (animal, pipeline) combo.
+const pick = randomPick();
+const spiritAnimal = localStorage.getItem(KEYS.spiritAnimal);
+if (pick && spiritAnimal) {
+  const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[pick.pipelineIdx];
+  const row = DB[Object.keys(DB)[pick.animalIdx]];
+  if (row) row.sequence = accessCode(spiritAnimal, pipeline);
 }
 
 const accInput  = document.getElementById('acc-input') as HTMLInputElement;

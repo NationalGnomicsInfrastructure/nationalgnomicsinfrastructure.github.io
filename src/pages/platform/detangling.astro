@@ -41,16 +41,16 @@ import '../../styles/detangling.css';
 </Layout>
 
 <script>
-import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
-import { KEYS, codeIdx, requireFlag } from '../../lib/platform';
+import { RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+import { KEYS, experience, requireFlag } from '../../lib/platform';
 import { knotSeed, mulberry32, generateKnotEdges } from '../../lib/knot';
 
 requireFlag(KEYS.accession);
-const idx = codeIdx(PROJECT_COUNT);
+const exp = experience();
 
 // Knot nodes spell out the pipeline guessed at retrieval + the spirit animal
 // from species ID — both already known to the player at this point.
-const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idx];
+const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[exp.pipelineIdx];
 const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
 const LETTERS = (pipeline + animal).replace(/[^a-z]/gi, '').toUpperCase().split('');
 
@@ -61,12 +61,12 @@ const PAD = 34;
 const NODE_COUNT = LETTERS.length;
 const EDGE_COUNT = NODE_COUNT + 4; // cycle + 4 chords; non-crossing by construction (see src/lib/knot.ts)
 
-const rng = mulberry32(knotSeed(idx));
+const rng = mulberry32(knotSeed(exp.seed));
 const nodes = Array.from({ length: NODE_COUNT }, () => ({
   x: PAD + rng() * (W - 2 * PAD),
   y: PAD + rng() * (H - 2 * PAD),
 }));
-const edges = generateKnotEdges(NODE_COUNT, knotSeed(idx));
+const edges = generateKnotEdges(NODE_COUNT, knotSeed(exp.seed));
 
 const NS = 'http://www.w3.org/2000/svg';
 const svg = document.querySelector<SVGSVGElement>('#knot')!;

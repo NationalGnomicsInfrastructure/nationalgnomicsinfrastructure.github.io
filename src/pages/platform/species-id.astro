@@ -60,7 +60,7 @@ import '../../styles/species-id.css';
 <script>
 import * as d3 from 'd3';
 import PHYLO_RAW from '../../data/phylo-db.csv?raw';
-import { KEYS, codeIdx } from '../../lib/platform';
+import { KEYS, experience } from '../../lib/platform';
 import { SPIRIT_ANIMALS_ENC, decodeAnswerList } from '../../lib/platform-content';
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SPECIES_DB: string[][] = PHYLO_RAW.trim().split('\n').map(line => line.split(','));
@@ -74,7 +74,12 @@ const POSSIBLE_TARGETS: TargetConfig[] = decodeAnswerList(SPIRIT_ANIMALS_ENC).ma
   return { name, scientific, path };
 });
 
-const TARGET = POSSIBLE_TARGETS[codeIdx(POSSIBLE_TARGETS.length)];
+const animalIdx = experience().animalIdx;
+if (animalIdx >= POSSIBLE_TARGETS.length) {
+  window.location.href = '/platform/';
+  throw new Error('Animal index out of range — redirecting to platform.');
+}
+const TARGET = POSSIBLE_TARGETS[animalIdx];
 const CORRECT_CLADE = TARGET.path.length + 1;
 
 // ─── Compute taxonomy dynamically ─────────────────────────────────────────────

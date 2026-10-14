@@ -168,8 +168,8 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
 </Layout>
 
 <script>
-    import { KEYS, accessCode, codeIdx, sha256 } from "../../lib/platform";
-    import { UNLOCK_HASHES, PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from "../../lib/platform-content";
+    import { KEYS, COMBO_KEY, accessCode, experience, sha256 } from "../../lib/platform";
+    import { UNLOCK_HASHES, UNIVERSAL_UNLOCK_HASH, PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from "../../lib/platform-content";
 
     // 5 columns × 4 rows: animal | plant | color | space | science.
     const EMOJI_COLUMNS = [
@@ -244,7 +244,7 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
         }
         if (done(KEYS.identificationDone)) {
             const animal = localStorage.getItem(KEYS.spiritAnimal) ?? "";
-            const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[codeIdx(PROJECT_COUNT)];
+            const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[experience().pipelineIdx];
             const codeEl = document.getElementById("access-code");
             if (codeEl) codeEl.textContent = accessCode(animal, pipeline);
             const banner = document.getElementById("access-code-banner");
@@ -306,7 +306,9 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
 
     buildEmojiGrid();
 
-    const hasUnlock = Boolean(localStorage.getItem(KEYS.codeIdx));
+    const hasUnlock =
+        Boolean(localStorage.getItem(KEYS.codeIdx)) ||
+        localStorage.getItem(KEYS.mode) === "random";
     const hasAgent = Boolean(localStorage.getItem(KEYS.agent));
     if (hasUnlock && hasAgent) {
         showPlatform();
@@ -320,6 +322,19 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
             return;
         }
         const hash = await sha256(selected.join(","));
+        if (codeError) codeError.style.display = "none";
+        if (hash === UNIVERSAL_UNLOCK_HASH) {
+            localStorage.setItem(KEYS.mode, "random");
+            // Restore semantics: keep an existing combo so the same experience
+            // returns after Cancel Delivery; only roll once per browser.
+            if (!localStorage.getItem(COMBO_KEY)) {
+                const a = Math.floor(Math.random() * PROJECT_COUNT);
+                const p = Math.floor(Math.random() * PROJECT_COUNT);
+                localStorage.setItem(COMBO_KEY, `${a}:${p}`);
+            }
+            showAgentAuth();
+            return;
+        }
         const idx = UNLOCK_HASHES.indexOf(
             hash as (typeof UNLOCK_HASHES)[number],
         );
@@ -327,7 +342,6 @@ import CancelDelivery from "../../components/CancelDelivery.astro";
             if (codeError) codeError.style.display = "block";
             return;
         }
-        if (codeError) codeError.style.display = "none";
         localStorage.setItem(KEYS.codeIdx, String(idx));
         showAgentAuth();
     });
