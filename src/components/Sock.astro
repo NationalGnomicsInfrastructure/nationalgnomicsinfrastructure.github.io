@@ -27,7 +27,11 @@ import { KEYS } from '../lib/platform';
 import { SOCK_TOTAL, foundSocks, markSockFound, sockToast } from '../lib/socks';
 
 // The sock hunt is only open to platform agents (unlock + agent name).
-const loggedIn = Boolean(localStorage.getItem(KEYS.codeIdx)) && Boolean(localStorage.getItem(KEYS.agent));
+// Random-mode unlocks have no code_idx — accept either entry style.
+const loggedIn =
+  Boolean(localStorage.getItem(KEYS.agent)) &&
+  (Boolean(localStorage.getItem(KEYS.codeIdx)) ||
+    localStorage.getItem(KEYS.mode) === 'random');
 
 function refresh(): void {
   const found = foundSocks();
