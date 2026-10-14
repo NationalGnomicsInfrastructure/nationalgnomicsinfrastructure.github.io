@@ -67,14 +67,14 @@ import '../../styles/identification.css';
 </Layout>
 
 <script>
-import { PROJECT_COUNT, RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
-import { KEYS, accessCode, codeIdx, requireFlag, toBases } from '../../lib/platform';
+import { RETRIEVAL_ANSWERS_ENC, decodeAnswerList } from '../../lib/platform-content';
+import { KEYS, accessCode, experience, requireFlag, toBases } from '../../lib/platform';
 
 requireFlag(KEYS.detangled);
-const idx = codeIdx(PROJECT_COUNT);
+const exp = experience();
 
 const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
-const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[idx];
+const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[exp.pipelineIdx];
 
 const animalLetters = animal.replace(/[^a-z]/gi, '').toUpperCase().split('');
 const pipelineLetters = pipeline.replace(/[^a-z]/gi, '').toUpperCase().split('');

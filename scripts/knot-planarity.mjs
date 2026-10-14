@@ -11,6 +11,7 @@ import {
 
 const pipelines = decodeAnswerList(RETRIEVAL_ANSWERS_ENC);
 const animals = decodeAnswerList(SPIRIT_ANIMALS_ENC);
+const PROJECT_COUNT = pipelines.length;
 
 const orient = (ax, ay, bx, by, cx, cy) => (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
 const properlyCross = (a, b, c, d) =>
@@ -18,9 +19,11 @@ const properlyCross = (a, b, c, d) =>
   orient(...c, ...d, ...a) * orient(...c, ...d, ...b) < 0;
 
 let failed = false;
-for (let idx = 0; idx < pipelines.length; idx++) {
-  const n = (pipelines[idx] + animals[idx]).replace(/[^a-z]/gi, '').length;
-  const edges = generateKnotEdges(n, knotSeed(idx));
+let checked = 0;
+
+function checkKnot(label, letters, seed) {
+  const n = letters.length;
+  const edges = generateKnotEdges(n, seed);
   const pts = Array.from({ length: n }, (_, i) => {
     const t = (2 * Math.PI * i) / n - Math.PI / 2;
     return [Math.cos(t), Math.sin(t)];
@@ -35,13 +38,29 @@ for (let idx = 0; idx < pipelines.length; idx++) {
     }
   }
   const ok = crossings === 0 && edges.length === n + 4;
-  console.log(
-    `idx ${String(idx).padStart(2)} ${pipelines[idx].padEnd(12)} nodes=${String(n).padStart(2)} edges=${edges.length} crossings=${crossings} ${ok ? 'ok' : 'FAIL'}`,
-  );
-  if (!ok) failed = true;
+  checked++;
+  if (!ok) {
+    failed = true;
+    console.log(`FAIL ${label} nodes=${n} edges=${edges.length} crossings=${crossings}`);
+  }
 }
+
+// Fixed-mode seeds (classic code_idx experience).
+for (let idx = 0; idx < PROJECT_COUNT; idx++) {
+  const letters = (pipelines[idx] + animals[idx]).replace(/[^a-z]/gi, '');
+  checkKnot(`fixed idx=${idx}`, letters, knotSeed(idx));
+}
+
+// Random-mode seeds: every (animal × pipeline) combo.
+for (let a = 0; a < PROJECT_COUNT; a++) {
+  for (let p = 0; p < PROJECT_COUNT; p++) {
+    const letters = (pipelines[p] + animals[a]).replace(/[^a-z]/gi, '');
+    checkKnot(`random a=${a} p=${p}`, letters, knotSeed(a * PROJECT_COUNT + p + PROJECT_COUNT));
+  }
+}
+
 if (failed) {
   console.error('knot generator produced an unwinnable seed');
   process.exit(1);
 }
-console.log('all seeds planar');
+console.log(`all ${checked} seeds planar`);

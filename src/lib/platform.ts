@@ -1,6 +1,9 @@
+import { PROJECT_COUNT } from './platform-content';
+
 export const KEYS = {
   agent: 'agent',
   codeIdx: 'code_idx',
+  mode: 'mode',
   speciesDone: 'species_done',
   spiritAnimal: 'spirit_animal',
   accession: 'accession',
@@ -12,6 +15,10 @@ export const KEYS = {
   retrievalGuesses: 'retrieval_guesses',
 } as const;
 
+// The random-mode combo survives Cancel Delivery on purpose: re-entering the
+// universal code restores the same experience (decision: restore, not re-roll).
+export const COMBO_KEY = 'combo';
+
 export const SESSION_KEYS = Object.values(KEYS);
 
 export function codeIdx(max: number): number {
@@ -21,6 +28,38 @@ export function codeIdx(max: number): number {
     throw new Error('No valid access code found — redirecting to platform.');
   }
   return idx;
+}
+
+export type Experience = { animalIdx: number; pipelineIdx: number; seed: number };
+
+// Random-mode pick (`animalIdx:pipelineIdx`), or null when not in random mode.
+// Never redirects — safe for public pages that just want to inject records.
+export function randomPick(): { animalIdx: number; pipelineIdx: number } | null {
+  if (localStorage.getItem(KEYS.mode) !== 'random') return null;
+  const m = /^(\d+):(\d+)$/.exec(localStorage.getItem(COMBO_KEY) ?? '');
+  if (!m) return null;
+  const animalIdx = parseInt(m[1], 10);
+  const pipelineIdx = parseInt(m[2], 10);
+  const max = PROJECT_COUNT;
+  if (animalIdx < 0 || animalIdx >= max || pipelineIdx < 0 || pipelineIdx >= max) {
+    return null;
+  }
+  return { animalIdx, pipelineIdx };
+}
+
+// The whole game chain derives from this one pick: fixed mode is the classic
+// code_idx pair; random mode uses the persisted combo. `seed` keeps the knot
+// deterministic within a session (fixed seeds unchanged from the originals).
+export function experience(): Experience {
+  const pick = randomPick();
+  if (pick) {
+    return {
+      ...pick,
+      seed: pick.animalIdx * PROJECT_COUNT + pick.pipelineIdx + PROJECT_COUNT,
+    };
+  }
+  const idx = codeIdx(PROJECT_COUNT);
+  return { animalIdx: idx, pipelineIdx: idx, seed: idx };
 }
 
 export function requireFlag(key: string): void {

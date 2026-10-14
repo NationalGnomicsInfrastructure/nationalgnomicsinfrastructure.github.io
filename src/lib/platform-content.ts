@@ -1,5 +1,9 @@
 export const PROJECT_COUNT = 17;
 
+// Universal entrypoint (random mode). Plaintext sequence: local ROADMAP only.
+export const UNIVERSAL_UNLOCK_HASH =
+  '25368eaf1439d236ca0b47432f565eaa8aa558e844c45e5d0f81a289b88ef74d';
+
 // test with Baconian X
 export const UNLOCK_HASHES = [
   '8bec3742f5bbe88cdc4adc784fe0cfead1ac15743bacf2ccf05979933df71973',
