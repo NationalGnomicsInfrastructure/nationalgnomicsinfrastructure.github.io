@@ -58,7 +58,7 @@ const H = 420;
 const R = LETTERS.length > 16 ? 13 : 16;
 const PAD = 34;
 const NODE_COUNT = LETTERS.length;
-const EDGE_COUNT = NODE_COUNT + 4; // cycle + 4 chords; almost always planar — pre-test all 17 seeds (see ROADMAP)
+const EDGE_COUNT = NODE_COUNT + 4; // cycle + 4 chords; chords stay non-crossing in index order (outerplanar by construction)
 
 function mulberry32(seed: number): () => number {
   let a = seed | 0;
@@ -77,12 +77,25 @@ const nodes = Array.from({ length: NODE_COUNT }, () => ({
 }));
 const edges: [number, number][] = [];
 for (let i = 0; i < NODE_COUNT; i++) edges.push([i, (i + 1) % NODE_COUNT]);
+
+// Chords whose endpoints interleave around the cycle cross; rejecting those
+// keeps the graph outerplanar (always drawable without crossings). A maximal
+// non-crossing set has NODE_COUNT - 3 chords, and NODE_COUNT >= 7 here, so
+// 4 chords always fit.
+function chordsCross(a: number, b: number, c: number, d: number): boolean {
+  const [lo1, hi1] = a < b ? [a, b] : [b, a];
+  const [lo2, hi2] = c < d ? [c, d] : [d, c];
+  return (lo1 < lo2 && lo2 < hi1 && hi1 < hi2) || (lo2 < lo1 && lo1 < hi2 && hi2 < hi1);
+}
+
 while (edges.length < EDGE_COUNT) {
   const a = Math.floor(rng() * NODE_COUNT);
   const b = Math.floor(rng() * NODE_COUNT);
-  if (a !== b && !edges.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) {
-    edges.push([a, b]);
-  }
+  if (a === b) continue;
+  if (edges.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) continue;
+  const chords = edges.slice(NODE_COUNT);
+  if (chords.some(([x, y]) => chordsCross(a, b, x, y))) continue;
+  edges.push([a, b]);
 }
 
 const NS = 'http://www.w3.org/2000/svg';
