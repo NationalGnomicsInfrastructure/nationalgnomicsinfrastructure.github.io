@@ -23,13 +23,13 @@ import CancelDelivery from '../../components/CancelDelivery.astro';
           </div>
         </div>
         <table>
-          <tr><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
-          <tr><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
-          <tr><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
+          <tr id="p-animal-row" style="display:none;"><td><i class="fa-solid fa-dna"></i> Spirit animal</td><td id="p-animal">—</td></tr>
+          <tr id="p-pipeline-row" style="display:none;"><td><i class="fa-solid fa-diagram-project"></i> Pipeline</td><td id="p-pipeline">—</td></tr>
+          <tr id="p-code-row" style="display:none;"><td><i class="fa-solid fa-key"></i> Access code</td><td id="p-code" style="font-family:var(--font-mono);letter-spacing:0.15em;">—</td></tr>
           <tr id="p-socks-row"><td><button type="button" id="p-sock-icon" aria-label="Decorative sock — not part of the hunt" style="background:none;border:none;padding:0;cursor:pointer;line-height:0;"><img src="/sock.png" alt="" width="15" height="15" style="vertical-align:-0.15em;" /></button> Socks</td><td><div id="p-socks">—</div><button type="button" id="p-socks-reset" class="btn btn-outline" style="margin-top:0.35rem;font-size:0.75rem;padding:0.25rem 0.6rem;">🥐 Clean croissants</button></td></tr>
           <tr id="p-project-row" style="display:none;"><td><i class="fa-solid fa-box"></i> Project</td><td id="p-project">—</td></tr>
         </table>
-        <h4 style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
+        <h4 id="p-progress-title" style="margin-top:1.25rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">Delivery progress</h4>
         <ul id="p-progress" style="list-style:none;padding:0;margin:0.5rem 0 0;"></ul>
       </div>
 
@@ -60,7 +60,11 @@ set('p-agent', localStorage.getItem(KEYS.agent) ?? '—');
 
 if (done(KEYS.speciesDone)) {
   const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
-  if (animal) set('p-animal', cap(animal));
+  if (animal) {
+    set('p-animal', cap(animal));
+    const row = document.getElementById('p-animal-row');
+    if (row) row.style.display = '';
+  }
 }
 
 const pick = randomPick();
@@ -69,12 +73,16 @@ const hasIdx = !Number.isNaN(idxRaw) && idxRaw >= 0 && idxRaw < PROJECT_COUNT;
 const pipelineIdx = pick ? pick.pipelineIdx : hasIdx ? idxRaw : null;
 if (done(KEYS.accession) && pipelineIdx !== null) {
   set('p-pipeline', decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[pipelineIdx]);
+  const row = document.getElementById('p-pipeline-row');
+  if (row) row.style.display = '';
 }
 
 if (done(KEYS.identificationDone) && pipelineIdx !== null) {
   const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
   const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[pipelineIdx];
   set('p-code', accessCode(animal, pipeline));
+  const row = document.getElementById('p-code-row');
+  if (row) row.style.display = '';
 }
 
 const project = localStorage.getItem(KEYS.deliveredName);
@@ -115,11 +123,17 @@ const steps = [
   { label: 'Project identification', key: KEYS.identificationDone },
   { label: 'Project delivery', key: KEYS.deliveryDone },
 ];
-const list = document.getElementById('p-progress');
-for (const s of steps) {
-  const li = document.createElement('li');
-  li.style.padding = '0.35rem 0';
-  li.textContent = `${done(s.key) ? '✅' : '⏳'} ${s.label}`;
-  list?.appendChild(li);
+const earnedSteps = steps.filter((s) => done(s.key));
+if (earnedSteps.length === 0) {
+  const title = document.getElementById('p-progress-title');
+  if (title) title.style.display = 'none';
+} else {
+  const list = document.getElementById('p-progress');
+  for (const s of earnedSteps) {
+    const li = document.createElement('li');
+    li.style.padding = '0.35rem 0';
+    li.textContent = `✅ ${s.label}`;
+    list?.appendChild(li);
+  }
 }
 </script>
