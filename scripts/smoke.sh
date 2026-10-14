@@ -21,6 +21,7 @@ test -f dist/platform/retrieval/index.html
 test -f dist/platform/detangling/index.html
 test -f dist/platform/identification/index.html
 test -f dist/platform/delivery/index.html
+test -f dist/platform/profile/index.html
 test -f dist/technologies/index.html
 test -f dist/favicon.svg
 test -f dist/ngni-logo.png
