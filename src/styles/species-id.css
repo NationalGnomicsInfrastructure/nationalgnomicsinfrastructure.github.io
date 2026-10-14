@@ -125,6 +125,8 @@ html[data-theme='dark'] {
 .phylo-svg-node-miss text,
 .phylo-svg-node-miss-clade text { fill: #c0392b; }
 .phylo-svg-node-shared rect { opacity: 1; fill: var(--gnomics-green-l); stroke: var(--gnomics-green); }
+.phylo-svg-node-hint rect { opacity: 1; fill: var(--bg); stroke: var(--gnomics-lime); stroke-dasharray: 4 3; stroke-width: 2; }
+.phylo-svg-node-hint text { fill: var(--gnomics-lime); }
 .phylo-svg-node-correct rect { opacity: 1; fill: var(--gnomics-green-d); stroke: var(--gnomics-lime); }
 .phylo-svg-node-correct text { fill: #fff; }
 

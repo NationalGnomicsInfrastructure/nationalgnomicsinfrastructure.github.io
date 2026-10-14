@@ -36,6 +36,9 @@ import '../../styles/species-id.css';
             <input type="text" id="species-input" placeholder="Enter a species name…" list="species-list" autocomplete="off" />
             <button class="btn btn-primary" id="guess-btn">Submit</button>
           </div>
+          <button type="button" class="btn btn-outline" id="hint-btn" style="display:none;margin-top:0.5rem;">
+            💡 Reveal a hint
+          </button>
         </div>
         <div class="game-guesses">
           <h4 style="margin-bottom:0.75rem;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;">
@@ -160,7 +163,7 @@ interface D3Node {
   id: string;
   name: string;
   url?: string;
-  type: 'hit' | 'miss' | 'miss-clade' | 'target' | 'correct' | 'shared';
+  type: 'hit' | 'miss' | 'miss-clade' | 'target' | 'correct' | 'shared' | 'hint';
   children?: D3Node[];
 }
 let _idCounter = 0;
@@ -183,6 +186,10 @@ function uid(prefix = 'n'): string { return `pn${prefix}${++_idCounter}`; }
 // - Leaves never leave the panel horizontally. Siblings may share a row;
 //   different groups may sit on different rows. Height may grow; width may not.
 let _won = false;
+let _hintLevel = (() => {
+  const n = parseInt(localStorage.getItem(KEYS.hintLevel) ?? '', 10);
+  return Number.isNaN(n) || n < 0 ? 0 : n;
+})();
 function buildTreeData(): D3Node {
   const cladeLevels = [...missAtClade.keys()].sort((a, b) => a - b);
   const root: D3Node = { id: 'node-root', name: 'Metazoa', url: wiki('Metazoa'), type: 'hit', children: [] };
@@ -238,6 +245,22 @@ function buildTreeData(): D3Node {
     spineParent.children!.push(shared);
     spineNodeByClade.set(clade, shared);
     spineParent = shared;
+  }
+
+  // Revealed hints extend the spine with the next true ancestors. The path
+  // stops one level above the species, so hints can never spoil the answer.
+  const deepestSpine = spineClades.length ? spineClades[spineClades.length - 1] : 0;
+  const hintCount = Math.min(_hintLevel, TARGET.path.length - deepestSpine);
+  for (let k = 1; k <= hintCount; k++) {
+    const hintName = cap(TARGET.path[deepestSpine + k - 1]);
+    const hintNode: D3Node = {
+      id: uid('h'),
+      name: hintName,
+      type: 'hint',
+      children: [],
+    };
+    spineParent.children!.push(hintNode);
+    spineParent = hintNode;
   }
 
   // Attach each miss under the deepest spine LCA at or above its own LCA
@@ -352,10 +375,14 @@ function drawD3Tree(root: D3Node) {
     .descendants()
     .filter((d: any) => !isCollapsed(d)) as any[];
 
-  // No overlap (3 passes), then clamp into panel.
+  // Misses wrap into sub-rows when a level doesn't fit the fixed panel
+  // width: width stays put, height grows (tree rule 7). Non-miss nodes keep
+  // the pairwise pass; misses get deterministic greedy packing.
+  const ROW_GAP = 36;
+  const nonMiss = drawable.filter((d: any) => d.data.type !== 'miss');
   for (let pass = 0; pass < 3; pass++) {
-    for (const a of drawable) {
-      for (const b of drawable) {
+    for (const a of nonMiss) {
+      for (const b of nonMiss) {
         if (a === b) continue;
         const ha = labelWidth(a.data.name) / 2;
         const hb = labelWidth(b.data.name) / 2;
@@ -369,10 +396,36 @@ function drawD3Tree(root: D3Node) {
       }
     }
   }
+  const missesByLevel = new Map<number, any[]>();
   for (const d of drawable) {
+    if (d.data.type !== 'miss') continue;
+    const key = Math.round(d.y);
+    if (!missesByLevel.has(key)) missesByLevel.set(key, []);
+    missesByLevel.get(key)!.push(d);
+  }
+  for (const level of missesByLevel.values()) {
+    level.sort((a, b) => a.x - b.x);
+    const baseY = level[0].y;
+    let rowX = pad;
+    let sub = 0;
+    for (const d of level) {
+      const w = labelWidth(d.data.name) + 8;
+      if (rowX + w > panelWidth - pad && rowX > pad) {
+        sub++;
+        rowX = pad;
+      }
+      d.x = rowX + w / 2;
+      d.y = baseY + sub * ROW_GAP;
+      rowX += w;
+    }
+  }
+  for (const d of nonMiss) {
     const hw = labelWidth(d.data.name) / 2;
     d.x = Math.min(Math.max(d.x, pad + hw), panelWidth - pad - hw);
   }
+  // The target stays at the bottom after wrapping grows the miss rows.
+  targetNode.y =
+    Math.max(...drawable.filter((d: any) => d !== targetNode).map((d: any) => d.y)) + 70;
 
   let contentMinY = Infinity;
   let contentMaxY = -Infinity;
@@ -581,6 +634,38 @@ if (localStorage.getItem(KEYS.speciesDone)) {
   showSuccess();
 }
 
+function deepestMissClade(): number {
+  const spine = [...missAtClade.keys()].filter((c) => c >= 1);
+  return spine.length ? Math.max(...spine) : 0;
+}
+
+function updateHintBtn() {
+  const btn = document.getElementById('hint-btn');
+  if (!btn) return;
+  const clades = [...missAtClade.keys()];
+  const missCount = [...missAtClade.values()].flat().length;
+  const best = clades.length ? Math.max(...clades) : 0;
+  const canHint =
+    !_won &&
+    missCount >= 3 &&
+    best < CORRECT_CLADE - 1 &&
+    deepestMissClade() < TARGET.path.length;
+  btn.style.display = canHint ? 'block' : 'none';
+}
+
+document.getElementById('hint-btn')?.addEventListener('click', () => {
+  const deepest = deepestMissClade();
+  const maxHints = TARGET.path.length - deepest;
+  const current = Math.min(_hintLevel, maxHints);
+  if (current >= maxHints) return;
+  _hintLevel = current + 1;
+  localStorage.setItem(KEYS.hintLevel, String(_hintLevel));
+  rebuildTree();
+  updateHintBtn();
+});
+
+updateHintBtn();
+
 function showSuccess() {
   successArea.style.display = 'block';
 }
@@ -633,6 +718,7 @@ function submitGuess() {
     rebuildTree();
     gameControls.style.display = 'none';
     showSuccess();
+    updateHintBtn();
     return;
   }
 
@@ -640,6 +726,7 @@ function submitGuess() {
   updateGuessesLabel();
   highlightNode(data.clade, raw);
   renderGuesses();
+  updateHintBtn();
 }
 
 btn.addEventListener('click', submitGuess);

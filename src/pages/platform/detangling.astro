@@ -22,7 +22,7 @@ import '../../styles/detangling.css';
             Drag the nodes until no lines cross.
           </div>
           <div class="knot-scroll">
-            <svg id="knot" class="knot-svg" viewBox="0 0 640 420" aria-label="Tangled knot puzzle"></svg>
+            <svg id="knot" class="knot-svg" viewBox="0 0 960 640" aria-label="Tangled knot puzzle"></svg>
           </div>
           <p id="knot-count" class="knot-count"></p>
         </div>
@@ -54,9 +54,9 @@ const pipeline = decodeAnswerList(RETRIEVAL_ANSWERS_ENC)[exp.pipelineIdx];
 const animal = localStorage.getItem(KEYS.spiritAnimal) ?? '';
 const LETTERS = (pipeline + animal).replace(/[^a-z]/gi, '').toUpperCase().split('');
 
-const W = 640;
-const H = 420;
-const R = LETTERS.length > 16 ? 13 : 16;
+const W = 960;
+const H = 640;
+const R = LETTERS.length > 16 ? 20 : 26;
 const PAD = 34;
 const NODE_COUNT = LETTERS.length;
 const EDGE_COUNT = NODE_COUNT + 4; // cycle + 4 chords; non-crossing by construction (see src/lib/knot.ts)

@@ -13,10 +13,12 @@ export const KEYS = {
   deliveredName: 'delivered_name',
   missOrder: 'miss_order',
   retrievalGuesses: 'retrieval_guesses',
+  hintLevel: 'hint_level',
 } as const;
 
-// The random-mode combo survives Cancel Delivery on purpose: re-entering the
-// universal code restores the same experience (decision: restore, not re-roll).
+// The random-mode combo is stored under its own key (not a session key):
+// unlocking with the universal code always rolls a fresh one, so cancel and
+// replay yields a new experience.
 export const COMBO_KEY = 'combo';
 
 export const SESSION_KEYS = Object.values(KEYS);
