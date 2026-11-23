@@ -5,8 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   verify:
@@ -14,17 +13,21 @@ jobs:
       contents: read
       pull-requests: read
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    timeout-minutes: 5
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    outputs:
+      head-sha: ${{ steps.verify.outputs.head-sha }}
     steps:
       - name: Verify Dependabot PR
         id: verify
-        uses: Midnighter/verify-dependabot-pr@78b332efb96437b9bf2f54830d5830972d8dfd52 # v0.4.0
+        uses: Midnighter/verify-dependabot-pr@78b332efb96437b9bf2f54830d5830972d8dfd52 # 0.4.0
 
   merge:
     permissions:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [verify]
     steps:
       - name: Dependabot metadata
@@ -37,7 +40,9 @@ jobs:
         if: |
           steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
           steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --merge "$PR_URL"
+        # Fails if the PR head is no longer the verified commit.
+        run: gh pr merge --auto --merge --match-head-commit "$HEAD_SHA" "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ needs.verify.outputs.head-sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
