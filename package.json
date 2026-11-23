@@ -16,7 +16,7 @@
     "test:knots": "node scripts/knot-planarity.mjs"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.5",
+    "@astrojs/sitemap": "^3.7.6",
     "astro": "^7.4.12",
     "d3": "^7.9.2"
   },
